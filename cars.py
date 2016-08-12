@@ -71,7 +71,7 @@ def partial_derivative_cost(params, j, x, y):
     return J
 
 
-def gradient_descent(params, x, y, alpha=0.01):
+def gradient_descent(params, x, y, alpha=0.1):
 
     max_epochs = 10000  # max number of iterations
     count = 0  # initiating a count number so once reaching max iterations will terminate
@@ -130,27 +130,22 @@ new_mse = metrics.mean_squared_error(regressand, data['predicted_acceleration'])
 print('the new MSE currently stands at: ', new_mse, '\n', ' and the R-squared stands at: ', new_r2)
 
 
+# multi-class Classifier on Origin
 
-# # Multiclass Classifier on Origin
-
-# Transforming
+# transforming
 dummy_cylinders = pd.get_dummies(data['cylinders'], prefix='cyl')
 dummy_years = pd.get_dummies(data['year'], prefix='y')
 dummies = pd.concat([dummy_cylinders, dummy_years], axis=1)
 data = data.join(dummies)
 
-categorical_cols = [col for col in data.columns if col.startswith('y_') or col.startswith('cyl_')]
+cat_cols = [col for col in data.columns if col.startswith('y_') or col.startswith('cyl_')]
 
-
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(data[categorical_cols], data['origin']  \
+x_train, x_test, y_train, y_test = cross_validation.train_test_split(data[cat_cols], data['origin'] \
                                                                      , test_size=.2, random_state=1)
-
 
 models = dict()
 unique_origins = data['origin'].unique()
-testing_probs = pd.DataFrame(columns = unique_origins)
-
-
+testing_probs = pd.DataFrame(columns=unique_origins)
 
 
 for i in unique_origins:
@@ -159,58 +154,38 @@ for i in unique_origins:
     y = y_train == i
     classifier.fit(x, y)
     models[i] = classifier
-    testing_probs[i] = models[i].predict_proba(x_test)[:,1]
-
+    testing_probs[i] = models[i].predict_proba(x_test)[:, 1]
 
 test_set = x_test.join(y_test).reset_index(drop=True)
 
 predictions = testing_probs.idxmax(axis=1)
 
-
 test_set['predicted_origin'] = predictions
-
 
 correct = test_set['origin'] == test_set['predicted_origin']
 
-
-len(test_set[correct]) / len(test_set)
-
-
+print(len(test_set[correct]) / len(test_set))
 
 probs = pd.DataFrame(columns=unique_origins)
 
 for i in unique_origins:
-    probs[i] = models[i].predict_proba(data[categorical_cols])[:,1]
-
-
-
+    probs[i] = models[i].predict_proba(data[cat_cols])[:, 1]
 
 data['predicted_origin'] = probs.idxmax(axis=1)
 
-
-# In[186]:
-
-len(data[data['origin'] == data['predicted_origin']]) / len(data)
+print(len(data[data['origin'] == data['predicted_origin']]) / len(data))
 
 
-# # Clustering Cars
+# Clustering Cars
 
-# In[187]:
-
-data = data[[i for i in data.columns if (i not in dummies.columns) and (i not in ['cylinders','year'])]]
-
-
-# In[188]:
+data = data[[i for i in data.columns if (i not in dummies.columns) and (i not in ['cylinders', 'year'])]]
 
 data['hw_ratio'] = data['horsepower'] / data['weight']
-
-
-# In[189]:
 
 plt.scatter(data['horsepower'], data['weight'])
 
 
-# In[190]:
+
 
 clustering = cluster.KMeans(n_clusters=3, random_state=1)
 
