@@ -22,9 +22,12 @@ normalized_regressors = sm.add_constant(preprocessing.scale(regressors))
 
 regressand = data['acceleration']
 
-lr = linear_model.LinearRegression(fit_intercept=False).fit(normalized_regressors, regressand)
+x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalized_regressors, regressand,\
+                                                                     test_size=.2, random_state=1)
 
-data['predicted_acceleration'] = lr.predict(normalized_regressors)
+lr = linear_model.LinearRegression(fit_intercept=False).fit(x_train, y_train)
+
+predictions = lr.predict(x_test)
 
 
 # fig, ax = plt.subplots()
@@ -36,8 +39,8 @@ data['predicted_acceleration'] = lr.predict(normalized_regressors)
 
 
 # calculating MSE for linear model
-init_mse = metrics.mean_squared_error(regressand, data['predicted_acceleration'])
-init_r2 = metrics.r2_score(regressand, data['predicted_acceleration'])
+init_mse = metrics.mean_squared_error(y_test, predictions)
+init_r2 = metrics.r2_score(y_test, predictions)
 print('the initial MSE currently stands at: ', init_mse, '\n', ' and the R-squared stands at: ', init_r2)
 
 old_theta = lr.coef_  # capturing parameters from linear model
@@ -108,11 +111,11 @@ def gradient_descent(params, x, y, alpha=0.1):
     return params, costs
 
 
-cost_function(old_theta, normalized_regressors, regressand)
+cost_function(old_theta, x_test, y_test)
 
 initial_params = np.ones(old_theta.shape)
 
-new_theta, cost_set = gradient_descent(initial_params, normalized_regressors, regressand)
+new_theta, cost_set = gradient_descent(initial_params, x_test, y_test)
 
 print('old thetas are:  ', old_theta, '\n', 'new thetas are: ', new_theta)
 
@@ -122,13 +125,10 @@ plt.show()
 # applying new parameters
 
 lr.coef_ = new_theta
-data['predicted_acceleration'] = lr.predict(normalized_regressors)
+predictions = lr.predict(x_test)
 
-residuals = - data['acceleration'] + data['predicted_acceleration']
-
-
-new_r2 = metrics.r2_score(regressand, data['predicted_acceleration'])
-new_mse = metrics.mean_squared_error(regressand, data['predicted_acceleration'])
+new_r2 = metrics.r2_score(y_test, predictions)
+new_mse = metrics.mean_squared_error(y_test, predictions)
 print('the new MSE currently stands at: ', new_mse, '\n', ' and the R-squared stands at: ', new_r2)
 
 
@@ -146,7 +146,7 @@ x_train, x_test, y_train, y_test = cross_validation.train_test_split(data[cat_co
                                                                      , test_size=.2, random_state=1)
 
 models = dict()
-unique_origins = data['origin'].unique()
+unique_origins = sorted(data['origin'].unique())
 testing_probs = pd.DataFrame(columns=unique_origins)
 
 
