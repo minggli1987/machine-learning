@@ -1,18 +1,15 @@
 
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
-from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model.LogisticRegression, linear_model.LinearRegression
+from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model
 
-
-data = pd.read_csv('data/auto-mpg.data-original.txt', header=None, delim_whitespace=True)
 
 cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
+data = pd.read_csv('data/auto-mpg.data-original.txt', header=None, delim_whitespace=True, names=cols)
 
-data.columns = cols
 data = data.dropna().reset_index(drop=True)
 data['year'] = (1900 + data['year']).astype(int)
 data.ix[:, :5] = data.ix[:, :5].astype(int)
@@ -25,28 +22,25 @@ normalized_regressors = sm.add_constant(preprocessing.scale(regressors))
 
 regressand = data['acceleration']
 
-lr = LinearRegression(fit_intercept=False)
-
-lr.fit(normalized_regressors, regressand)
+lr = linear_model.LinearRegression(fit_intercept=False).fit(normalized_regressors, regressand)
 
 data['predicted_acceleration'] = lr.predict(normalized_regressors)
 
+# fig, ax = plt.subplots()
+# ax.scatter(data['horsepower'], data['acceleration'], color='b')
+# ax.scatter(data['horsepower'], data['predicted_acceleration'], color='r')
+# ax.set_xlabel('horsepower')
+# ax.set_ylabel('acceleration')
+# plt.show()
 
-fig, ax = plt.subplots()
-ax.scatter(data['horsepower'], data['acceleration'], color='b')
-ax.scatter(data['horsepower'], data['predicted_acceleration'], color='r')
-ax.set_xlabel('horsepower')
-ax.set_ylabel('acceleration')
-plt.show()
+# calculating MSE for linear model
+init_mse = metrics.mean_squared_error(regressand, data['predicted_acceleration'])
+init_r2 = metrics.r2_score(regressand, data['predicted_acceleration'])
+print('the initial MSE currently stands at: ', init_mse, '\n', ' and the R-squared stands at: ', init_r2)
 
-# In[211]:
+old_theta = lr.coef_  # capturing parameters from linear model
 
-metrics.mean_squared_error(regressand, data['predicted_acceleration'])
-
-
-# In[212]:
-
-theta = lr.coef_
+# cost function, partial_derivative and gradient descent algorithm
 
 
 def cost_function(params, x, y):
@@ -62,6 +56,7 @@ def cost_function(params, x, y):
     J /= (2 * m)
     return J
 
+
 def partial_derivative_cost(params, j, x, y):
     params = np.array(params)
     x = np.array(x)
@@ -76,31 +71,32 @@ def partial_derivative_cost(params, j, x, y):
     return J
 
 
-def gradient_descent(params, x, y, alpha=0.1):
-    #max number of iterations
-    max_epochs = 10000
-    #initaiting a count number so once reaching max iterations will termiante
-    count = 0
-    #convergence threshold
-    conv_thres = 0.00000001
-    #initail cost
-    cost = cost_function(params, x, y)
+def gradient_descent(params, x, y, alpha=0.01):
+
+    max_epochs = 10000  # max number of iterations
+    count = 0  # initiating a count number so once reaching max iterations will terminate
+    conv_thres = 0.000001  # convergence threshold
+
+    cost = cost_function(params, x, y)  # convergence threshold
+
     prev_cost = cost + 10
     costs = [cost]
     thetas = [params]
     
-    #beginning gradient_descent iterations
+    #  beginning gradient_descent iterations
+
+    print('beginning gradient decent algorithm')
     
     while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
         prev_cost = cost
-        update = np.ones(len(params))
-        #simutaneously update all thetas
+        update = np.zeros(len(params))  # simultaneously update all thetas
+
         for j in range(len(params)):
             update[j] = alpha * partial_derivative_cost(params, j, x, y)
 
-        params -= update
+        params -= update  # descending
         
-        thetas.append(params)
+        thetas.append(params)  # restoring historic parameters
         
         cost = cost_function(params, x, y)
         
@@ -110,97 +106,55 @@ def gradient_descent(params, x, y, alpha=0.1):
     return params, costs
 
 
-cost_function(theta, normalized_regressors, regressand)
+cost_function(old_theta, normalized_regressors, regressand)
 
+initial_params = np.ones(old_theta.shape)
 
-# In[220]:
+new_theta, cost_set = gradient_descent(initial_params, normalized_regressors, regressand)
 
-new_theta, cost_set = gradient_descent([10,10,10,10,10], normalized_regressors, regressand)
-
-
-# In[221]:
-
-new_theta
-
-
-# In[222]:
-
-cost_function(new_theta, normalized_regressors, regressand)
-
-
-# In[223]:
+print('old thetas are:  ', old_theta, '\n', 'new thetas are: ', new_theta)
 
 plt.plot(range(len(cost_set)), cost_set)
+plt.show()
 
-
-# In[224]:
+# applying new parameters
 
 lr.coef_ = new_theta
-
-
-# In[225]:
+data['predicted_acceleration'] = lr.predict(normalized_regressors)
 
 residuals = - data['acceleration'] + data['predicted_acceleration']
 
 
-# In[226]:
+new_r2 = metrics.r2_score(regressand, data['predicted_acceleration'])
+new_mse = metrics.mean_squared_error(regressand, data['predicted_acceleration'])
+print('the new MSE currently stands at: ', new_mse, '\n', ' and the R-squared stands at: ', new_r2)
 
-residuals.hist()
-
-
-# In[227]:
-
-r2 = r2_score(data['acceleration'], data['predicted_acceleration'])
-
-
-# In[228]:
-
-mean_squared_error(regressand, data['predicted_acceleration'])
 
 
 # # Multiclass Classifier on Origin
 
-# In[170]:
-
+# Transforming
 dummy_cylinders = pd.get_dummies(data['cylinders'], prefix='cyl')
-
-
-# In[171]:
-
 dummy_years = pd.get_dummies(data['year'], prefix='y')
-
-
-# In[172]:
-
 dummies = pd.concat([dummy_cylinders, dummy_years], axis=1)
-
-
-# In[173]:
-
 data = data.join(dummies)
-
-
-# In[174]:
 
 categorical_cols = [col for col in data.columns if col.startswith('y_') or col.startswith('cyl_')]
 
 
-# In[175]:
+x_train, x_test, y_train, y_test = cross_validation.train_test_split(data[categorical_cols], data['origin']  \
+                                                                     , test_size=.2, random_state=1)
 
-x_train, x_test, y_train, y_test = train_test_split(data[categorical_cols],data['origin'],test_size=.2, random_state=1)
-
-
-# In[176]:
 
 models = dict()
 unique_origins = data['origin'].unique()
 testing_probs = pd.DataFrame(columns = unique_origins)
 
 
-# In[177]:
+
 
 for i in unique_origins:
-    classifier = LogisticRegression()
+    classifier = linear_model.LogisticRegression()
     x = x_train
     y = y_train == i
     classifier.fit(x, y)
@@ -208,43 +162,28 @@ for i in unique_origins:
     testing_probs[i] = models[i].predict_proba(x_test)[:,1]
 
 
-# In[178]:
-
 test_set = x_test.join(y_test).reset_index(drop=True)
-
-
-# In[179]:
 
 predictions = testing_probs.idxmax(axis=1)
 
 
-# In[180]:
-
 test_set['predicted_origin'] = predictions
 
-
-# In[181]:
 
 correct = test_set['origin'] == test_set['predicted_origin']
 
 
-# In[182]:
-
 len(test_set[correct]) / len(test_set)
 
 
-# In[183]:
 
-probs = pd.DataFrame(columns = unique_origins)
-
-
-# In[184]:
+probs = pd.DataFrame(columns=unique_origins)
 
 for i in unique_origins:
     probs[i] = models[i].predict_proba(data[categorical_cols])[:,1]
 
 
-# In[185]:
+
 
 data['predicted_origin'] = probs.idxmax(axis=1)
 
@@ -303,7 +242,7 @@ for n in range(3):
 legend = {1:'North America', 2: 'Europe', 3:'Asia'}
 
 
-# In[196]:
+
 
 for n in range(1,4,1):
     clustered_data = data[data['origin'] == n]
