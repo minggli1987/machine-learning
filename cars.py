@@ -26,12 +26,14 @@ lr = linear_model.LinearRegression(fit_intercept=False).fit(normalized_regressor
 
 data['predicted_acceleration'] = lr.predict(normalized_regressors)
 
+
 # fig, ax = plt.subplots()
 # ax.scatter(data['horsepower'], data['acceleration'], color='b')
 # ax.scatter(data['horsepower'], data['predicted_acceleration'], color='r')
 # ax.set_xlabel('horsepower')
 # ax.set_ylabel('acceleration')
 # plt.show()
+
 
 # calculating MSE for linear model
 init_mse = metrics.mean_squared_error(regressand, data['predicted_acceleration'])
@@ -82,7 +84,7 @@ def gradient_descent(params, x, y, alpha=0.1):
     prev_cost = cost + 10
     costs = [cost]
     thetas = [params]
-    
+
     #  beginning gradient_descent iterations
 
     print('beginning gradient decent algorithm')
