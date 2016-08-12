@@ -140,7 +140,7 @@ data = data.join(dummies)
 
 cat_cols = [col for col in data.columns if col.startswith('y_') or col.startswith('cyl_')]
 
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(data[cat_cols], data['origin'] \
+x_train, x_test, y_train, y_test = cross_validation.train_test_split(data[cat_cols], data['origin']\
                                                                      , test_size=.2, random_state=1)
 
 models = dict()
