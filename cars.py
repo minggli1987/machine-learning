@@ -91,7 +91,7 @@ def gradient_descent(params, x, y, alpha=0.1):
     #  beginning gradient_descent iterations
 
     print('beginning gradient decent algorithm')
-    
+
     while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
         prev_cost = cost
         update = np.zeros(len(params))  # simultaneously update all thetas
