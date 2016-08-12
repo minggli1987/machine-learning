@@ -4,17 +4,11 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LinearRegression
 import statsmodels.api as sm
-from sklearn.cross_validation import train_test_split
-from sklearn.metrics import r2_score, mean_squared_error
-from sklearn.metrics import roc_auc_score
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import scale
+from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model.LogisticRegression, linear_model.LinearRegression
 
 
-data = pd.read_csv('data/auto-mpg.data-original.txt', header=None,delim_whitespace=True)
+data = pd.read_csv('data/auto-mpg.data-original.txt', header=None, delim_whitespace=True)
 
 cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
 
@@ -24,56 +18,30 @@ data['year'] = (1900 + data['year']).astype(int)
 data.ix[:, :5] = data.ix[:, :5].astype(int)
 data['origin'] = data['origin'].astype(int)
 
+# defining predictive variables
+regressors = data[['mpg', 'displacement', 'horsepower', 'weight']]
 
-# # Predicting acceleration
-
-# In[203]:
-
-regressors = data[['mpg','displacement','horsepower','weight']]
-
-
-# In[204]:
-
-normalized_regressors = sm.add_constant(scale(regressors))
-
-
-# In[205]:
+normalized_regressors = sm.add_constant(preprocessing.scale(regressors))
 
 regressand = data['acceleration']
 
-
-# In[206]:
-
-normalized_regressand = scale(regressand)
-
-
-# In[207]:
-
 lr = LinearRegression(fit_intercept=False)
-
-
-# In[208]:
 
 lr.fit(normalized_regressors, regressand)
 
-
-# In[209]:
-
 data['predicted_acceleration'] = lr.predict(normalized_regressors)
 
-
-# In[210]:
 
 fig, ax = plt.subplots()
 ax.scatter(data['horsepower'], data['acceleration'], color='b')
 ax.scatter(data['horsepower'], data['predicted_acceleration'], color='r')
 ax.set_xlabel('horsepower')
 ax.set_ylabel('acceleration')
-
+plt.show()
 
 # In[211]:
 
-mean_squared_error(regressand, data['predicted_acceleration'])
+metrics.mean_squared_error(regressand, data['predicted_acceleration'])
 
 
 # In[212]:
@@ -81,46 +49,34 @@ mean_squared_error(regressand, data['predicted_acceleration'])
 theta = lr.coef_
 
 
-# In[213]:
-
-theta
-
-
-# In[214]:
-
-def cost_function(theta, x, y):
-    theta = np.array(theta)
+def cost_function(params, x, y):
+    params = np.array(params)
     x = np.array(x)
     y = np.array(y)
     J = 0
     m = len(x)
     for i in range(m):
-        h = np.sum(theta.T * x[i])
+        h = np.sum(params.T * x[i])
         diff = (h - y[i])**2
         J += diff
     J /= (2 * m)
     return J
 
-
-# In[215]:
-
-def partial_derivative_cost(theta, j, x, y):
-    theta = np.array(theta)
+def partial_derivative_cost(params, j, x, y):
+    params = np.array(params)
     x = np.array(x)
     y = np.array(y)
     J = 0
     m = len(x)
     for i in range(m):
-        h = np.sum(theta.T * x[i])
+        h = np.sum(params.T * x[i])
         diff = (h - y[i]) * x[i][j]
         J += diff
     J /= m
     return J
 
 
-# In[216]:
-
-def gradient_descent(theta, x, y, alpha=0.1):
+def gradient_descent(params, x, y, alpha=0.1):
     #max number of iterations
     max_epochs = 10000
     #initaiting a count number so once reaching max iterations will termiante
@@ -128,38 +84,31 @@ def gradient_descent(theta, x, y, alpha=0.1):
     #convergence threshold
     conv_thres = 0.00000001
     #initail cost
-    cost = cost_function(theta, x, y)
+    cost = cost_function(params, x, y)
     prev_cost = cost + 10
     costs = [cost]
-    thetas = [theta]
+    thetas = [params]
     
     #beginning gradient_descent iterations
     
     while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
         prev_cost = cost
-        update = np.ones(len(theta))
+        update = np.ones(len(params))
         #simutaneously update all thetas
-        for j in range(len(theta)):
-            update[j] = alpha * partial_derivative_cost(theta, j, x, y)
+        for j in range(len(params)):
+            update[j] = alpha * partial_derivative_cost(params, j, x, y)
+
+        params -= update
         
-        theta -= update
+        thetas.append(params)
         
-        thetas.append(theta)
-        
-        cost = cost_function(theta, x, y)
+        cost = cost_function(params, x, y)
         
         costs.append(cost)
         count += 1
         
-    return theta, costs
+    return params, costs
 
-
-# In[218]:
-
-theta
-
-
-# In[219]:
 
 cost_function(theta, normalized_regressors, regressand)
 
@@ -324,7 +273,7 @@ plt.scatter(data['horsepower'], data['weight'])
 
 # In[190]:
 
-clustering = KMeans(n_clusters=3, random_state=1)
+clustering = cluster.KMeans(n_clusters=3, random_state=1)
 
 
 # In[191]:
