@@ -3,8 +3,6 @@
 text = '''g fmnc wms bgblr rpylqjyrc gr zw fylb. rfyrq ufyr amknsrcpq ypc dmp. bmgle gr gl zw fylb gq glcddgagclr ylb rfyr'q ufw rfgq rcvr gq qm jmle. sqgle qrpgle.kyicrpylq() gq pcamkkclbcb. lmu ynnjw ml rfc spj.'''
 
 
-# In[3]:
-
 def decrypt(txt, n):
     import string
     original = string.ascii_lowercase
@@ -12,22 +10,11 @@ def decrypt(txt, n):
     return txt.translate(txt.maketrans(original, shifted))
 
 
-# In[ ]:
-
 url = '''http://www.pythonchallenge.com/pc/def/map.html'''
-
-
-# In[5]:
 
 decrypt(text, 2)
 
-
-# In[11]:
-
-decrypt('map',2)
-
-
-# In[70]:
+decrypt('map', 2)
 
 mess = '''
 kAewtloYgcFQaJNhHVGxXDiQmzjfcpYbzxlWrVcqsmUbCunkfxZWDZjUZMiGqhRRiUvGmYmvnJIHEmbT
@@ -1283,29 +1270,14 @@ PBuijeoTSpsVLaOGuLVjMZXkBvVXwUuHfBihziiavGSYofPNeKsTXruMUumRRPQJzvSzJkKbtSipiqBd
 '''
 
 
-# In[33]:
-
-count = dict()
-for i in list(set(mess)):
-    count[i] = mess.count(i)
-
-
-# In[48]:
-
 new = ''.join({k: v for k, v in count.items() if v < 10}.keys())
 
-
-# In[58]:
 
 ''.join(sorted(decrypt(new,0), reverse=True))
 
 
-# In[60]:
-
 import re
 
-
-# In[65]:
 
 ''.join(re.findall('[A-Za-z]', mess))
 
