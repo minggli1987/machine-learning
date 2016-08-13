@@ -124,7 +124,7 @@ data['predicted_acceleration'] = lr.predict(normalized_regressors)
 
 residuals = - data['acceleration'] + data['predicted_acceleration']
 
-
+# displaying new R-squared and MSE
 new_r2 = metrics.r2_score(regressand, data['predicted_acceleration'])
 new_mse = metrics.mean_squared_error(regressand, data['predicted_acceleration'])
 print('the new MSE currently stands at: ', new_mse, '\n', ' and the R-squared stands at: ', new_r2)
@@ -141,12 +141,13 @@ data = data.join(dummies)
 cat_cols = [col for col in data.columns if col.startswith('y_') or col.startswith('cyl_')]
 
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(data[cat_cols], data['origin']\
-                                                                     , test_size=.2, random_state=1)
+                                                                     , test_size=.2, random_state=2)
 
-models = dict()
-unique_origins = data['origin'].unique()
+
+unique_origins = sorted(data['origin'].unique())
 testing_probs = pd.DataFrame(columns=unique_origins)
 
+models = dict()  # dict to contain different classifiers with each to produce one binomial output.
 
 for i in unique_origins:
     classifier = linear_model.LogisticRegression()
@@ -154,17 +155,17 @@ for i in unique_origins:
     y = y_train == i
     classifier.fit(x, y)
     models[i] = classifier
-    testing_probs[i] = models[i].predict_proba(x_test)[:, 1]
+    testing_probs[i] = models[i].predict_proba(x_test)[:, 1]  # only capturing probability of positive result
 
 test_set = x_test.join(y_test).reset_index(drop=True)
-
 predictions = testing_probs.idxmax(axis=1)
-
 test_set['predicted_origin'] = predictions
-
 correct = test_set['origin'] == test_set['predicted_origin']
 
 print(len(test_set[correct]) / len(test_set))
+
+
+# applying trained classifiers to full data
 
 probs = pd.DataFrame(columns=unique_origins)
 
@@ -183,54 +184,28 @@ data = data[[i for i in data.columns if (i not in dummies.columns) and (i not in
 data['hw_ratio'] = data['horsepower'] / data['weight']
 
 plt.scatter(data['horsepower'], data['weight'])
+plt.show()
 
-
-
-
-clustering = cluster.KMeans(n_clusters=3, random_state=1)
-
-
-# In[191]:
-
-clustering.fit(data[['horsepower','weight']])
-
-
-# In[192]:
+clustering = cluster.KMeans(n_clusters=3, random_state=1).fit(data[['horsepower', 'weight']])
 
 data['cluster'] = clustering.labels_
 
 
-# In[193]:
-
-colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+scatter_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
 
 
-# In[194]:
-
-for n in range(3):
+for n in range(len(set(clustering.labels_))):
     clustered_data = data[data['cluster'] == n]
-    plt.scatter(clustered_data['horsepower'], clustered_data['weight'], color=colors[n])
-
+    plt.scatter(clustered_data['horsepower'], clustered_data['weight'], color=scatter_colors[n])
+plt.show()
 
 # In[195]:
 
-legend = {1:'North America', 2: 'Europe', 3:'Asia'}
+legend = {1: 'North America', 2: 'Europe', 3: 'Asia'}
 
-
-
-
-for n in range(1,4,1):
+for n in range(1, len(set(clustering.labels_)) + 1, 1):
     clustered_data = data[data['origin'] == n]
-    plt.scatter(clustered_data['horsepower'], clustered_data['weight'], color=colors[n], label=legend[n])
+    plt.scatter(clustered_data['horsepower'], clustered_data['weight'], color=scatter_colors[n], label=legend[n])
 plt.legend(loc=2)
-
-
-# In[ ]:
-
-
-
-
-# In[ ]:
-
-
+plt.show()
 
