@@ -7,6 +7,19 @@ import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model
 
 
+class NumberFormatted(object):
+    def __init__(self, n):
+        self.value = float(n)
+
+    def converted(self):
+        return '{0:.2f}'.format(self.value)
+
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __lt__(self, other):
+        return self.value < other.value
+
 cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
 data = pd.read_csv('data/auto-mpg.data-original.txt', header=None, delim_whitespace=True, names=cols)
 
@@ -22,9 +35,12 @@ normalized_regressors = sm.add_constant(preprocessing.scale(regressors))
 
 regressand = data['acceleration']
 
-lr = linear_model.LinearRegression(fit_intercept=False).fit(normalized_regressors, regressand)
+x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalized_regressors, regressand\
+                                                                     , test_size=.2, random_state=1)
 
-data['predicted_acceleration'] = lr.predict(normalized_regressors)
+lr = linear_model.LinearRegression(fit_intercept=False).fit(x_train, y_train)
+
+predictions = lr.predict(x_test)
 
 # fig, ax = plt.subplots()
 # ax.scatter(data['horsepower'], data['acceleration'], color='b')
@@ -34,9 +50,9 @@ data['predicted_acceleration'] = lr.predict(normalized_regressors)
 # plt.show()
 
 # calculating MSE for linear model
-init_mse = metrics.mean_squared_error(regressand, data['predicted_acceleration'])
-init_r2 = metrics.r2_score(regressand, data['predicted_acceleration'])
-print('the initial MSE currently stands at: ', init_mse, '\n', ' and the R-squared stands at: ', init_r2)
+init_mse = metrics.mean_squared_error(y_test, predictions)
+init_r2 = metrics.r2_score(y_test, predictions)
+print('the initial MSE currently stands at: ', NumberFormatted(init_mse).converted(), '\n', ' and the R-squared stands at: ', NumberFormatted(init_r2).converted())
 
 old_theta = lr.coef_  # capturing parameters from linear model
 
@@ -82,7 +98,7 @@ def gradient_descent(params, x, y, alpha=0.1):
     prev_cost = cost + 10
     costs = [cost]
     thetas = [params]
-    
+
     #  beginning gradient_descent iterations
 
     print('beginning gradient decent algorithm')
@@ -102,15 +118,15 @@ def gradient_descent(params, x, y, alpha=0.1):
         
         costs.append(cost)
         count += 1
-        
+
     return params, costs
 
 
-cost_function(old_theta, normalized_regressors, regressand)
+cost_function(old_theta, x_test, y_test)
 
-initial_params = np.ones(old_theta.shape)
+initial_params = np.zeros(old_theta.shape)
 
-new_theta, cost_set = gradient_descent(initial_params, normalized_regressors, regressand)
+new_theta, cost_set = gradient_descent(initial_params, x_test, y_test)
 
 print('old thetas are:  ', old_theta, '\n', 'new thetas are: ', new_theta)
 
@@ -120,14 +136,12 @@ plt.show()
 # applying new parameters
 
 lr.coef_ = new_theta
-data['predicted_acceleration'] = lr.predict(normalized_regressors)
-
-residuals = - data['acceleration'] + data['predicted_acceleration']
+predictions = lr.predict(x_test)
 
 # displaying new R-squared and MSE
-new_r2 = metrics.r2_score(regressand, data['predicted_acceleration'])
-new_mse = metrics.mean_squared_error(regressand, data['predicted_acceleration'])
-print('the new MSE currently stands at: ', new_mse, '\n', ' and the R-squared stands at: ', new_r2)
+new_r2 = metrics.r2_score(y_test, predictions)
+new_mse = metrics.mean_squared_error(y_test, predictions)
+print('the new MSE currently stands at: ', NumberFormatted(new_mse).converted(), '\n', ' and the R-squared stands at: ', NumberFormatted(new_r2).converted())
 
 
 # multi-class Classifier on Origin
@@ -162,8 +176,6 @@ predictions = testing_probs.idxmax(axis=1)
 test_set['predicted_origin'] = predictions
 correct = test_set['origin'] == test_set['predicted_origin']
 
-print(len(test_set[correct]) / len(test_set))
-
 
 # applying trained classifiers to full data
 
@@ -174,14 +186,13 @@ for i in unique_origins:
 
 data['predicted_origin'] = probs.idxmax(axis=1)
 
-print(len(data[data['origin'] == data['predicted_origin']]) / len(data))
+print('classier accuracy on testing stands at:', NumberFormatted(len(test_set[correct]) / len(test_set)).converted())
+print('classier accuracy on whole data stands at:', NumberFormatted(len(data[data['origin'] == data['predicted_origin']]) / len(data)).converted())
 
 
 # Clustering Cars
 
 data = data[[i for i in data.columns if (i not in dummies.columns) and (i not in ['cylinders', 'year'])]]
-
-data['hw_ratio'] = data['horsepower'] / data['weight']
 
 plt.scatter(data['horsepower'], data['weight'])
 plt.show()
@@ -190,16 +201,12 @@ clustering = cluster.KMeans(n_clusters=3, random_state=1).fit(data[['horsepower'
 
 data['cluster'] = clustering.labels_
 
-
 scatter_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-
 
 for n in range(len(set(clustering.labels_))):
     clustered_data = data[data['cluster'] == n]
     plt.scatter(clustered_data['horsepower'], clustered_data['weight'], color=scatter_colors[n])
 plt.show()
-
-# In[195]:
 
 legend = {1: 'North America', 2: 'Europe', 3: 'Asia'}
 
