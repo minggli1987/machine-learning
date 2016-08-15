@@ -37,20 +37,25 @@ y = Node(7)
 z = Node(11)
 a = Node(14)
 b = Node(21)
+c = Node(23)
+d = Node(27)
 
 x.connect(y)
 y.connect(z)
 z.connect(a)
 a.connect(b)
 b.connect(x)
+# x.connect(c)
+# c.connect(d)
 
-print(x.edges)
-print(y.edges)
-print(z.edges)
+
+print([i.value for i in x.edges])
+print([i.value for i in y.edges])
+print([i.value for i in z.edges])
 
 print(x.is_connected(y))
 print(x.is_connected(z))
-print(y.is_connected(a))
+print(x.is_connected(d))
 
 
 def fibonacci(n):
