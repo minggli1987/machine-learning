@@ -35,12 +35,22 @@ normalized_regressors = sm.add_constant(preprocessing.scale(regressors))
 
 regressand = data['acceleration']
 
+<<<<<<< HEAD
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalized_regressors, regressand\
                                                                      , test_size=.2, random_state=1)
 
 lr = linear_model.LinearRegression(fit_intercept=False).fit(x_train, y_train)
 
 predictions = lr.predict(x_test)
+=======
+x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalized_regressors, regressand,\
+                                                                     test_size=.2, random_state=1)
+
+lr = linear_model.LinearRegression(fit_intercept=False).fit(x_train, y_train)
+
+predictions = lr.predict(x_test)
+
+>>>>>>> d59ac7fc761646a606f4753efacbc99c34f875da
 
 # fig, ax = plt.subplots()
 # ax.scatter(data['horsepower'], data['acceleration'], color='b')
@@ -49,10 +59,15 @@ predictions = lr.predict(x_test)
 # ax.set_ylabel('acceleration')
 # plt.show()
 
+
 # calculating MSE for linear model
 init_mse = metrics.mean_squared_error(y_test, predictions)
 init_r2 = metrics.r2_score(y_test, predictions)
+<<<<<<< HEAD
 print('the initial MSE currently stands at: ', NumberFormatted(init_mse).converted(), '\n', ' and the R-squared stands at: ', NumberFormatted(init_r2).converted())
+=======
+print('the initial MSE currently stands at: ', init_mse, '\n', ' and the R-squared stands at: ', init_r2)
+>>>>>>> d59ac7fc761646a606f4753efacbc99c34f875da
 
 old_theta = lr.coef_  # capturing parameters from linear model
 
@@ -102,7 +117,7 @@ def gradient_descent(params, x, y, alpha=0.1):
     #  beginning gradient_descent iterations
 
     print('beginning gradient decent algorithm')
-    
+
     while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
         prev_cost = cost
         update = np.zeros(len(params))  # simultaneously update all thetas
@@ -138,10 +153,16 @@ plt.show()
 lr.coef_ = new_theta
 predictions = lr.predict(x_test)
 
+<<<<<<< HEAD
 # displaying new R-squared and MSE
 new_r2 = metrics.r2_score(y_test, predictions)
 new_mse = metrics.mean_squared_error(y_test, predictions)
 print('the new MSE currently stands at: ', NumberFormatted(new_mse).converted(), '\n', ' and the R-squared stands at: ', NumberFormatted(new_r2).converted())
+=======
+new_r2 = metrics.r2_score(y_test, predictions)
+new_mse = metrics.mean_squared_error(y_test, predictions)
+print('the new MSE currently stands at: ', new_mse, '\n', ' and the R-squared stands at: ', new_r2)
+>>>>>>> d59ac7fc761646a606f4753efacbc99c34f875da
 
 
 # multi-class Classifier on Origin
@@ -158,6 +179,10 @@ x_train, x_test, y_train, y_test = cross_validation.train_test_split(data[cat_co
                                                                      , test_size=.2, random_state=2)
 
 
+<<<<<<< HEAD
+=======
+models = dict()
+>>>>>>> d59ac7fc761646a606f4753efacbc99c34f875da
 unique_origins = sorted(data['origin'].unique())
 testing_probs = pd.DataFrame(columns=unique_origins)
 
