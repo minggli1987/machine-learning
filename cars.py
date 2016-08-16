@@ -6,70 +6,18 @@ import seaborn as sns
 import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model
 
-
-class NumberFormatted(object):
-    def __init__(self, n):
-        self.value = float(n)
-
-    def converted(self):
-        return '{0:.2f}'.format(self.value)
-
-    def __eq__(self, other):
-        return self.value == other.value
-
-    def __lt__(self, other):
-        return self.value < other.value
-
-cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
-data = pd.read_csv('data/auto-mpg.data-original.txt', header=None, delim_whitespace=True, names=cols)
-
-data = data.dropna().reset_index(drop=True)
-data['year'] = (1900 + data['year']).astype(int)
-data.ix[:, :5] = data.ix[:, :5].astype(int)
-data['origin'] = data['origin'].astype(int)
-
-# defining predictive variables
-regressors = data[['mpg', 'displacement', 'horsepower', 'weight']]
-
-normalized_regressors = sm.add_constant(preprocessing.scale(regressors))
-
-regressand = data['acceleration']
-
-<<<<<<< HEAD
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalized_regressors, regressand\
-                                                                     , test_size=.2, random_state=1)
-
-lr = linear_model.LinearRegression(fit_intercept=False).fit(x_train, y_train)
-
-predictions = lr.predict(x_test)
-=======
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalized_regressors, regressand,\
-                                                                     test_size=.2, random_state=1)
-
-lr = linear_model.LinearRegression(fit_intercept=False).fit(x_train, y_train)
-
-predictions = lr.predict(x_test)
-
->>>>>>> d59ac7fc761646a606f4753efacbc99c34f875da
-
-# fig, ax = plt.subplots()
-# ax.scatter(data['horsepower'], data['acceleration'], color='b')
-# ax.scatter(data['horsepower'], data['predicted_acceleration'], color='r')
-# ax.set_xlabel('horsepower')
-# ax.set_ylabel('acceleration')
-# plt.show()
-
-
-# calculating MSE for linear model
-init_mse = metrics.mean_squared_error(y_test, predictions)
-init_r2 = metrics.r2_score(y_test, predictions)
-<<<<<<< HEAD
-print('the initial MSE currently stands at: ', NumberFormatted(init_mse).converted(), '\n', ' and the R-squared stands at: ', NumberFormatted(init_r2).converted())
-=======
-print('the initial MSE currently stands at: ', init_mse, '\n', ' and the R-squared stands at: ', init_r2)
->>>>>>> d59ac7fc761646a606f4753efacbc99c34f875da
-
-old_theta = lr.coef_  # capturing parameters from linear model
+# class NumFmt(object):
+#     def __init__(self, n):
+#         self.value = float(n)
+#
+#     def converted(self):
+#         return '{0:.2f}'.format(self.value)
+#
+#     def __eq__(self, other):
+#         return self.value == other.value
+#
+#     def __lt__(self, other):
+#         return self.value < other.value
 
 # cost function, partial_derivative and gradient descent algorithm
 
@@ -82,7 +30,7 @@ def cost_function(params, x, y):
     m = len(x)
     for i in range(m):
         h = np.sum(params.T * x[i])
-        diff = (h - y[i])**2
+        diff = (h - y[i]) ** 2
         J += diff
     J /= (2 * m)
     return J
@@ -103,7 +51,6 @@ def partial_derivative_cost(params, j, x, y):
 
 
 def gradient_descent(params, x, y, alpha=0.1):
-
     max_epochs = 10000  # max number of iterations
     count = 0  # initiating a count number so once reaching max iterations will terminate
     conv_thres = 0.000001  # convergence threshold
@@ -116,7 +63,7 @@ def gradient_descent(params, x, y, alpha=0.1):
 
     #  beginning gradient_descent iterations
 
-    print('beginning gradient decent algorithm')
+    print('beginning gradient decent algorithm...')
 
     while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
         prev_cost = cost
@@ -126,43 +73,147 @@ def gradient_descent(params, x, y, alpha=0.1):
             update[j] = alpha * partial_derivative_cost(params, j, x, y)
 
         params -= update  # descending
-        
+
         thetas.append(params)  # restoring historic parameters
-        
+
         cost = cost_function(params, x, y)
-        
+
         costs.append(cost)
         count += 1
 
     return params, costs
 
 
-cost_function(old_theta, x_test, y_test)
+import statsmodels.formula.api as smf
 
-initial_params = np.zeros(old_theta.shape)
+
+def forward_selected(data, response):
+    """Linear model designed by forward selection.
+
+    Parameters:
+    -----------
+    data : pandas DataFrame with all possible predictors and response
+
+    response: string, name of response column in data
+
+    Returns:
+    --------
+    model: an "optimal" fitted statsmodels linear model
+           with an intercept
+           selected by forward selection
+           evaluated by adjusted R-squared
+    """
+
+    remaining = set(data.columns)
+    remaining.remove(response)
+    selected = []
+    current_score, best_new_score = 0.0, 0.0
+
+    while remaining and current_score == best_new_score:
+
+        scores_with_candidates = []
+
+        for candidate in remaining:
+            formula = "{} ~ {} + 1".format(response,
+                                           ' + '.join(selected + [candidate]))
+            score = smf.ols(formula, data).fit().rsquared
+            scores_with_candidates.append((score, candidate))
+        scores_with_candidates.sort(reverse=False)
+        print(scores_with_candidates)
+        best_new_score, best_candidate = scores_with_candidates.pop()
+        if current_score < best_new_score:
+            remaining.remove(best_candidate)
+            selected.append(best_candidate)
+            current_score = best_new_score
+    formula = "{} ~ {} + 1".format(response,
+                                   ' + '.join(selected))
+    print(formula)
+    model = smf.ols(formula, data).fit()
+    return model
+
+
+def numfmt(num):
+    assert isinstance(num, (int, float))
+    return float('{0:.2f}'.format(num))
+
+cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
+data = pd.read_csv('data/auto-mpg.data-original.txt', header=None, delim_whitespace=True, names=cols)
+
+data = data.dropna().reset_index(drop=True)
+data['year'] = (1900 + data['year']).astype(int)
+data.ix[:, :5] = data.ix[:, :5].astype(int)
+data['origin'] = data['origin'].astype(int)
+
+# selecting predictive variables
+regressors = data[[i for i in cols if i not in ['acceleration', 'name']]]
+
+# selecting target variable
+regressand = data['acceleration']
+
+fs_model = forward_selected(data[['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin']], 'acceleration')
+
+def normalize(data):
+    # building a scaler that applies to future data
+    scaler = preprocessing.StandardScaler().fit(regressors)
+    return sm.add_constant(scaler.transform(data))
+
+
+# splitting data - holdout validation
+x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalize(regressors), regressand, test_size=.2)
+
+kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True)
+
+# trying linear model
+lr = linear_model.LinearRegression(fit_intercept=False)
+lr.fit(x_train, y_train)
+
+# preparing Gradient Descent
+
+old_theta = lr.coef_  # capturing parameters from linear model
+initial_params = np.zeros(old_theta.shape)  # generating initial parameters using the shape of existing ones
 
 new_theta, cost_set = gradient_descent(initial_params, x_test, y_test)
 
-print('old thetas are:  ', old_theta, '\n', 'new thetas are: ', new_theta)
-
+print(' old thetas are: ', [numfmt(i) for i in old_theta], '\n', 'new thetas are: ', [numfmt(i) for i in new_theta])
 plt.plot(range(len(cost_set)), cost_set)
-plt.show()
+
 
 # applying new parameters
-
 lr.coef_ = new_theta
 predictions = lr.predict(x_test)
 
-<<<<<<< HEAD
-# displaying new R-squared and MSE
-new_r2 = metrics.r2_score(y_test, predictions)
-new_mse = metrics.mean_squared_error(y_test, predictions)
-print('the new MSE currently stands at: ', NumberFormatted(new_mse).converted(), '\n', ' and the R-squared stands at: ', NumberFormatted(new_r2).converted())
-=======
-new_r2 = metrics.r2_score(y_test, predictions)
-new_mse = metrics.mean_squared_error(y_test, predictions)
-print('the new MSE currently stands at: ', new_mse, '\n', ' and the R-squared stands at: ', new_r2)
->>>>>>> d59ac7fc761646a606f4753efacbc99c34f875da
+# calculating new metrics
+new_r2 = numfmt(metrics.r2_score(y_test, predictions))
+new_mse = numfmt(metrics.mean_squared_error(y_test, predictions))
+
+print('the new MSE currently stands at: ', new_mse, '\n', 'the R-squared stands at: ', new_r2)
+
+# init_mse = numfmt(metrics.mean_squared_error(y_test, predictions))
+# init_r2 = numfmt(metrics.r2_score(y_test, predictions))
+# print('the initial MSE currently stands at: ', init_mse, '\n', 'the R-squared stands at: ', init_r2)
+
+
+# for train_index, test_index in kf_gen:
+#
+#     x_train, y_train = regressors.ix[train_index], regressand.ix[train_index]
+#     x_test, y_test = regressors.ix[test_index], regressand.ix[test_index]
+#
+#     lr.fit(normalize(x_train), y_train)
+#     predictions = lr.predict((normalize(x_test)))
+#
+#     # calculating MSE for linear model
+
+
+kf_mse = cross_validation.cross_val_score(lr, normalize(regressors), regressand, scoring='mean_squared_error', cv=kf_gen)
+kf_r2 = cross_validation.cross_val_score(lr, normalize(regressors), regressand, scoring='r2', cv=kf_gen)
+print(numfmt(np.mean(abs(kf_mse))), numfmt(np.mean(kf_r2)))
+
+# fig, ax = plt.subplots()
+# ax.scatter(data['horsepower'], data['acceleration'], color='b')
+# ax.scatter(data['horsepower'], data['predicted_acceleration'], color='r')
+# ax.set_xlabel('horsepower')
+# ax.set_ylabel('acceleration')
+# plt.show()
 
 
 # multi-class Classifier on Origin
@@ -178,11 +229,6 @@ cat_cols = [col for col in data.columns if col.startswith('y_') or col.startswit
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(data[cat_cols], data['origin']\
                                                                      , test_size=.2, random_state=2)
 
-
-<<<<<<< HEAD
-=======
-models = dict()
->>>>>>> d59ac7fc761646a606f4753efacbc99c34f875da
 unique_origins = sorted(data['origin'].unique())
 testing_probs = pd.DataFrame(columns=unique_origins)
 
@@ -211,33 +257,33 @@ for i in unique_origins:
 
 data['predicted_origin'] = probs.idxmax(axis=1)
 
-print('classier accuracy on testing stands at:', NumberFormatted(len(test_set[correct]) / len(test_set)).converted())
-print('classier accuracy on whole data stands at:', NumberFormatted(len(data[data['origin'] == data['predicted_origin']]) / len(data)).converted())
+print('classier accuracy on testing stands at:', numfmt(len(test_set[correct]) / len(test_set)))
+print('classier accuracy on whole data stands at:', numfmt(len(data[data['origin'] == data['predicted_origin']]) / len(data)))
 
 
 # Clustering Cars
-
-data = data[[i for i in data.columns if (i not in dummies.columns) and (i not in ['cylinders', 'year'])]]
-
-plt.scatter(data['horsepower'], data['weight'])
-plt.show()
-
-clustering = cluster.KMeans(n_clusters=3, random_state=1).fit(data[['horsepower', 'weight']])
-
-data['cluster'] = clustering.labels_
-
-scatter_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
-
-for n in range(len(set(clustering.labels_))):
-    clustered_data = data[data['cluster'] == n]
-    plt.scatter(clustered_data['horsepower'], clustered_data['weight'], color=scatter_colors[n])
-plt.show()
-
-legend = {1: 'North America', 2: 'Europe', 3: 'Asia'}
-
-for n in range(1, len(set(clustering.labels_)) + 1, 1):
-    clustered_data = data[data['origin'] == n]
-    plt.scatter(clustered_data['horsepower'], clustered_data['weight'], color=scatter_colors[n], label=legend[n])
-plt.legend(loc=2)
-plt.show()
+#
+# data = data[[i for i in data.columns if (i not in dummies.columns) and (i not in ['cylinders', 'year'])]]
+#
+# plt.scatter(data['horsepower'], data['weight'])
+# plt.show()
+#
+# clustering = cluster.KMeans(n_clusters=3, random_state=1).fit(data[['horsepower', 'weight']])
+#
+# data['cluster'] = clustering.labels_
+#
+# scatter_colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
+#
+# for n in range(len(set(clustering.labels_))):
+#     clustered_data = data[data['cluster'] == n]
+#     plt.scatter(clustered_data['horsepower'], clustered_data['weight'], color=scatter_colors[n])
+# plt.show()
+#
+# legend = {1: 'North America', 2: 'Europe', 3: 'Asia'}
+#
+# for n in range(1, len(set(clustering.labels_)) + 1, 1):
+#     clustered_data = data[data['origin'] == n]
+#     plt.scatter(clustered_data['horsepower'], clustered_data['weight'], color=scatter_colors[n], label=legend[n])
+# plt.legend(loc=2)
+# plt.show()
 
