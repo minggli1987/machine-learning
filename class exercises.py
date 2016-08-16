@@ -8,33 +8,36 @@ class NumberFormatted(object):
         assert isinstance(n, (float, int)), 'please input a numeric value'
         self.value = float('{0:.2f}'.format(n))
 
-assert isinstance(32.123, (float, int)), 'please input a numeric value'
-
-print(NumberFormatted(234.123).value)
+print(NumberFormatted(234.123).value + 1)
 
 
 class Node(object):
 
     __origin__ = None
+    __nextid = 0
+    __inst = {}
 
     def __init__(self, n):
         self.edges = []
         self.value = n
+        self.id = self.__class__.__nextid
+        self.__class__.__inst[self.id] = self
+        self.__class__.__nextid += 1
 
     def is_connected(self, other):
 
-        if Node.__origin__ is None:
-            Node.__origin__ = self
+        if self.__class__.__origin__ is None:
+            self.__class__.__origin__ = self
 
         if other in self.edges:
-            Node.__origin__ = None
+            self.__class__.__origin__ = None
             return True
         else:
             for edge in self.edges:
-                if edge == Node.__origin__:
+                if edge == self.__class__.__origin__:
                     continue
                 if edge.is_connected(other):
-                    Node.__origin__ = None
+                    self.__class__.__origin__ = None
                     return True
         return False
 
@@ -50,6 +53,10 @@ class Node(object):
 
     def __ge__(self, other):
         return self.value >= other.value
+
+    # def __del__(self):
+    #     self.__class__.__inst.remove(self)
+    #     print('Node({0})'.format(self.value), 'has been deleted.')
 
 x = Node(3)
 y = Node(7)
@@ -82,9 +89,18 @@ print([i.value for i in a.edges])
 print([i.value for i in b.edges])
 print([i.value for i in c.edges])
 print([i.value for i in d.edges])
-# print(x.is_connected(y))
-print(a.is_connected(h))
-print(x <= f)
+print([i.value for i in e.edges])
+print([i.value for i in f.edges])
+print([i.value for i in g.edges])
+print([i.value for i in h.edges])
+
+
+print(x.is_connected(y))
+print(x.is_connected(h))
+
+print(h.value)
+
+
 # def fibonacci(n):
 #     assert n > 0 and isinstance(n, int), 'please input a valid integer'
 #     return 0 if n == 1 else 1 if n == 3 or n == 2 else fibonacci(n - 1) + fibonacci(n - 2)
@@ -92,3 +108,16 @@ print(x <= f)
 # seq = [fibonacci(i) for i in range(1, 20)]
 #
 # print(seq)
+
+
+class A(object):
+    instances = []
+
+    def __init__(self, foo):
+        self.foo = foo
+        A.instances.append(self)
+
+i = A(1)
+o = A(2)
+print(A.instances)
+
