@@ -14,14 +14,14 @@ print(NumberFormatted(234.123).value + 1)
 class Node(object):
 
     __origin__ = None
-    __nextid = 0
-    __inst = {}
+    __nextid = 1
+    __inst = dict()
 
     def __init__(self, n):
         self.edges = []
         self.value = n
-        self.id = self.__class__.__nextid
-        self.__class__.__inst[self.id] = self
+        self.inst_id = self.__class__.__nextid
+        self.__class__.__inst[self.inst_id] = self
         self.__class__.__nextid += 1
 
     def is_connected(self, other):
@@ -54,9 +54,9 @@ class Node(object):
     def __ge__(self, other):
         return self.value >= other.value
 
-    # def __del__(self):
-    #     self.__class__.__inst.remove(self)
-    #     print('Node({0})'.format(self.value), 'has been deleted.')
+    def printall(self):
+        return {k: 'Node({0})'.format(v.value) for k, v in self.__class__.__inst.items()}
+
 
 x = Node(3)
 y = Node(7)
@@ -74,13 +74,13 @@ x.connect(y)
 y.connect(z)
 z.connect(a)
 a.connect(b)
-b.connect(x)
-x.connect(c)
+b.connect(c)
 c.connect(d)
 d.connect(e)
-x.connect(f)
-x.connect(g)
-f.connect(h)
+e.connect(f)
+f.connect(g)
+g.connect(h)
+
 
 print([i.value for i in x.edges])
 print([i.value for i in y.edges])
@@ -98,26 +98,13 @@ print([i.value for i in h.edges])
 print(x.is_connected(y))
 print(x.is_connected(h))
 
-print(h.value)
+print(h.printall())
 
 
-# def fibonacci(n):
-#     assert n > 0 and isinstance(n, int), 'please input a valid integer'
-#     return 0 if n == 1 else 1 if n == 3 or n == 2 else fibonacci(n - 1) + fibonacci(n - 2)
-#
-# seq = [fibonacci(i) for i in range(1, 20)]
-#
-# print(seq)
+def fibonacci(n):
+    assert n > 0 and isinstance(n, int), 'please input a valid integer'
+    return 0 if n == 1 else 1 if n == 3 or n == 2 else fibonacci(n - 1) + fibonacci(n - 2)
 
+seq = [fibonacci(i) for i in range(1, 20)]
 
-class A(object):
-    instances = []
-
-    def __init__(self, foo):
-        self.foo = foo
-        A.instances.append(self)
-
-i = A(1)
-o = A(2)
-print(A.instances)
-
+print(seq)
