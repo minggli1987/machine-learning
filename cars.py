@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model
+from scipy.stats import t
+
 
 # class NumFmt(object):
 #     def __init__(self, n):
@@ -84,10 +86,7 @@ def gradient_descent(params, x, y, alpha=0.1):
     return params, costs
 
 
-import statsmodels.formula.api as smf
-
-
-def forward_selected(data, response):
+def forward_selected(data, target):
     """Linear model designed by forward selection.
 
     Parameters:
@@ -105,61 +104,78 @@ def forward_selected(data, response):
     """
 
     remaining = set(data.columns)
-    remaining.remove(response)
+    remaining.remove(target)
     selected = []
     current_score, best_new_score = 0.0, 0.0
+    crit_value = .95
 
     while remaining and current_score == best_new_score:
 
-        scores_with_candidates = []
+        scores_with_candidates = []  # containing variables
 
         for candidate in remaining:
-            formula = "{} ~ {} + 1".format(response,
-                                           ' + '.join(selected + [candidate]))
-            score = smf.ols(formula, data).fit().rsquared
+
+            X = selected + [candidate]
+            reg = linear_model.LinearRegression(fit_intercept=False)
+            reg.fit(data[X], data[target])
+            score = reg.score(data[X], data[target])
             scores_with_candidates.append((score, candidate))
+
+            # p value
+            lr = linear_model.LinearRegression(fit_intercept=True)
+            lr.fit(data[candidate], data[target])
+            predicted = lr.predict(data[candidate])
+            SSE = np.sum((predicted - data[target])**2)
+            xvar = np.sum((data[candidate] - np.mean(data[candidate]))**2)
+            df = data.shape[0] - 2
+            sb = SSE / (xvar * df)
+            tstat = (abs(lr.params[candidate]) - 0) / sb ** .5
+            p = t.cdf(tstat, df=df)
+            print(p)
+
         scores_with_candidates.sort(reverse=False)
-        print(scores_with_candidates)
         best_new_score, best_candidate = scores_with_candidates.pop()
-        if current_score < best_new_score:
+        print(best_new_score)
+        if current_score < best_new_score:  # need more robust criteria
             remaining.remove(best_candidate)
             selected.append(best_candidate)
             current_score = best_new_score
-    formula = "{} ~ {} + 1".format(response,
-                                   ' + '.join(selected))
-    print(formula)
-    model = smf.ols(formula, data).fit()
-    return model
+
+    model = sm.OLS(data[target], data[selected]).fit()
+    return model, selected
 
 
 def numfmt(num):
     assert isinstance(num, (int, float))
     return float('{0:.2f}'.format(num))
 
+
+def normalize(data):
+    # building a scaler that applies to future data
+    col_name = ['const'] + data.columns.tolist()
+    scaler = preprocessing.StandardScaler().fit(data)
+    return pd.DataFrame(sm.add_constant(scaler.transform(data)), columns=col_name)
+
+
 cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
 data = pd.read_csv('data/auto-mpg.data-original.txt', header=None, delim_whitespace=True, names=cols)
-
 data = data.dropna().reset_index(drop=True)
 data['year'] = (1900 + data['year']).astype(int)
 data.ix[:, :5] = data.ix[:, :5].astype(int)
 data['origin'] = data['origin'].astype(int)
 
 # selecting predictive variables
-regressors = data[[i for i in cols if i not in ['acceleration', 'name']]]
+# regressors = data[[i for i in cols if i not in ['name']]]
+fs_model, var = forward_selected(normalize(data[[i for i in cols if i != 'name']]), 'acceleration')
+
+print(fs_model.summary())
 
 # selecting target variable
 regressand = data['acceleration']
-
-fs_model = forward_selected(data[['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin']], 'acceleration')
-
-def normalize(data):
-    # building a scaler that applies to future data
-    scaler = preprocessing.StandardScaler().fit(regressors)
-    return sm.add_constant(scaler.transform(data))
-
+regressors = data[var]
 
 # splitting data - holdout validation
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalize(regressors), regressand, test_size=.2)
+x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalize(data[var]), regressand, test_size=.2)
 
 kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True)
 
