@@ -91,7 +91,7 @@ def forward_selected(data, target):
 
     Parameters:
     -----------
-    data : pandas DataFrame with all possible predictors and response
+    data : pandas DataFrame with all possible predictors and response w
 
     response: string, name of response column in data
 
@@ -105,9 +105,9 @@ def forward_selected(data, target):
 
     remaining = set(data.columns)
     remaining.remove(target)
-    selected = []
+    selected_var = []
     current_score, best_new_score = 0.0, 0.0
-    crit_value = .95
+    alpha = 0.05
 
     while remaining and current_score == best_new_score:
 
@@ -115,34 +115,29 @@ def forward_selected(data, target):
 
         for candidate in remaining:
 
-            X = selected + [candidate]
-            reg = linear_model.LinearRegression(fit_intercept=False)
-            reg.fit(data[X], data[target])
-            score = reg.score(data[X], data[target])
-            scores_with_candidates.append((score, candidate))
+            X = sm.add_constant(data[selected_var + [candidate]])  # inherit variables from last step and try new ones
+            reg = sm.OLS(data[target], X).fit()
+            score, p = reg.rsquared, reg.pvalues[-1]  # r2 (changeable) and two-tailed p value of the candidate
+            scores_with_candidates.append((score, p, candidate))
 
-            # p value
-            lr = linear_model.LinearRegression(fit_intercept=True)
-            lr.fit(data[candidate], data[target])
-            predicted = lr.predict(data[candidate])
-            SSE = np.sum((predicted - data[target])**2)
-            xvar = np.sum((data[candidate] - np.mean(data[candidate]))**2)
-            df = data.shape[0] - 2
-            sb = SSE / (xvar * df)
-            tstat = (abs(lr.params[candidate]) - 0) / sb ** .5
-            p = t.cdf(tstat, df=df)
-            print(p)
-
-        scores_with_candidates.sort(reverse=False)
-        best_new_score, best_candidate = scores_with_candidates.pop()
-        print(best_new_score)
-        if current_score < best_new_score:  # need more robust criteria
+        scores_with_candidates.sort(reverse=False)  # order variables by score in ascending
+        disqualified_candidates = [i for i in scores_with_candidates if ~(i[1] < alpha)]
+        scores_with_candidates = [i for i in scores_with_candidates if i[1] < alpha]
+        try:
+            best_new_score, best_candidate_p, best_candidate = scores_with_candidates.pop()
+        except IndexError:  # when no candidate passes significance test at critical value
+            disqualified_score, disqualified_p, disqualified_candidate = disqualified_candidates.pop(0)
+            remaining.remove(disqualified_candidate)  # remove the worst disqualified candidate
+#            print(disqualified_score, disqualified_p, disqualified_candidate)
+            continue  # continuing the while loop
+        if current_score < best_new_score:
             remaining.remove(best_candidate)
-            selected.append(best_candidate)
             current_score = best_new_score
+            selected_var.append(best_candidate)
+#            print(best_new_score, best_candidate_p, best_candidate)
 
-    model = sm.OLS(data[target], data[selected]).fit()
-    return model, selected
+    model = sm.OLS(data[target], sm.add_constant(data[selected_var])).fit()
+    return model, selected_var
 
 
 def numfmt(num):
@@ -152,9 +147,9 @@ def numfmt(num):
 
 def normalize(data):
     # building a scaler that applies to future data
-    col_name = ['const'] + data.columns.tolist()
+    col_name = data.columns
     scaler = preprocessing.StandardScaler().fit(data)
-    return pd.DataFrame(sm.add_constant(scaler.transform(data)), columns=col_name)
+    return pd.DataFrame(scaler.transform(data), columns=col_name)
 
 
 cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
@@ -166,13 +161,20 @@ data['origin'] = data['origin'].astype(int)
 
 # selecting predictive variables
 # regressors = data[[i for i in cols if i not in ['name']]]
-fs_model, var = forward_selected(normalize(data[[i for i in cols if i != 'name']]), 'acceleration')
 
-print(fs_model.summary())
+# automatic stepwise (forward) selection
+entire_numeric = data[[i for i in cols if i not in ['name']]]
+fs_model, var = forward_selected(normalize(entire_numeric), 'acceleration')
+
 
 # selecting target variable
 regressand = data['acceleration']
-regressors = data[var]
+regressors = data[var]  # recommended variables from stepwise procedure
+
+reg = sm.OLS(regressand, normalize(entire_numeric[['horsepower', 'weight', 'displacement']]))
+print(fs_model.summary())
+print(reg.fit().summary())
+
 
 # splitting data - holdout validation
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalize(data[var]), regressand, test_size=.2)
