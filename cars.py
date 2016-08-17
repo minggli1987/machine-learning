@@ -23,68 +23,6 @@ from minglib import forward_selected
 # cost function, partial_derivative and gradient descent algorithm
 
 
-def cost_function(params, x, y):
-    params = np.array(params)
-    x = np.array(x)
-    y = np.array(y)
-    J = 0
-    m = len(x)
-    for i in range(m):
-        h = np.sum(params.T * x[i])
-        diff = (h - y[i]) ** 2
-        J += diff
-    J /= (2 * m)
-    return J
-
-
-def partial_derivative_cost(params, j, x, y):
-    params = np.array(params)
-    x = np.array(x)
-    y = np.array(y)
-    J = 0
-    m = len(x)
-    for i in range(m):
-        h = np.sum(params.T * x[i])
-        diff = (h - y[i]) * x[i][j]
-        J += diff
-    J /= m
-    return J
-
-
-def gradient_descent(params, x, y, alpha=0.1):
-    max_epochs = 10000  # max number of iterations
-    count = 0  # initiating a count number so once reaching max iterations will terminate
-    conv_thres = 0.000001  # convergence threshold
-
-    cost = cost_function(params, x, y)  # convergence threshold
-
-    prev_cost = cost + 10
-    costs = [cost]
-    thetas = [params]
-
-    #  beginning gradient_descent iterations
-
-    print('\nbeginning gradient decent algorithm...\n')
-
-    while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
-        prev_cost = cost
-        update = np.zeros(len(params))  # simultaneously update all thetas
-
-        for j in range(len(params)):
-            update[j] = alpha * partial_derivative_cost(params, j, x, y)
-
-        params -= update  # descending
-
-        thetas.append(params)  # restoring historic parameters
-
-        cost = cost_function(params, x, y)
-
-        costs.append(cost)
-        count += 1
-
-    return params, costs
-
-
 def numfmt(num):
     assert isinstance(num, (int, float))
     return float('{0:.2f}'.format(num))
@@ -162,8 +100,11 @@ print('the new MSE currently stands at: {}; '.format(new_mse), 'the R-squared st
 #     # calculating MSE for linear model
 
 
-kf_mse = cross_validation.cross_val_score(lr, sm.add_constant(normalize(regressors)), regressand, scoring='mean_squared_error', cv=kf_gen)
-kf_r2 = cross_validation.cross_val_score(lr, sm.add_constant(normalize(regressors)), regressand, scoring='r2', cv=kf_gen)
+kf_mse = cross_validation.cross_val_score\
+    (lr, sm.add_constant(normalize(regressors)), regressand, scoring='mean_squared_error', cv=kf_gen)
+kf_r2 = cross_validation.cross_val_score\
+    (lr, sm.add_constant(normalize(regressors)), regressand, scoring='r2', cv=kf_gen)
+
 print('the average MSE from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_mse)))),
       'the average R-squared stands at: {}'.format(numfmt(np.mean(kf_r2))))
 
