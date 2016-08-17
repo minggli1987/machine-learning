@@ -5,22 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model
-from minglib import forward_selected
-
-# class NumFmt(object):
-#     def __init__(self, n):
-#         self.value = float(n)
-#
-#     def converted(self):
-#         return '{0:.2f}'.format(self.value)
-#
-#     def __eq__(self, other):
-#         return self.value == other.value
-#
-#     def __lt__(self, other):
-#         return self.value < other.value
-
-# cost function, partial_derivative and gradient descent algorithm
+from minglib import forward_selected, gradient_descent
 
 
 def numfmt(num):
