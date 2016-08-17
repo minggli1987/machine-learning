@@ -26,7 +26,7 @@ def forward_selected(data, target):
     current_score, best_new_score = 0.0, 0.0
     alpha = 0.05
 
-    print('\nbeginning forward stepwise variable selection...\n')
+    print('beginning forward stepwise variable selection...\n')
     while remaining and current_score == best_new_score:
 
         scores_with_candidates = []  # containing variables
@@ -55,4 +55,7 @@ def forward_selected(data, target):
 #            print(best_new_score, best_candidate_p, best_candidate)
 
     model = sm.OLS(data[target], sm.add_constant(data[selected_var])).fit()
+
+    print('forward stepwise selection completed...\n')
+
     return model, selected_var

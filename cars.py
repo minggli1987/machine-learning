@@ -5,8 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model
-from scipy.stats import t
-
+from minglib import forward_selected
 
 # class NumFmt(object):
 #     def __init__(self, n):
@@ -84,8 +83,6 @@ def gradient_descent(params, x, y, alpha=0.1):
         count += 1
 
     return params, costs
-
-
 
 
 def numfmt(num):
