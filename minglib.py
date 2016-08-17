@@ -1,4 +1,5 @@
 import statsmodels.api as sm
+import numpy as np
 
 __author__ = 'Ming Li @ London, UK'
 
@@ -59,3 +60,65 @@ def forward_selected(data, target):
     print('forward stepwise selection completed...\n')
 
     return model, selected_var
+
+
+def cost_function(params, x, y):
+    params = np.array(params)
+    x = np.array(x)
+    y = np.array(y)
+    J = 0
+    m = len(x)
+    for i in range(m):
+        h = np.sum(params.T * x[i])
+        diff = (h - y[i]) ** 2
+        J += diff
+    J /= (2 * m)
+    return J
+
+
+def partial_derivative_cost(params, j, x, y):
+    params = np.array(params)
+    x = np.array(x)
+    y = np.array(y)
+    J = 0
+    m = len(x)
+    for i in range(m):
+        h = np.sum(params.T * x[i])
+        diff = (h - y[i]) * x[i][j]
+        J += diff
+    J /= m
+    return J
+
+
+def gradient_descent(params, x, y, alpha=0.1):
+    max_epochs = 10000  # max number of iterations
+    count = 0  # initiating a count number so once reaching max iterations will terminate
+    conv_thres = 0.000001  # convergence threshold
+
+    cost = cost_function(params, x, y)  # convergence threshold
+
+    prev_cost = cost + 10
+    costs = [cost]
+    thetas = [params]
+
+    #  beginning gradient_descent iterations
+
+    print('\nbeginning gradient decent algorithm...\n')
+
+    while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
+        prev_cost = cost
+        update = np.zeros(len(params))  # simultaneously update all thetas
+
+        for j in range(len(params)):
+            update[j] = alpha * partial_derivative_cost(params, j, x, y)
+
+        params -= update  # descending
+
+        thetas.append(params)  # restoring historic parameters
+
+        cost = cost_function(params, x, y)
+
+        costs.append(cost)
+        count += 1
+
+    return params, costs
