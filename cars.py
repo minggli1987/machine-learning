@@ -65,7 +65,7 @@ def gradient_descent(params, x, y, alpha=0.1):
 
     #  beginning gradient_descent iterations
 
-    print('beginning gradient decent algorithm...')
+    print('\nbeginning gradient decent algorithm...\n')
 
     while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
         prev_cost = cost
@@ -109,6 +109,7 @@ def forward_selected(data, target):
     current_score, best_new_score = 0.0, 0.0
     alpha = 0.05
 
+    print('\nbeginning forward stepwise variable selection...\n')
     while remaining and current_score == best_new_score:
 
         scores_with_candidates = []  # containing variables
@@ -166,35 +167,34 @@ data['origin'] = data['origin'].astype(int)
 entire_numeric = data[[i for i in cols if i not in ['name']]]
 fs_model, var = forward_selected(normalize(entire_numeric), 'acceleration')
 
-
 # selecting target variable
 regressand = data['acceleration']
 regressors = data[var]  # recommended variables from stepwise procedure
 
-reg = sm.OLS(regressand, normalize(entire_numeric[['horsepower', 'weight', 'displacement']]))
-print(fs_model.summary())
-print(reg.fit().summary())
-
-
 # splitting data - holdout validation
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(normalize(data[var]), regressand, test_size=.2)
-
+x_train, x_test, y_train, y_test = \
+    cross_validation.train_test_split(sm.add_constant(normalize(regressors)), regressand, test_size=.2)
+# splitting data - k fold cross validation
 kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True)
 
-# trying linear model
-lr = linear_model.LinearRegression(fit_intercept=False)
+# fitting linear model
+lr = linear_model.LinearRegression(fit_intercept=False)  # regressors already has intercept manually
 lr.fit(x_train, y_train)
+predictions = lr.predict(x_test)
+
+init_mse = numfmt(metrics.mean_squared_error(y_test, predictions))
+init_r2 = numfmt(metrics.r2_score(y_test, predictions))
+print('the initial MSE currently stands at: {}; '.format(init_mse), 'the initial R-squared stands at: {}'.format(init_r2))
 
 # preparing Gradient Descent
 
 old_theta = lr.coef_  # capturing parameters from linear model
-initial_params = np.zeros(old_theta.shape)  # generating initial parameters using the shape of existing ones
-
+initial_params = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
 new_theta, cost_set = gradient_descent(initial_params, x_test, y_test)
 
 print(' old thetas are: ', [numfmt(i) for i in old_theta], '\n', 'new thetas are: ', [numfmt(i) for i in new_theta])
 plt.plot(range(len(cost_set)), cost_set)
-
+plt.show()
 
 # applying new parameters
 lr.coef_ = new_theta
@@ -204,13 +204,9 @@ predictions = lr.predict(x_test)
 new_r2 = numfmt(metrics.r2_score(y_test, predictions))
 new_mse = numfmt(metrics.mean_squared_error(y_test, predictions))
 
-print('the new MSE currently stands at: ', new_mse, '\n', 'the R-squared stands at: ', new_r2)
+print('the new MSE currently stands at: {}; '.format(new_mse), 'the R-squared stands at: %s' % new_r2)
 
-# init_mse = numfmt(metrics.mean_squared_error(y_test, predictions))
-# init_r2 = numfmt(metrics.r2_score(y_test, predictions))
-# print('the initial MSE currently stands at: ', init_mse, '\n', 'the R-squared stands at: ', init_r2)
-
-
+# k-fold generator intervals
 # for train_index, test_index in kf_gen:
 #
 #     x_train, y_train = regressors.ix[train_index], regressand.ix[train_index]
@@ -222,9 +218,10 @@ print('the new MSE currently stands at: ', new_mse, '\n', 'the R-squared stands 
 #     # calculating MSE for linear model
 
 
-kf_mse = cross_validation.cross_val_score(lr, normalize(regressors), regressand, scoring='mean_squared_error', cv=kf_gen)
-kf_r2 = cross_validation.cross_val_score(lr, normalize(regressors), regressand, scoring='r2', cv=kf_gen)
-print(numfmt(np.mean(abs(kf_mse))), numfmt(np.mean(kf_r2)))
+kf_mse = cross_validation.cross_val_score(lr, sm.add_constant(normalize(regressors)), regressand, scoring='mean_squared_error', cv=kf_gen)
+kf_r2 = cross_validation.cross_val_score(lr, sm.add_constant(normalize(regressors)), regressand, scoring='r2', cv=kf_gen)
+print('the average MSE from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_mse)))),
+      'the average R-squared stands at: {}'.format(numfmt(np.mean(kf_r2))))
 
 # fig, ax = plt.subplots()
 # ax.scatter(data['horsepower'], data['acceleration'], color='b')
