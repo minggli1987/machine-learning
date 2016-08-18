@@ -46,13 +46,13 @@ def forward_selected(data, target, alpha=0.05):
         except IndexError:  # when no candidate passes significance test at critical value
             disqualified_score, disqualified_p, disqualified_candidate = disqualified_candidates.pop(0)
             remaining.remove(disqualified_candidate)  # remove the worst disqualified candidate
-            print(disqualified_score, disqualified_p, disqualified_candidate)
+#            print(disqualified_score, disqualified_p, disqualified_candidate)
             continue  # continuing the while loop
         if current_score < best_new_score:
             remaining.remove(best_candidate)
             current_score = best_new_score
             selected_var.append(best_candidate)
-            print(best_new_score, best_candidate_p, best_candidate)
+#            print(best_new_score, best_candidate_p, best_candidate)
 
     model = sm.OLS(data[target], sm.add_constant(data[selected_var])).fit()
 

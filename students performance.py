@@ -65,19 +65,18 @@ for i in df_math.columns:
     data_mapping[i] = df[i].unique().shape[0]
 
 # looking for categorical variables that require dummy coding
-# print({k: v for k, v in data_mapping.items() if (v < 5) and (v > 2)})
+print({k: v for k, v in data_mapping.items() if (v < 5) and (v > 2)})
 
+# transforming non-linear multi-nominal categorical variable
 reason_dummies = pd.get_dummies(df['reason'], prefix='reason',)
 guardian_dummies = pd.get_dummies(df['guardian'], prefix='guardian')
-df.drop('guardian', axis=1, inplace=True)
-df.drop('reason', axis=1, inplace=True)
+df.drop(df[['reason', 'guardian']], axis=1, inplace=True)
 df = df.join(reason_dummies).join(guardian_dummies)
 
 # predicting G3
 
 regressand = df['G3']
 regressors = df[[i for i in df.columns]] # if i not in ['G1', 'G2']]]
-print(regressors.columns)
 
 
 def normalize(data):
@@ -89,7 +88,7 @@ def normalize(data):
 
 fs_model, var = forward_selected(normalize(regressors), 'G3', alpha=0.1)
 
-print(fs_model.summary(), '\n', var)
+print('\n', var)
 
 regressors = df[var]
 
@@ -104,3 +103,8 @@ predicted_G3 = lr.predict(x_test)
 mse = metrics.mean_squared_error(y_test, predicted_G3)
 r2 = metrics.r2_score(y_test, predicted_G3)
 print(mse, r2)
+
+x_test['pred_G3'] = predicted_G3
+test = x_test.join(y_test)
+
+print(test)
