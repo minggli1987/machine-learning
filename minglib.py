@@ -4,7 +4,7 @@ import numpy as np
 __author__ = 'Ming Li @ London, UK'
 
 
-def forward_selected(data, target):
+def forward_selected(data, target, alpha=0.05):
     """Linear model designed by forward selection.
 
     Parameters:
@@ -25,7 +25,6 @@ def forward_selected(data, target):
     remaining.remove(target)
     selected_var = []
     current_score, best_new_score = 0.0, 0.0
-    alpha = 0.05
 
     print('beginning forward stepwise variable selection...\n')
     while remaining and current_score == best_new_score:
