@@ -4,7 +4,7 @@ import numpy as np
 __author__ = 'Ming Li @ London, UK'
 
 
-def forward_select(data, target, alpha=0.05):
+def forward_select(data, target, alpha=0.05, display=True):
     """Linear model designed by forward selection.
 
     Parameters:
@@ -52,7 +52,8 @@ def forward_select(data, target, alpha=0.05):
             remaining.remove(best_candidate)
             current_score = best_new_score
             selected_var.append(best_candidate)
-#            print(best_new_score, best_candidate_p, best_candidate)
+            if display:
+                print(selected_var)
 
     model = sm.OLS(data[target], sm.add_constant(data[selected_var])).fit()
 
@@ -61,7 +62,7 @@ def forward_select(data, target, alpha=0.05):
     return model, selected_var
 
 
-def backward_select(data, target, alpha=0.05):
+def backward_select(data, target, alpha=0.05, display=True):
     """Linear model designed by backward selection.
 
     Parameters:
@@ -83,7 +84,9 @@ def backward_select(data, target, alpha=0.05):
 
     print('beginning backward stepwise variable selection...\n')
     while selected_var:
-        print(selected_var)
+        if display:
+            print(selected_var)
+
         scores_with_candidates = []  # containing variables
 
         X = sm.add_constant(data[selected_var])  # inherit variables from last step and try new ones

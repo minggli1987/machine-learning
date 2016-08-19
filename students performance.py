@@ -17,7 +17,13 @@ from minglib import forward_select, gradient_descent, backward_select
 df_math = pd.read_csv('data/student-mat.csv', delimiter=';', header=0)
 df_por = pd.read_csv('data/student-por.csv', delimiter=';', header=0)
 
-df = df_math
+df = df_math.copy()
+
+
+def standardize(data):
+    cols = data.columns
+    scaler = preprocessing.StandardScaler().fit(data)
+    return pd.DataFrame(scaler.transform(data), columns=cols)
 
 
 def categorical_to_code(var):
@@ -61,6 +67,7 @@ def numfmt(num):
 30 absences - number of school absences (numeric: from 0 to 93)
 '''
 
+
 obj_col = df.dtypes[df.dtypes == 'object'].index  # locate all object columns to be transformed
 
 df[obj_col] = df[obj_col].apply(categorical_to_code, axis=0)  # transforming
@@ -79,29 +86,24 @@ guardian_dummies = pd.get_dummies(df['guardian'], prefix='guardian')
 df.drop(df[['reason', 'guardian']], axis=1, inplace=True)
 df = df.join(reason_dummies).join(guardian_dummies)
 
-# predicting G3
 
-regressand = df['G3']
-regressors = df[[i for i in df.columns]] # if i not in ['G1', 'G2']]]
+# PREDICTING CONTINUOUS VARIABLE
+target = 'studytime'
+regressand = df[target]
+regressors = df[[i for i in df.columns]]  # if i not in ['G1', 'G2']]]
 
+# stepwise backward selection
 
-def normalize(data):
-    cols = data.columns
-    scaler = preprocessing.StandardScaler().fit(data)
-    return pd.DataFrame(scaler.transform(data), columns=cols)
+sw_model, var = backward_select(standardize(regressors), target, alpha=0.05, display=True)
 
-# stepwise
+print('\n', var, '\n', sw_model.summary())
 
-fs_model, var = backward_select(normalize(regressors), 'G3', alpha=0.05)
-
-print('\n', var)
-
-regressors = df[[i for i in df.columns if i != 'G3']]
 regressors = df[var]
 
-# hold out
+# holdout validation
+
 x_train, x_test, y_train, y_test = \
-    cross_validation.train_test_split(sm.add_constant(normalize(regressors)), regressand, test_size=.2, random_state=1)
+    cross_validation.train_test_split(sm.add_constant(standardize(regressors)), regressand, test_size=.2, random_state=1)
 
 lr = linear_model.LinearRegression(fit_intercept=False)
 lr.fit(x_train, y_train)
@@ -111,12 +113,6 @@ mse = metrics.mean_squared_error(y_test, predicted_G3)
 r2 = metrics.r2_score(y_test, predicted_G3)
 print(mse, r2)
 
-x_test['pred_G3'] = predicted_G3
-test = x_test.join(y_test)
-
-df['pred_G3'] = lr.predict(sm.add_constant(normalize(regressors)))
-
-
 # plt.plot(df.index, df['G3'], label='Final Score', color='b')
 # plt.plot(df.index, df['pred_G3'], label='Pred Score', color='r')
 # plt.legend(loc=2)
@@ -124,9 +120,9 @@ df['pred_G3'] = lr.predict(sm.add_constant(normalize(regressors)))
 
 kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True)
 kf_mse = cross_validation.cross_val_score\
-    (lr, sm.add_constant(normalize(regressors)), regressand, scoring='mean_squared_error', cv=kf_gen)
+    (lr, sm.add_constant(standardize(regressors)), regressand, scoring='mean_squared_error', cv=kf_gen)
 kf_r2 = cross_validation.cross_val_score\
-    (lr, sm.add_constant(normalize(regressors)), regressand, scoring='r2', cv=kf_gen)
+    (lr, sm.add_constant(standardize(regressors)), regressand, scoring='r2', cv=kf_gen)
 
 print('the average MSE from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_mse)))),
       'the average R-squared stands at: {}'.format(numfmt(np.mean(kf_r2))))
