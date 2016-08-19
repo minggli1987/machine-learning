@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model
-from minglib import forward_selected, gradient_descent
+from minglib import forward_selected, gradient_descent, backward_selected
 
 
 def numfmt(num):
@@ -32,8 +32,9 @@ data['origin'] = data['origin'].astype(int)
 
 # automatic stepwise (forward) selection
 entire_numeric = data[[i for i in cols if i not in ['name']]]
-fs_model, var = forward_selected(normalize(entire_numeric), 'acceleration')
-
+fs_model, var = forward_select(normalize(entire_numeric), 'acceleration')
+print(var)
+print(fs_model.summary())
 # selecting target variable
 regressand = data['acceleration']
 regressors = data[var]  # recommended variables from stepwise procedure
