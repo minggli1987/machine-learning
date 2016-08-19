@@ -107,4 +107,4 @@ print(mse, r2)
 x_test['pred_G3'] = predicted_G3
 test = x_test.join(y_test)
 
-print(test)
+print(test, test)
