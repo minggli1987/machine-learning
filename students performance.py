@@ -19,6 +19,7 @@ df_por = pd.read_csv('data/student-por.csv', delimiter=';', header=0)
 
 df = df_math
 
+
 def categorical_to_code(var):
     return pd.Categorical.from_array(var).codes
 
