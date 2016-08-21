@@ -22,7 +22,6 @@ def forward_select(data, target, alpha=0.05, display=True):
     """
 
     remaining = set(data.columns)
-    remaining.remove(target)
     selected_var = []
     current_score, best_new_score = 0.0, 0.0
 
@@ -34,7 +33,7 @@ def forward_select(data, target, alpha=0.05, display=True):
         for candidate in remaining:
 
             X = sm.add_constant(data[selected_var + [candidate]])  # inherit variables from last step and try new ones
-            reg = sm.OLS(data[target], X).fit()
+            reg = sm.OLS(target, X).fit()
             score, p = reg.rsquared, reg.pvalues[-1]  # r2 (changeable) and two-tailed p value of the candidate
             scores_with_candidates.append((score, p, candidate))
 
@@ -55,7 +54,7 @@ def forward_select(data, target, alpha=0.05, display=True):
             if display:
                 print(selected_var)
 
-    model = sm.OLS(data[target], sm.add_constant(data[selected_var])).fit()
+    model = sm.OLS(target, sm.add_constant(data[selected_var])).fit()
 
     print('forward stepwise selection completed...\n')
 
@@ -80,7 +79,6 @@ def backward_select(data, target, alpha=0.05, display=True):
     """
 
     selected_var = list(set(data.columns))
-    selected_var.remove(target)
 
     print('beginning backward stepwise variable selection...\n')
     while selected_var:
@@ -90,7 +88,7 @@ def backward_select(data, target, alpha=0.05, display=True):
         scores_with_candidates = []  # containing variables
 
         X = sm.add_constant(data[selected_var])  # inherit variables from last step and try new ones
-        reg = sm.OLS(data[target], X).fit()
+        reg = sm.OLS(target, X).fit()
         score = reg.rsquared  # r2 (changeable) and two-tailed p value of the candidate
         p = reg.pvalues[1:]  # first p value belongs to constant
         for i, var in enumerate(selected_var):
@@ -105,7 +103,7 @@ def backward_select(data, target, alpha=0.05, display=True):
             selected_var = [i[2] for i in scores_with_candidates]
             break
 
-    model = sm.OLS(data[target], sm.add_constant(data[selected_var])).fit()
+    model = sm.OLS(target, sm.add_constant(data[selected_var])).fit()
 
     print('\nbackward stepwise selection completed...\n')
 

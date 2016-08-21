@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
-from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model
+from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model, feature_selection
 from minglib import forward_select, gradient_descent, backward_select
 
 
@@ -25,6 +25,16 @@ def standardize(data):
     scaler = preprocessing.StandardScaler().fit(data)
     return pd.DataFrame(scaler.transform(data), columns=cols)
 
+
+def normalize(data):
+    cols = data.columns
+    scaler = preprocessing.Normalizer().fit(data)
+    return pd.DataFrame(scaler.transform(data), columns=cols)
+
+
+def nonscaled(data):
+    cols = data.columns
+    return pd.DataFrame(data, columns=cols)
 
 
 def categorical_to_code(var):
@@ -79,7 +89,7 @@ for i in df_math.columns:
     data_mapping[i] = df[i].unique().shape[0]
 
 # looking for multi-nominal categorical variables that require dummy coding
-print({k: v for k, v in data_mapping.items() if (v < 5) and (v > 2)})
+# print({k: v for k, v in data_mapping.items() if (v < 5) and (v > 2)})
 
 # transforming non-linear multi-nominal categorical variable
 reason_dummies = pd.get_dummies(df['reason'], prefix='reason',)
@@ -89,29 +99,35 @@ df = df.join(reason_dummies).join(guardian_dummies)
 
 
 # PREDICTING CONTINUOUS VARIABLE
-target = 'studytime'
+
+lr = linear_model.LinearRegression(fit_intercept=False)
+
+target = input('please input target variable name: ')
 regressand = df[target]
-regressors = df[[i for i in df.columns]]  # if i not in ['G1', 'G2']]]
+regressors = df[[i for i in df.columns if i != target]]  # if i not in ['G1', 'G2']]]
+
+# How variables are to be rescaled
+scaler = standardize
 
 # stepwise backward selection
+# sw_model, var = forward_select(scaler(regressors), regressand, alpha=0.05, display=False)
+rfe = feature_selection.RFE(lr)
+rfe = rfe.fit(scaler(regressors), regressand)
+var = regressors.columns[rfe.support_]
+regressors = regressors[var]
+print(var)
 
-sw_model, var = backward_select(standardize(regressors), target, alpha=0.05, display=True)
-
-print('\n', var, '\n', sw_model.summary())
-
-regressors = df[var]
 
 # holdout validation
 
 x_train, x_test, y_train, y_test = \
-    cross_validation.train_test_split(sm.add_constant(standardize(regressors)), regressand, test_size=.2, random_state=1)
+    cross_validation.train_test_split(sm.add_constant(scaler(regressors)), regressand, test_size=.2, random_state=1)
 
-lr = linear_model.LinearRegression(fit_intercept=False)
 lr.fit(x_train, y_train)
 
-predicted_G3 = lr.predict(x_test)
-mse = metrics.mean_squared_error(y_test, predicted_G3)
-r2 = metrics.r2_score(y_test, predicted_G3)
+predicted = lr.predict(x_test)
+mse = metrics.mean_squared_error(y_test, predicted)
+r2 = metrics.r2_score(y_test, predicted)
 print(mse, r2)
 
 # plt.plot(df.index, df['G3'], label='Final Score', color='b')
@@ -119,19 +135,62 @@ print(mse, r2)
 # plt.legend(loc=2)
 # plt.show()
 
-kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True)
+kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True, random_state=5)
 kf_mse = cross_validation.cross_val_score\
-    (lr, sm.add_constant(standardize(regressors)), regressand, scoring='mean_squared_error', cv=kf_gen)
+    (lr, sm.add_constant(scaler(regressors)), regressand, scoring='mean_squared_error', cv=kf_gen)
 kf_r2 = cross_validation.cross_val_score\
-    (lr, sm.add_constant(standardize(regressors)), regressand, scoring='r2', cv=kf_gen)
+    (lr, sm.add_constant(scaler(regressors)), regressand, scoring='r2', cv=kf_gen)
 
 print('the average MSE from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_mse)))),
       'the average R-squared stands at: {}'.format(numfmt(np.mean(kf_r2))))
 
 
-# classifying
+# PREDICTING ROMANTIC RELATIONSHIP AT SCHOOL
 
-target = 'romantic'
+locr = linear_model.LogisticRegression()
+
+target = input('please input target variable name: ')
 regressand = df[target]
-regressors = df[[i for i in df.columns]]
+regressors = df[[i for i in df.columns if i != target]]
 
+# Scaler
+
+scaler = nonscaled
+
+# Feature Seletion
+
+rfe = feature_selection.RFE(locr)
+rfe = rfe.fit(scaler(regressors), regressand)
+var = regressors.columns[rfe.support_]
+regressors = regressors[var]
+print(var)
+
+# HOLDOUT
+
+x_train, x_test, y_train, y_test = \
+    cross_validation.train_test_split(scaler(regressors), regressand, test_size=.2, random_state=9)
+
+locr.fit(x_train, y_train)
+predicted = locr.predict(x_test)
+roc_auc = metrics.roc_auc_score(y_test, predicted)
+
+test = x_test.join(y_test)
+test['predicted'] = predicted
+condition = test[target] == test['predicted']
+accuracy = len(test[condition]) / len(test)
+print('Accuracy: {0}'.format(numfmt(accuracy)))
+print('ROC Area Under Curve: {0}'.format(numfmt(roc_auc)))
+print('True Positive Rate: {0}'.format(numfmt(len(test[(test['predicted'] == 1) & (test[target] == 1)]) / len(test[test[target] == 1]))))
+print('True Negative Rate: {0}'.format(numfmt(len(test[(test['predicted'] == 0) & (test[target] == 0)]) / len(test[test[target] == 0]))))
+print('False Positive Rate: {0}'.format(numfmt(len(test[(test['predicted'] == 1) & (test[target] == 0)]) /len(test[test[target] == 0]))))
+print('False Negative Rate: {0}'.format(numfmt(len(test[(test['predicted'] == 0) & (test[target] == 1)]) /len(test[test[target] == 1]))))
+
+
+kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True, random_state=5)
+kf_rocauc = cross_validation.cross_val_score\
+    (locr, scaler(regressors), regressand, scoring='roc_auc', cv=kf_gen)
+kf_accuracy = cross_validation.cross_val_score\
+    (locr, scaler(regressors), regressand, scoring='accuracy', cv=kf_gen)
+
+print('the average ROC AUC from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_rocauc)))),
+      'the average Accuracy stands at: {}'.format(numfmt(np.mean(kf_accuracy))))
