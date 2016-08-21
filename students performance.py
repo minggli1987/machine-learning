@@ -141,8 +141,8 @@ kf_mse = cross_validation.cross_val_score\
 kf_r2 = cross_validation.cross_val_score\
     (lr, sm.add_constant(scaler(regressors)), regressand, scoring='r2', cv=kf_gen)
 
-print('the average MSE from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_mse)))),
-      'the average R-squared stands at: {}'.format(numfmt(np.mean(kf_r2))))
+print('the average MSE from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_mse)))))
+print('the average R-squared stands at: {}'.format(numfmt(np.mean(kf_r2))))
 
 
 # PREDICTING ROMANTIC RELATIONSHIP AT SCHOOL
