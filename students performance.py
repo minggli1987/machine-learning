@@ -18,7 +18,7 @@ df_math = pd.read_csv('data/student-mat.csv', delimiter=';', header=0)
 df_por = pd.read_csv('data/student-por.csv', delimiter=';', header=0)
 
 df = df_math.copy()
-
+feature_selection.
 
 def standardize(data):
     cols = data.columns
