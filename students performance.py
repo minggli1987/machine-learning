@@ -127,3 +127,11 @@ kf_r2 = cross_validation.cross_val_score\
 
 print('the average MSE from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_mse)))),
       'the average R-squared stands at: {}'.format(numfmt(np.mean(kf_r2))))
+
+
+# classifying
+
+target = 'romantic'
+regressand = df[target]
+regressors = df[[i for i in df.columns]]
+
