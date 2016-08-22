@@ -89,3 +89,4 @@ def transform_multinominal(df, cols):
 
 loans = transform_multinominal(loans, cols)
 print(loans.columns)
+
