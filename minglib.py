@@ -170,3 +170,5 @@ def gradient_descent(params, x, y, alpha=0.1):
         count += 1
 
     return params, costs
+
+
