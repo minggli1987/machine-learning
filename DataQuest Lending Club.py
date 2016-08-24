@@ -1,5 +1,7 @@
 import pandas as pd
 import os
+import numpy as np
+from sklearn import linear_model, cross_validation, ensemble
 
 
 if not os.path.exists('data/loans_2007.csv'):
@@ -11,7 +13,7 @@ if not os.path.exists('data/loans_2007.csv'):
     loans.to_csv('data/loans_2007.csv', index=False)
     del loans
 
-loans = pd.read_csv('data/loans_2007.csv', encoding='ISO-8859-1', low_memory=False)
+loans = pd.read_csv('data/loans_2007.csv', encoding='utf-8', low_memory=False)
 
 drop = ['id', 'member_id', 'funded_amnt', 'funded_amnt_inv', 'grade', 'sub_grade', 'emp_title', 'issue_d']
 
@@ -39,7 +41,8 @@ data_mapping = dict()
 for i in loans.columns:
     data_mapping[i] = loans[i].dropna().unique().shape[0]
 
-loans.drop([k for k, v in data_mapping.items() if v == 1], inplace=True, axis=1)
+drop5 = [k for k, v in data_mapping.items() if (v == 1) or (k == 'pymnt_plan')]
+loans.drop(drop5, inplace=True, axis=1)
 
 # Removing columns with too many missing values and remove rows with (any) NaN
 
@@ -88,5 +91,62 @@ def transform_multinominal(df, cols):
     return df
 
 loans = transform_multinominal(loans, cols)
-print(loans.columns)
 
+# DEFINING ERROR METRICS
+
+predictions = pd.Series(np.random.randint(0, 2, size=loans.shape[0]))
+
+tn_logic = (predictions == 0) & (loans[target] == 0)
+tp_logic = (predictions == 1) & (loans[target] == 1)
+fn_logic = (predictions == 0) & (loans[target] == 1)
+fp_logic = (predictions == 1) & (loans[target] == 0)
+
+# tn = len(predictions[tn_logic])
+# tp = len(predictions[tp_logic])
+# fn = len(predictions[fn_logic])
+# fp = len(predictions[fp_logic])
+#
+# fpr = fp / (fp + tn)
+# tpr = tp / (tp + fn)
+
+
+# ANOUNCING FEATURES AND TARGET
+features = loans[[i for i in loans.columns if i != target]]
+target = loans[target]
+
+penalty = {0: 10, 1: 1}
+
+
+lr = linear_model.LogisticRegression(class_weight=penalty)  # balanced to penalize misclassification of Charged Off
+lr.fit(features, target)
+
+predictions = lr.predict(features)
+
+kf = cross_validation.KFold(features.shape[0], n_folds=3, random_state=1)
+predictions = cross_validation.cross_val_predict(lr, features, target, cv=kf)
+predictions = pd.Series(predictions)
+
+tn = len(predictions[tn_logic])
+tp = len(predictions[tp_logic])
+fn = len(predictions[fn_logic])
+fp = len(predictions[fp_logic])
+
+fpr = fp / (fp + tn)
+tpr = tp / (tp + fn)
+
+print(fpr, tpr)
+
+
+rf = ensemble.RandomForestClassifier(class_weight="balanced", random_state=1)
+predictions = cross_validation.cross_val_predict(rf, features, target, cv=kf)
+predictions = pd.Series(predictions)
+
+tn = len(predictions[tn_logic])
+tp = len(predictions[tp_logic])
+fn = len(predictions[fn_logic])
+fp = len(predictions[fp_logic])
+
+fpr = fp / (fp + tn)
+tpr = tp / (tp + fn)
+
+print(fpr, tpr)
