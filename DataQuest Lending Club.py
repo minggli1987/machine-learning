@@ -1,7 +1,43 @@
 import pandas as pd
 import os
 import numpy as np
-from sklearn import linear_model, cross_validation, ensemble
+from sklearn import linear_model, cross_validation, ensemble, metrics
+
+
+def binominal_result(data, target, predictions):
+
+    def numfmt(num):
+        assert isinstance(num, (int, float))
+        return float('{0:.2f}'.format(num))
+
+    loans = data
+    target_col = target
+
+    tn_logic = (predictions == 0) & (loans[target_col] == 0)
+    tp_logic = (predictions == 1) & (loans[target_col] == 1)
+    fn_logic = (predictions == 0) & (loans[target_col] == 1)
+    fp_logic = (predictions == 1) & (loans[target_col] == 0)
+
+    tn = len(predictions[tn_logic])
+    tp = len(predictions[tp_logic])
+    fn = len(predictions[fn_logic])
+    fp = len(predictions[fp_logic])
+
+    fpr = fp / (fp + tn)
+    tpr = tp / (tp + fn)
+    fnr = fn / (fn + tp)
+    tnr = tn / (tn + fp)
+
+    accuracy_logic = (predictions == data[target_col])
+    accuracy = len([i for i in accuracy_logic if i]) / data.shape[0]
+    roc_auc = metrics.roc_auc_score(loans[target_col], predictions)
+
+    print('Accuracy: {0}'.format(numfmt(accuracy)))
+    print('ROC Area Under Curve: {0}'.format(numfmt(roc_auc)))
+    print('True Positive Rate: {0}'.format(numfmt(tpr)))
+    print('False Positive Rate: {0}'.format(numfmt(fpr)))
+    print('True Negative Rate: {0}'.format(numfmt(tnr)))
+    print('False Negative Rate: {0}'.format(numfmt(fnr)))
 
 
 if not os.path.exists('data/loans_2007.csv'):
@@ -13,7 +49,7 @@ if not os.path.exists('data/loans_2007.csv'):
     loans.to_csv('data/loans_2007.csv', index=False)
     del loans
 
-loans = pd.read_csv('data/loans_2007.csv', encoding='utf-8')
+loans = pd.read_csv('data/loans_2007.csv', encoding='utf-8', low_memory=False)
 
 drop = ['id', 'member_id', 'funded_amnt', 'funded_amnt_inv', 'grade', 'sub_grade', 'emp_title', 'issue_d']
 
@@ -26,14 +62,14 @@ drop3 = ['total_rec_int', 'total_rec_late_fee', 'recoveries', 'collection_recove
 loans.drop(drop3, inplace=True, axis=1)
 
 # Target
-target = 'loan_status'
+target_col = 'loan_status'
 
 # Only keep Fully Paid and Charged Off and ignore other statues
 
-drop4 = loans[target].value_counts()[:2].index
-loans = loans[loans[target].isin(drop4)]
+drop4 = loans[target_col].value_counts()[:2].index
+loans = loans[loans[target_col].isin(drop4)]
 
-loans[target] = loans[target].astype('category').cat.codes
+loans[target_col] = loans[target_col].astype('category').cat.codes
 
 # Removing columns with just one variable as they do not affect model
 
@@ -91,44 +127,16 @@ def transform_multinominal(df, cols):
     return df
 
 loans = transform_multinominal(loans, cols)
-print(loans.info())
+
+
 # DEFINING ERROR METRICS
-#
-# predictions = pd.Series(np.random.randint(0, 2, size=loans.shape[0]))
-#
-# tn_logic = (predictions == 0) & (loans[target] == 0)
-# tp_logic = (predictions == 1) & (loans[target] == 1)
-# fn_logic = (predictions == 0) & (loans[target] == 1)
-# fp_logic = (predictions == 1) & (loans[target] == 0)
 
-# tn = len(predictions[tn_logic])
-# tp = len(predictions[tp_logic])
-# fn = len(predictions[fn_logic])
-# fp = len(predictions[fp_logic])
-#
-# fpr = fp / (fp + tn)
-# tpr = tp / (tp + fn)
+predictions = pd.Series(np.random.randint(0, 2, size=loans.shape[0]))
 
-
-# ANOUNCING FEATURES AND TARGET
-features = loans[[i for i in loans.columns if i != target]]
-target = loans[target]
-
-
-lr = linear_model.LogisticRegression(class_weight={0: 10, 1: 1})  # balanced to penalize misclassification of Charged Off
-lr.fit(features, target)
-
-predictions = lr.predict(features)
-
-kf = cross_validation.KFold(features.shape[0], random_state=1)
-predictions = cross_validation.cross_val_predict(lr, features, target, cv=kf)
-predictions = pd.Series(predictions)
-
-tn_logic = (predictions == 0) & (loans[target] == 0)
-tp_logic = (predictions == 1) & (loans[target] == 1)
-fn_logic = (predictions == 0) & (loans[target] == 1)
-fp_logic = (predictions == 1) & (loans[target] == 0)
-
+tn_logic = (predictions == 0) & (loans[target_col] == 0)
+tp_logic = (predictions == 1) & (loans[target_col] == 1)
+fn_logic = (predictions == 0) & (loans[target_col] == 1)
+fp_logic = (predictions == 1) & (loans[target_col] == 0)
 
 tn = len(predictions[tn_logic])
 tp = len(predictions[tp_logic])
@@ -137,22 +145,26 @@ fp = len(predictions[fp_logic])
 
 fpr = fp / (fp + tn)
 tpr = tp / (tp + fn)
-print(fpr, tpr)
-#
-# rf = ensemble.RandomForestClassifier(class_weight="balanced", random_state=1)
-# predictions = cross_validation.cross_val_predict(rf, features, target, cv=kf)
-# predictions = pd.Series(predictions)
-#
-# tn_logic = (predictions == 0) & (loans[target] == 0)
-# tp_logic = (predictions == 1) & (loans[target] == 1)
-# fn_logic = (predictions == 0) & (loans[target] == 1)
-# fp_logic = (predictions == 1) & (loans[target] == 0)
-#
-# tn = len(predictions[tn_logic])
-# tp = len(predictions[tp_logic])
-# fn = len(predictions[fn_logic])
-# fp = len(predictions[fp_logic])
-#
-# fpr = fp / (fp + tn)
-# tpr = tp / (tp + fn)
-# print(fpr, tpr)
+
+
+# ANOUNCING FEATURES AND TARGET
+regressors = loans[[i for i in loans.columns if i != target_col]]
+regressand = loans[target_col]
+
+
+lr = linear_model.LogisticRegression(class_weight={0: 10, 1: 1})  # balanced to penalize misclassification of Charged Off
+lr.fit(regressors, regressand)
+
+predictions = lr.predict(regressors)
+
+kf = cross_validation.KFold(regressors.shape[0], random_state=1)
+predictions = cross_validation.cross_val_predict(lr, regressors, regressand, cv=kf)
+predictions = pd.Series(predictions)
+
+binominal_result(loans, target_col, predictions)
+
+rf = ensemble.RandomForestClassifier(class_weight="balanced", random_state=1)
+predictions = cross_validation.cross_val_predict(rf, regressors, regressand, cv=kf)
+predictions = pd.Series(predictions)
+
+binominal_result(loans, target_col, predictions)
