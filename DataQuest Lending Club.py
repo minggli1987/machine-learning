@@ -162,7 +162,7 @@ predictions = cross_validation.cross_val_predict(lr, regressors, regressand, cv=
 predictions = pd.Series(predictions)
 
 binominal_result(loans, target_col, predictions)
-
+print('\n')
 rf = ensemble.RandomForestClassifier(class_weight="balanced", random_state=1)
 predictions = cross_validation.cross_val_predict(rf, regressors, regressand, cv=kf)
 predictions = pd.Series(predictions)
