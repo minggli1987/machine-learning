@@ -146,6 +146,7 @@ fp = len(predictions[fp_logic])
 fpr = fp / (fp + tn)
 tpr = tp / (tp + fn)
 
+print(loans.info())
 
 # ANOUNCING FEATURES AND TARGET
 regressors = loans[[i for i in loans.columns if i != target_col]]
