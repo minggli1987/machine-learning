@@ -27,8 +27,9 @@ kf_gen = cross_validation.KFold(df.shape[0], n_folds=5, shuffle=True)
 
 
 prediction = cross_validation.cross_val_predict(reg, X=regressors, y=regressand, cv=kf_gen, n_jobs=-1)
-
-accuracy = cross_validation.cross_val_score(reg, regressors, regressand, scoring='accuracy', cv=kf_gen, n_jobs=-1)
 df['pred'] = prediction
+accuracy = cross_validation.cross_val_score(reg, regressors, regressand, scoring='accuracy', cv=kf_gen, n_jobs=-1)
+print(accuracy)
 
-print(df[df['pred'] == df['species']].shape, df[df['pred'] != df['species']].shape)
+with pd.ExcelWriter('iris_pred.xlsx') as writer:
+    df.to_excel(writer, sheet_name='output', index=False)
