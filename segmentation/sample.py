@@ -260,7 +260,3 @@ def plot_vs_marketing_channel(variable):
     pl.legend(['channel_'+str(i) for i in list(sample.new_channel.unique())], loc='upper right', title='new channel')
     # pl.show()
 plot_vs_marketing_channel('days_in_advance')
-
-
-
-
