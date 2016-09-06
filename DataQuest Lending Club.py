@@ -1,7 +1,9 @@
 import pandas as pd
 import os
 import numpy as np
-from sklearn import linear_model, cross_validation, ensemble, metrics
+from sklearn import linear_model, cross_validation, ensemble, metrics, tree
+from sklearn.externals.six import StringIO
+import pydotplus
 
 
 def binominal_result(data, target, predictions):
@@ -66,7 +68,7 @@ target_col = 'loan_status'
 
 # Only keep Fully Paid and Charged Off and ignore other statues
 
-drop4 = loans[target_col].value_counts()[:2].index
+drop4 = loans[target_col].value_counts(ascending=False)[:2].index
 loans = loans[loans[target_col].isin(drop4)]
 
 loans[target_col] = loans[target_col].astype('category').cat.codes
@@ -110,11 +112,11 @@ emp_length_tranform = {
     }
 }
 
-loans.replace(emp_length_tranform, inplace=True)
+loans = loans.replace(emp_length_tranform)
 
 # convert interest rates to numeric
 
-loans[['revol_util', 'int_rate']] = loans[['revol_util', 'int_rate']].apply(lambda x: x.str.replace('%',''), axis=0).astype(float)
+loans[['revol_util', 'int_rate']] = loans[['revol_util', 'int_rate']].apply(lambda x: x.str.rstrip('%'), axis=0).astype(float)
 
 cols_drop = ['last_credit_pull_d', 'addr_state', 'title', 'earliest_cr_line']
 
@@ -129,43 +131,35 @@ def transform_multinominal(df, cols):
 loans = transform_multinominal(loans, cols)
 
 
-# DEFINING ERROR METRICS
-
-predictions = pd.Series(np.random.randint(0, 2, size=loans.shape[0]))
-
-tn_logic = (predictions == 0) & (loans[target_col] == 0)
-tp_logic = (predictions == 1) & (loans[target_col] == 1)
-fn_logic = (predictions == 0) & (loans[target_col] == 1)
-fp_logic = (predictions == 1) & (loans[target_col] == 0)
-
-tn = len(predictions[tn_logic])
-tp = len(predictions[tp_logic])
-fn = len(predictions[fn_logic])
-fp = len(predictions[fp_logic])
-
-fpr = fp / (fp + tn)
-tpr = tp / (tp + fn)
-
-print(loans.info())
-
 # ANOUNCING FEATURES AND TARGET
 regressors = loans[[i for i in loans.columns if i != target_col]]
 regressand = loans[target_col]
 
 
-lr = linear_model.LogisticRegression(class_weight={0: 10, 1: 1})  # balanced to penalize misclassification of Charged Off
+cus_weighting = {0: 10, 1: 1}
+
+lr = linear_model.LogisticRegression(class_weight=cus_weighting)  # balanced to penalize misclassification of Charged Off
 lr.fit(regressors, regressand)
 
-predictions = lr.predict(regressors)
+predictions = lr.predict_proba(regressors)
 
-kf = cross_validation.KFold(regressors.shape[0], random_state=1)
+
+kf = cross_validation.KFold(regressors.shape[0], n_folds=10, random_state=1)
+
 predictions = cross_validation.cross_val_predict(lr, regressors, regressand, cv=kf)
 predictions = pd.Series(predictions)
 
-binominal_result(loans, target_col, predictions)
-print('\n')
-rf = ensemble.RandomForestClassifier(class_weight="balanced", random_state=1)
-predictions = cross_validation.cross_val_predict(rf, regressors, regressand, cv=kf)
+
+rf = ensemble.RandomForestClassifier(class_weight="balanced", min_samples_leaf=1, max_leaf_nodes=100, random_state=1)
+dt = tree.DecisionTreeClassifier(class_weight='balanced', random_state=1)
+dt.fit(regressors, regressand)
+predictions = cross_validation.cross_val_predict(dt, regressors, regressand, cv=kf)
 predictions = pd.Series(predictions)
 
 binominal_result(loans, target_col, predictions)
+
+dot_data = StringIO()
+tree.export_graphviz(dt, out_file=dot_data)
+graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+graph.write_pdf("tree.pdf")
+
