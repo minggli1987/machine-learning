@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
-from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model, feature_selection
+from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model, feature_selection, naive_bayes
 from minglib import forward_select, gradient_descent, backward_select
 
 
