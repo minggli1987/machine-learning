@@ -57,7 +57,7 @@ drop = ['id', 'member_id', 'funded_amnt', 'funded_amnt_inv', 'grade', 'sub_grade
 
 loans.drop(drop, inplace=True, axis=1)
 
-drop2 = ['zip_code', 'out_prncp', 'out_prncp_inv', 'total_pymnt']
+drop2 = ["zip_code", "out_prncp", "out_prncp_inv", "total_pymnt", "total_pymnt_inv", "total_rec_prncp"]
 loans.drop(drop2, inplace=True, axis=1)
 
 drop3 = ['total_rec_int', 'total_rec_late_fee', 'recoveries', 'collection_recovery_fee', 'last_pymnt_d', 'last_pymnt_amnt']
@@ -95,7 +95,7 @@ cols = ['home_ownership', 'verification_status', 'term', 'purpose']
 
 # convert employment length to continuous
 
-emp_length_tranform = {
+manual_transform = {
     "emp_length": {
         "10+ years": 10,
         "9 years": 9,
@@ -109,10 +109,15 @@ emp_length_tranform = {
         "1 year": 1,
         "< 1 year": 0,
         "n/a": 0
+    },
+    'term': {
+        ' 36 months': '36_months',
+        ' 60 months': '60_months'
     }
 }
 
-loans = loans.replace(emp_length_tranform)
+
+loans.replace(manual_transform, inplace=True)
 
 # convert interest rates to numeric
 
@@ -130,36 +135,33 @@ def transform_multinominal(df, cols):
 
 loans = transform_multinominal(loans, cols)
 
-
 # ANOUNCING FEATURES AND TARGET
 regressors = loans[[i for i in loans.columns if i != target_col]]
 regressand = loans[target_col]
 
 
-cus_weighting = {0: 10, 1: 1}
+cus_weighting = {0: 6, 1: 1}
 
 lr = linear_model.LogisticRegression(class_weight=cus_weighting)  # balanced to penalize misclassification of Charged Off
 lr.fit(regressors, regressand)
 
 predictions = lr.predict_proba(regressors)
 
-
-kf = cross_validation.KFold(regressors.shape[0], n_folds=10, random_state=1)
+kf = cross_validation.KFold(regressors.shape[0], n_folds=5, random_state=1)
 
 predictions = cross_validation.cross_val_predict(lr, regressors, regressand, cv=kf)
 predictions = pd.Series(predictions)
 
-
-rf = ensemble.RandomForestClassifier(class_weight="balanced", min_samples_leaf=1, max_leaf_nodes=100, random_state=1)
-dt = tree.DecisionTreeClassifier(class_weight='balanced', random_state=1)
-dt.fit(regressors, regressand)
-predictions = cross_validation.cross_val_predict(dt, regressors, regressand, cv=kf)
-predictions = pd.Series(predictions)
+#rf = ensemble.RandomForestClassifier(class_weight="balanced", min_samples_leaf=50, max_leaf_nodes=10, random_state=1)
+dt = tree.DecisionTreeClassifier(class_weight='balanced', max_depth=3, max_leaf_nodes=20, min_samples_leaf=50, random_state=1)
+predictions = pd.Series(cross_validation.cross_val_predict(dt, regressors, regressand, cv=kf))
 
 binominal_result(loans, target_col, predictions)
+dt.fit(regressors, regressand)
 
 dot_data = StringIO()
-tree.export_graphviz(dt, out_file=dot_data)
+tree.export_graphviz(dt, feature_names=regressors.columns, class_names=regressand.name, filled=True, rounded=True
+                     ,special_characters=True, out_file=dot_data)
 graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
-graph.write_pdf("tree.pdf")
+graph.write_pdf("lendingDT.pdf")
 
