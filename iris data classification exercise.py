@@ -98,6 +98,7 @@ graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
 graph.write_pdf("iris.pdf")
 
 # neutral network applying on iris dataset from dataquest
+
 class NNet3:
 
     def __init__(self, learning_rate=0.5, maxepochs=1e4, convergence_thres=1e-5, hidden_layer=4):
@@ -192,15 +193,28 @@ model = NNet3(learning_rate=learning_rate, maxepochs=maxepochs,
 # Train model
 
 X = np.column_stack([np.ones(regressors.shape[0]), np.array(regressors)])
-y = np.array((regressand['species'] == 2).values.astype(int))
-
+y = np.array((regressand['species'] == 1).values.astype(int))
+print(y)
 
 x_train, x_test, y_train, y_test = \
-    cross_validation.train_test_split(X, y, test_size=.2, random_state=3)
+    cross_validation.train_test_split(X, y, test_size=.3)
 
 model.learn(x_train, y_train)
 
 yhat = model.predict(x_test)[0]
-print(yhat, y_test)
 auc = metrics.roc_auc_score(y_test, yhat)
 print(auc)
+
+
+def sigmoid_activation(X, theta):
+    X = np.asarray(X)
+    theta = np.asarray(theta)
+    return 1 / (1 + np.exp(-np.dot(theta.T, X)))  # logistic sigmoid
+
+
+l1 = sigmoid_activation(x_test.T, model.theta0).T
+# add a column of ones for bias term
+l1 = np.column_stack([np.ones(l1.shape[0]), l1])
+# activation units are then inputted to the output layer
+l2 = sigmoid_activation(l1.T, model.theta1)
+print(model.theta1.T.shape, l1.T.shape, l2.shape)
