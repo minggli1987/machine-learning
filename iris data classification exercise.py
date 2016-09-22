@@ -1,4 +1,9 @@
-from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree, neural_network
+# from __future__ import absolute_import
+# from __future__ import division
+# from __future__ import print_function
+import tensorflow as tf
+from tensorflow.contrib import learn
+from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree
 from sklearn.datasets import load_iris
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -159,8 +164,8 @@ class NNet3:
             l1_delta = l2_delta.T.dot(self.theta1.T) * l1 * (1 - l1)
 
             # Update parameters by averaging gradients and multiplying by the learning rate
-            self.theta1 += l1.T.dot(l2_delta.T) / nobs * self.learning_rate
             self.theta0 += X.T.dot(l1_delta)[:, 1:] / nobs * self.learning_rate
+            self.theta1 += l1.T.dot(l2_delta.T) / nobs * self.learning_rate
 
             # Store costs and check for convergence
             counter += 1  # Count
@@ -192,29 +197,41 @@ model = NNet3(learning_rate=learning_rate, maxepochs=maxepochs,
               convergence_thres=convergence_thres, hidden_layer=hidden_units)
 # Train model
 
-X = np.column_stack([np.ones(regressors.shape[0]), np.array(regressors)])
-y = np.array((regressand['species'] == 1).values.astype(int))
-print(y)
+# X = np.column_stack([np.ones(regressors.shape[0]), np.array(regressors)])
+# y = np.array((regressand['species'] == 1).values.astype(int))
 
 x_train, x_test, y_train, y_test = \
-    cross_validation.train_test_split(X, y, test_size=.3)
-
-model.learn(x_train, y_train)
-
-yhat = model.predict(x_test)[0]
-auc = metrics.roc_auc_score(y_test, yhat)
-print(auc)
-
-
-def sigmoid_activation(X, theta):
-    X = np.asarray(X)
-    theta = np.asarray(theta)
-    return 1 / (1 + np.exp(-np.dot(theta.T, X)))  # logistic sigmoid
+    cross_validation.train_test_split(regressors, np.array(regressand), test_size=.3)
+#
+# model.learn(x_train, y_train)
+#
+# yhat = model.predict(X)[0]
+# auc = metrics.roc_auc_score(y, yhat)
 
 
-l1 = sigmoid_activation(x_test.T, model.theta0).T
-# add a column of ones for bias term
-l1 = np.column_stack([np.ones(l1.shape[0]), l1])
-# activation units are then inputted to the output layer
-l2 = sigmoid_activation(l1.T, model.theta1)
-print(model.theta1.T.shape, l1.T.shape, l2.shape)
+## Tensorflow Neutral Network implementation
+
+
+def main(unused_argv):
+
+    # iris = learn.datasets.load_dataset('iris')
+    # x_train, x_test, y_train, y_test = cross_validation.train_test_split(
+    #     iris.data, iris.target, test_size=0.2, random_state=42)
+
+
+    # Build 3 layer DNN with 10, 20, 10 units respectively.
+    feature_columns = learn.infer_real_valued_columns_from_input(x_train)
+    classifier = learn.DNNClassifier(
+        feature_columns=feature_columns, hidden_units=[10, 20, 10], n_classes=3)
+
+    # Fit and predict.
+    classifier.fit(x_train, y_train, steps=200)
+    predictions = list(classifier.predict(x_test, as_iterable=True))
+    score = metrics.accuracy_score(y_test, predictions)
+    print('Accuracy: {0:f}'.format(score))
+    # print(y_test, predictions)
+
+
+if __name__ == '__main__':
+  output = tf.app.run()
+
