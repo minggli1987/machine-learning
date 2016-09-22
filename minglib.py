@@ -1,10 +1,12 @@
 import statsmodels.api as sm
 import numpy as np
+from sklearn import linear_model
 
 __author__ = 'Ming Li @ London, UK'
 
 
 def forward_select(data, target, alpha=0.05, display=True):
+
     """Linear model designed by forward selection.
 
     Parameters:
@@ -21,7 +23,7 @@ def forward_select(data, target, alpha=0.05, display=True):
            evaluated by adjusted R-squared
     """
 
-    remaining = set(data.columns)
+    remaining = set([i for i in data.columns if i not in target.columns])
     selected_var = []
     current_score, best_new_score = 0.0, 0.0
 
@@ -32,7 +34,7 @@ def forward_select(data, target, alpha=0.05, display=True):
 
         for candidate in remaining:
 
-            X = sm.add_constant(data[selected_var + [candidate]])  # inherit variables from last step and try new ones
+            X = sm.add_constant(data[selected_var + [candidate]]) # inherit variables from last step and try new ones
             reg = sm.OLS(target, X).fit()
             score, p = reg.rsquared, reg.pvalues[-1]  # r2 (changeable) and two-tailed p value of the candidate
             scores_with_candidates.append((score, p, candidate))
@@ -78,7 +80,7 @@ def backward_select(data, target, alpha=0.05, display=True):
            evaluated by adjusted R-squared
     """
 
-    selected_var = list(set(data.columns))
+    selected_var = list(set([i for i in data.columns if i not in target.columns]))
 
     print('beginning backward stepwise variable selection...\n')
     while selected_var:
@@ -110,62 +112,81 @@ def backward_select(data, target, alpha=0.05, display=True):
     return model, selected_var
 
 
-def cost_function(params, x, y):
-    params = np.array(params)
-    x = np.array(x)
-    y = np.array(y)
+def cost_function(params, x, y, model):
+
     J = 0
     m = len(x)
-    for i in range(m):
-        h = np.sum(params.T * x[i])
-        diff = (h - y[i]) ** 2
-        J += diff
-    J /= (2 * m)
-    return J
+    # for i in range(m):
+    #     h = np.sum(params.T * x[i])  # hypothesis linear regression with constant 1
+    #     J += (h - y[i]) ** 2
+    # J /= (2 * m)
+    if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
+        h = np.dot(x, params.T)
+        # GLM hypothesis in linear algebra representation
+        J = (h - y) ** 2
+        J /= (2 * m)
+        return np.sum(J)
+
+    if isinstance(model, linear_model.LogisticRegression):
+        h = 1 / (1 + np.exp(-np.dot(x, params)))
+        # logistic (sigmoid) model hypothesis
+        J = np.dot(np.log(h).T, y) + np.dot(np.log(1 - h).T, (1 - y))
+        J /= -m
+        return np.sum(J)
 
 
-def partial_derivative_cost(params, j, x, y):
-    params = np.array(params)
-    x = np.array(x)
-    y = np.array(y)
+def partial_derivative_cost(params, x, y, model):
+
     J = 0
     m = len(x)
-    for i in range(m):
-        h = np.sum(params.T * x[i])
-        diff = (h - y[i]) * x[i][j]
-        J += diff
-    J /= m
-    return J
+    # for i in range(m):
+    #     h = np.sum(params.T * x[i])
+    #     J += (h - y[i]) * x[i][j]
+    # J /= m
+
+    if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
+        h = np.dot(x, params.T)
+
+    # GLM hypothesis in linear algebra representation
+    if isinstance(model, linear_model.LogisticRegression):
+        h = 1 / (1 + np.exp(-np.dot(x, params)))
+        # logistic (sigmoid) model hypothesis
+    J = np.dot(x.T, (h - y)) / m
+    # partial_derivative terms
+    return J  # J is a n-dimensioned vector
 
 
-def gradient_descent(params, x, y, alpha=0.1):
-    max_epochs = 10000  # max number of iterations
+def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=.0001):
+
     count = 0  # initiating a count number so once reaching max iterations will terminate
-    conv_thres = 0.000001  # convergence threshold
 
-    cost = cost_function(params, x, y)  # convergence threshold
+    params = np.array(params)
+    x = np.array(x)
+    y = np.array(y)
+
+    cost = cost_function(params, x, y, model)  # initial J(theta)
 
     prev_cost = cost + 10
     costs = [cost]
     thetas = [params]
 
-    #  beginning gradient_descent iterations
+    # beginning gradient_descent iterations
 
     print('\nbeginning gradient decent algorithm...\n')
 
     while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
+
         prev_cost = cost
-        update = np.zeros(len(params))  # simultaneously update all thetas
 
-        for j in range(len(params)):
-            update[j] = alpha * partial_derivative_cost(params, j, x, y)
-
-        params -= update  # descending
+        # update = np.zeros(params.shape[0])
+        #
+        # for j in range(len(params)):
+        #     update = partial_derivative_cost(params, j, x, y)  # gradient descend
+        params -= alpha * partial_derivative_cost(params, x, y, model)  # gradient descend
 
         thetas.append(params)  # restoring historic parameters
 
-        cost = cost_function(params, x, y)
-
+        cost = cost_function(params, x, y, model)  # cost at each iteration
         costs.append(cost)
         count += 1
 

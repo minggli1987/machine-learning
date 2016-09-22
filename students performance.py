@@ -41,10 +41,6 @@ def categorical_to_code(var):
     return pd.Categorical.from_array(var).codes
 
 
-def numfmt(num):
-    assert isinstance(num, (int, float))
-    return float('{0:.2f}'.format(num))
-
 '''
 1 school - student's school (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira)
 2 sex - student's sex (binary: 'F' - female or 'M' - male)
@@ -141,8 +137,8 @@ kf_mse = cross_validation.cross_val_score\
 kf_r2 = cross_validation.cross_val_score\
     (lr, sm.add_constant(scaler(regressors)), regressand, scoring='r2', cv=kf_gen)
 
-print('the average MSE from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_mse)))))
-print('the average R-squared stands at: {}'.format(numfmt(np.mean(kf_r2))))
+print('the average MSE from k-fold validation: {0:.2f}; '.format(np.mean(abs(kf_mse))))
+print('the average R-squared stands at: {0:.2f}'.format(np.mean(kf_r2)))
 
 
 # PREDICTING ROMANTIC RELATIONSHIP AT SCHOOL
@@ -178,12 +174,12 @@ test = x_test.join(y_test)
 test['predicted'] = predicted
 condition = test[target] == test['predicted']
 accuracy = len(test[condition]) / len(test)
-print('Accuracy: {0}'.format(numfmt(accuracy)))
-print('ROC Area Under Curve: {0}'.format(numfmt(roc_auc)))
-print('True Positive Rate: {0}'.format(numfmt(len(test[(test['predicted'] == 1) & (test[target] == 1)]) / len(test[test[target] == 1]))))
-print('True Negative Rate: {0}'.format(numfmt(len(test[(test['predicted'] == 0) & (test[target] == 0)]) / len(test[test[target] == 0]))))
-print('False Positive Rate: {0}'.format(numfmt(len(test[(test['predicted'] == 1) & (test[target] == 0)]) /len(test[test[target] == 0]))))
-print('False Negative Rate: {0}'.format(numfmt(len(test[(test['predicted'] == 0) & (test[target] == 1)]) /len(test[test[target] == 1]))))
+print('Accuracy: {0:.2f}'.format(accuracy))
+print('ROC Area Under Curve: {0:.2f}'.format(roc_auc))
+print('True Positive Rate: {0:.2f}'.format(len(test[(test['predicted'] == 1) & (test[target] == 1)]) / len(test[test[target] == 1])))
+print('True Negative Rate: {0:.2f}'.format(len(test[(test['predicted'] == 0) & (test[target] == 0)]) / len(test[test[target] == 0])))
+print('False Positive Rate: {0:.2f}'.format(len(test[(test['predicted'] == 1) & (test[target] == 0)]) / len(test[test[target] == 0])))
+print('False Negative Rate: {0:.2f}'.format(len(test[(test['predicted'] == 0) & (test[target] == 1)]) / len(test[test[target] == 1])))
 
 
 kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True, random_state=5)
@@ -192,5 +188,5 @@ kf_rocauc = cross_validation.cross_val_score\
 kf_accuracy = cross_validation.cross_val_score\
     (locr, scaler(regressors), regressand, scoring='accuracy', cv=kf_gen)
 
-print('the average ROC AUC from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_rocauc)))),
-      'the average Accuracy stands at: {}'.format(numfmt(np.mean(kf_accuracy))))
+print('the average ROC AUC from k-fold validation: {0:.2f}; '.format(np.mean(abs(kf_rocauc))),
+      'the average Accuracy stands at: {0:.2f}'.format(np.mean(kf_accuracy)))

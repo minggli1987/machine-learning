@@ -5,20 +5,15 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model
-from minglib import forward_selected, gradient_descent, backward_selected
-
-
-def numfmt(num):
-    assert isinstance(num, (int, float))
-    return float('{0:.2f}'.format(num))
-
+from minglib import forward_select, gradient_descent, backward_select
+from warnings import filterwarnings
+filterwarnings('ignore')
 
 def normalize(data):
     # building a scaler that applies to future data
     col_name = data.columns
     scaler = preprocessing.StandardScaler().fit(data)
     return pd.DataFrame(scaler.transform(data), columns=col_name)
-
 
 cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
 data = pd.read_csv('data/auto-mpg.data-original.txt', header=None, delim_whitespace=True, names=cols)
@@ -27,52 +22,55 @@ data['year'] = (1900 + data['year']).astype(int)
 data.ix[:, :5] = data.ix[:, :5].astype(int)
 data['origin'] = data['origin'].astype(int)
 
+
 # selecting predictive variables
 # regressors = data[[i for i in cols if i not in ['name']]]
 
 # automatic stepwise (forward) selection
-entire_numeric = data[[i for i in cols if i not in ['name']]]
-fs_model, var = forward_select(normalize(entire_numeric), 'acceleration')
-print(var)
-print(fs_model.summary())
+entire_numeric = data.select_dtypes(include=['int', 'float'])
+fs_model, var = forward_select(normalize(entire_numeric), data[['acceleration']], display=False)
+# print(var)
+# print(fs_model.summary())
 # selecting target variable
 regressand = data['acceleration']
 regressors = data[var]  # recommended variables from stepwise procedure
 
 # splitting data - holdout validation
 x_train, x_test, y_train, y_test = \
-    cross_validation.train_test_split(sm.add_constant(normalize(regressors)), regressand, test_size=.2)
+    cross_validation.train_test_split(np.column_stack((np.ones(regressors.shape[0]), normalize(regressors))),
+                                      regressand, test_size=.2, random_state=99)
 # splitting data - k fold cross validation
 kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True)
 
 # fitting linear model
-lr = linear_model.LinearRegression(fit_intercept=False)  # regressors already has intercept manually
+lr = linear_model.LinearRegression(fit_intercept=False)  # regressors already has constant 1
 lr.fit(x_train, y_train)
 predictions = lr.predict(x_test)
 
-init_mse = numfmt(metrics.mean_squared_error(y_test, predictions))
-init_r2 = numfmt(metrics.r2_score(y_test, predictions))
-print('the initial MSE currently stands at: {}; '.format(init_mse), 'the initial R-squared stands at: {}'.format(init_r2))
+init_mse = metrics.mean_squared_error(y_test, predictions)
+init_r2 = metrics.r2_score(y_test, predictions)
+print('the initial MSE currently stands at: {0:.2f}; '.format(init_mse), 'the initial R-squared stands at: {0:.2f}'.format(init_r2))
 
 # preparing Gradient Descent
 
 old_theta = lr.coef_  # capturing parameters from linear model
-initial_params = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
-new_theta, cost_set = gradient_descent(initial_params, x_test, y_test)
+initial_params = np.random.rand(len(old_theta))  # generating initial parameters using the shape of existing ones
+new_theta, cost_set = gradient_descent(initial_params, x_test, y_test, lr, alpha=0.01, max_epochs=10000)
 
-print(' old thetas are: ', [numfmt(i) for i in old_theta], '\n', 'new thetas are: ', [numfmt(i) for i in new_theta])
-plt.plot(range(len(cost_set)), cost_set)
-plt.show()
+print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta])
+# plt.plot(range(len(cost_set)), cost_set)
+# plt.show()
+# print(cost_set)
 
 # applying new parameters
 lr.coef_ = new_theta
 predictions = lr.predict(x_test)
 
 # calculating new metrics
-new_r2 = numfmt(metrics.r2_score(y_test, predictions))
-new_mse = numfmt(metrics.mean_squared_error(y_test, predictions))
+new_r2 = metrics.r2_score(y_test, predictions)
+new_mse = metrics.mean_squared_error(y_test, predictions)
 
-print('the new MSE currently stands at: {}; '.format(new_mse), 'the R-squared stands at: %s' % new_r2)
+print('the new MSE currently stands at: {0:.2f}; '.format(new_mse), 'the R-squared stands at: {0:.2f}'.format(new_r2))
 
 # k-fold generator intervals
 # for train_index, test_index in kf_gen:
@@ -91,8 +89,8 @@ kf_mse = cross_validation.cross_val_score\
 kf_r2 = cross_validation.cross_val_score\
     (lr, sm.add_constant(normalize(regressors)), regressand, scoring='r2', cv=kf_gen)
 
-print('the average MSE from k-fold validation: {}; '.format(numfmt(np.mean(abs(kf_mse)))),
-      'the average R-squared stands at: {}'.format(numfmt(np.mean(kf_r2))))
+print('the average MSE from k-fold validation: {0:.2f}; '.format(np.mean(abs(kf_mse))),
+      'the average R-squared stands at: {0:.2f}'.format(np.mean(kf_r2)))
 
 # fig, ax = plt.subplots()
 # ax.scatter(data['horsepower'], data['acceleration'], color='b')
@@ -100,7 +98,6 @@ print('the average MSE from k-fold validation: {}; '.format(numfmt(np.mean(abs(k
 # ax.set_xlabel('horsepower')
 # ax.set_ylabel('acceleration')
 # plt.show()
-
 
 # multi-class Classifier on Origin
 
@@ -111,9 +108,9 @@ dummies = pd.concat([dummy_cylinders, dummy_years], axis=1)
 data = data.join(dummies)
 
 cat_cols = [col for col in data.columns if col.startswith('y_') or col.startswith('cyl_')]
+x_train, x_test, y_train, y_test = cross_validation.train_test_split(
+    pd.DataFrame(np.column_stack((np.ones(data.shape[0]), data[cat_cols]))), data['origin'], test_size=.2)
 
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(data[cat_cols], data['origin']\
-                                                                     , test_size=.2, random_state=2)
 
 unique_origins = sorted(data['origin'].unique())
 testing_probs = pd.DataFrame(columns=unique_origins)
@@ -121,12 +118,23 @@ testing_probs = pd.DataFrame(columns=unique_origins)
 models = dict()  # dict to contain different classifiers with each to produce one binomial output.
 
 for i in unique_origins:
-    classifier = linear_model.LogisticRegression()
+    classifier = linear_model.LogisticRegression(fit_intercept=False)
     x = x_train
-    y = y_train == i
+    y = pd.DataFrame(y_train == i)
+
     classifier.fit(x, y)
+
+    # gradient descent
+    old_theta = classifier.coef_  # capturing parameters from logistic regression
+    initial_params = np.ones(old_theta.T.shape)  # generating initial parameters using the shape of existing ones
+    new_theta, cost_set = gradient_descent(initial_params, x, y, classifier, alpha=0.01, max_epochs=10000)
+    classifier.coef_ = new_theta.T
+
     models[i] = classifier
+    del classifier
     testing_probs[i] = models[i].predict_proba(x_test)[:, 1]  # only capturing probability of positive result
+
+
 
 test_set = x_test.join(y_test).reset_index(drop=True)
 predictions = testing_probs.idxmax(axis=1)
@@ -139,12 +147,12 @@ correct = test_set['origin'] == test_set['predicted_origin']
 probs = pd.DataFrame(columns=unique_origins)
 
 for i in unique_origins:
-    probs[i] = models[i].predict_proba(data[cat_cols])[:, 1]
+    probs[i] = models[i].predict_proba(pd.DataFrame(np.column_stack((np.ones(data.shape[0]), data[cat_cols]))))[:, 1]
 
 data['predicted_origin'] = probs.idxmax(axis=1)
 
-print('classier accuracy on testing stands at:', numfmt(len(test_set[correct]) / len(test_set)))
-print('classier accuracy on whole data stands at:', numfmt(len(data[data['origin'] == data['predicted_origin']]) / len(data)))
+print('classier accuracy on testing stands at: {0:.2f}'.format(len(test_set[correct]) / len(test_set)))
+print('classier accuracy on whole data stands at: {0:.2f}'.format(len(data[data['origin'] == data['predicted_origin']]) / len(data)))
 
 
 # Clustering Cars
