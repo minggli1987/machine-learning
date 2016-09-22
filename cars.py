@@ -38,37 +38,35 @@ regressors = data[var]  # recommended variables from stepwise procedure
 # splitting data - holdout validation
 x_train, x_test, y_train, y_test = \
     cross_validation.train_test_split(np.column_stack((np.ones(regressors.shape[0]), normalize(regressors))),
-                                      regressand, test_size=.2, random_state=99)
+                                      regressand, test_size=.3)
 # splitting data - k fold cross validation
-kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True)
+kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=5, shuffle=True)
 
 # fitting linear model
 lr = linear_model.LinearRegression(fit_intercept=False)  # regressors already has constant 1
 lr.fit(x_train, y_train)
-predictions = lr.predict(x_test)
 
-init_mse = metrics.mean_squared_error(y_test, predictions)
-init_r2 = metrics.r2_score(y_test, predictions)
+init_mse = metrics.mean_squared_error(y_test, lr.predict(x_test))
+init_r2 = metrics.r2_score(y_test, lr.predict(x_test))
 print('the initial MSE currently stands at: {0:.2f}; '.format(init_mse), 'the initial R-squared stands at: {0:.2f}'.format(init_r2))
 
 # preparing Gradient Descent
 
-old_theta = lr.coef_  # capturing parameters from linear model
-initial_params = np.random.rand(len(old_theta))  # generating initial parameters using the shape of existing ones
-new_theta, cost_set = gradient_descent(initial_params, x_test, y_test, lr, alpha=0.01, max_epochs=10000)
-
-print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta])
-# plt.plot(range(len(cost_set)), cost_set)
-# plt.show()
-# print(cost_set)
+old_theta = np.array(np.matrix(lr.coef_))
+y_train = np.matrix(y_train).T
+initial_params = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
+new_theta, cost_set = gradient_descent(initial_params, x_train, y_train, lr, alpha=0.005, max_epochs=5000)
+print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta[0]], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta[0]])
+plt.plot(range(len(cost_set)), cost_set)
+plt.show()
+print(cost_set)
 
 # applying new parameters
 lr.coef_ = new_theta
-predictions = lr.predict(x_test)
 
 # calculating new metrics
-new_r2 = metrics.r2_score(y_test, predictions)
-new_mse = metrics.mean_squared_error(y_test, predictions)
+new_r2 = metrics.r2_score(y_test, lr.predict(x_test))
+new_mse = metrics.mean_squared_error(y_test, lr.predict(x_test))
 
 print('the new MSE currently stands at: {0:.2f}; '.format(new_mse), 'the R-squared stands at: {0:.2f}'.format(new_r2))
 
@@ -106,53 +104,76 @@ dummy_cylinders = pd.get_dummies(data['cylinders'], prefix='cyl')
 dummy_years = pd.get_dummies(data['year'], prefix='y')
 dummies = pd.concat([dummy_cylinders, dummy_years], axis=1)
 data = data.join(dummies)
-
 cat_cols = [col for col in data.columns if col.startswith('y_') or col.startswith('cyl_')]
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(
-    pd.DataFrame(np.column_stack((np.ones(data.shape[0]), data[cat_cols]))), data['origin'], test_size=.2)
+
+regressors = np.column_stack((np.ones(data.shape[0]), data[cat_cols]))
+regressand = pd.DataFrame(data['origin'] == 3)
+
+x_train, x_test, y_train, y_test = cross_validation.train_test_split(regressors, regressand, test_size=.3)
+
+sigmoid = linear_model.LogisticRegression(fit_intercept=False, class_weight='auto')
+sigmoid.fit(x_train, y_train)
+
+accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
+print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
+
+# gradient descent
+old_theta = np.array(np.matrix(sigmoid.coef_))  # capturing parameters from logistic regression
+initial_params = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
+new_theta, cost_set = gradient_descent(initial_params, x_train, y_train, sigmoid, alpha=0.05, max_epochs=10000)
+sigmoid.coef_ = new_theta
+
+print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta[0]], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta[0]])
 
 
-unique_origins = sorted(data['origin'].unique())
-testing_probs = pd.DataFrame(columns=unique_origins)
+# plt.plot(range(len(cost_set)), cost_set)
+# plt.show()
+# print(cost_set)
 
-models = dict()  # dict to contain different classifiers with each to produce one binomial output.
+accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
+print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
 
-for i in unique_origins:
-    classifier = linear_model.LogisticRegression(fit_intercept=False)
-    x = x_train
-    y = pd.DataFrame(y_train == i)
-
-    classifier.fit(x, y)
-
-    # gradient descent
-    old_theta = classifier.coef_  # capturing parameters from logistic regression
-    initial_params = np.ones(old_theta.T.shape)  # generating initial parameters using the shape of existing ones
-    new_theta, cost_set = gradient_descent(initial_params, x, y, classifier, alpha=0.01, max_epochs=10000)
-    classifier.coef_ = new_theta.T
-
-    models[i] = classifier
-    del classifier
-    testing_probs[i] = models[i].predict_proba(x_test)[:, 1]  # only capturing probability of positive result
-
-
-
-test_set = x_test.join(y_test).reset_index(drop=True)
-predictions = testing_probs.idxmax(axis=1)
-test_set['predicted_origin'] = predictions
-correct = test_set['origin'] == test_set['predicted_origin']
-
-
-# applying trained classifiers to full data
-
-probs = pd.DataFrame(columns=unique_origins)
-
-for i in unique_origins:
-    probs[i] = models[i].predict_proba(pd.DataFrame(np.column_stack((np.ones(data.shape[0]), data[cat_cols]))))[:, 1]
-
-data['predicted_origin'] = probs.idxmax(axis=1)
-
-print('classier accuracy on testing stands at: {0:.2f}'.format(len(test_set[correct]) / len(test_set)))
-print('classier accuracy on whole data stands at: {0:.2f}'.format(len(data[data['origin'] == data['predicted_origin']]) / len(data)))
+# unique_origins = sorted(data['origin'].unique())
+# testing_probs = pd.DataFrame(columns=unique_origins)
+#
+# models = dict()  # dict to contain different classifiers with each to produce one binomial output.
+#
+# for i in unique_origins:
+#     classifier = linear_model.LogisticRegression(fit_intercept=False)
+#     x = x_train
+#     y = pd.DataFrame(y_train == i)
+#
+#     classifier.fit(x, y)
+#
+#     # gradient descent
+#     old_theta = classifier.coef_  # capturing parameters from logistic regression
+#     initial_params = np.ones(old_theta.T.shape)  # generating initial parameters using the shape of existing ones
+#     new_theta, cost_set = gradient_descent(initial_params, x, y, classifier, alpha=0.01, max_epochs=10000)
+#     classifier.coef_ = new_theta.T
+#
+#     models[i] = classifier
+#     del classifier
+#     testing_probs[i] = models[i].predict_proba(x_test)[:, 1]  # only capturing probability of positive result
+#
+#
+#
+# test_set = x_test.join(y_test).reset_index(drop=True)
+# predictions = testing_probs.idxmax(axis=1)
+# test_set['predicted_origin'] = predictions
+# correct = test_set['origin'] == test_set['predicted_origin']
+#
+#
+# # applying trained classifiers to full data
+#
+# probs = pd.DataFrame(columns=unique_origins)
+#
+# for i in unique_origins:
+#     probs[i] = models[i].predict_proba(pd.DataFrame(np.column_stack((np.ones(data.shape[0]), data[cat_cols]))))[:, 1]
+#
+# data['predicted_origin'] = probs.idxmax(axis=1)
+#
+# print('classier accuracy on testing stands at: {0:.2f}'.format(len(test_set[correct]) / len(test_set)))
+# print('classier accuracy on whole data stands at: {0:.2f}'.format(len(data[data['origin'] == data['predicted_origin']]) / len(data)))
 
 
 # Clustering Cars

@@ -128,10 +128,10 @@ def cost_function(params, x, y, model):
         return np.sum(J)
 
     if isinstance(model, linear_model.LogisticRegression):
-        h = 1 / (1 + np.exp(-np.dot(x, params)))
+        h = 1 / (1 + np.exp(-np.dot(x, params.T)))
         # logistic (sigmoid) model hypothesis
-        J = np.dot(np.log(h).T, y) + np.dot(np.log(1 - h).T, (1 - y))
-        J /= -m
+        J = -np.dot(np.log(h).T, y) - np.dot(np.log(1 - h).T, (1 - y))
+        J /= m
         return np.sum(J)
 
 
@@ -146,17 +146,18 @@ def partial_derivative_cost(params, x, y, model):
 
     if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
         h = np.dot(x, params.T)
+        # GLM hypothesis in linear algebra representation
 
-    # GLM hypothesis in linear algebra representation
     if isinstance(model, linear_model.LogisticRegression):
-        h = 1 / (1 + np.exp(-np.dot(x, params)))
+        h = 1 / (1 + np.exp(-np.dot(x, params.T)))
         # logistic (sigmoid) model hypothesis
+
     J = np.dot(x.T, (h - y)) / m
-    # partial_derivative terms
-    return J  # J is a n-dimensioned vector
+    # partial_derivative terms for either linear or logistic regression
+    return J.T  # J is a n-dimensioned vector
 
 
-def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=.0001):
+def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=.0001, display=False):
 
     count = 0  # initiating a count number so once reaching max iterations will terminate
 
@@ -172,7 +173,8 @@ def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=
 
     # beginning gradient_descent iterations
 
-    print('\nbeginning gradient decent algorithm...\n')
+    if display:
+        print('\nbeginning gradient decent algorithm...\n')
 
     while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
 
