@@ -143,7 +143,7 @@ regressand = loans[target_col]
 
 cus_weighting = {0: 6, 1: 1}
 
-lr = linear_model.LogisticRegression(fit_intercept=False, class_weight='auto')
+lr = linear_model.LogisticRegression(fit_intercept=False, class_weight=cus_weighting)
 #  balanced to penalize mis-classification of Charged Off
 lr.fit(regressors, regressand)
 

@@ -167,6 +167,13 @@ x_train, x_test, y_train, y_test = \
     cross_validation.train_test_split(scaler(regressors), regressand, test_size=.2, random_state=9)
 
 locr.fit(x_train, y_train)
+
+new_theta, costs = gradient_descent(locr.coef_, x_train, np.matrix(y_train).T, locr, alpha=.01)
+plt.plot(range(len(costs)), costs)
+plt.show()
+print(costs)
+locr.coef_ = new_theta
+
 predicted = locr.predict(x_test)
 roc_auc = metrics.roc_auc_score(y_test, predicted)
 
