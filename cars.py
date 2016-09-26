@@ -126,8 +126,8 @@ sigmoid.coef_ = new_theta
 print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta[0]], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta[0]])
 
 
-# plt.plot(range(len(cost_set)), cost_set)
-# plt.show()
+plt.plot(range(len(cost_set)), cost_set)
+plt.show()
 # print(cost_set)
 
 accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))

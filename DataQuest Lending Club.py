@@ -3,7 +3,9 @@ import os
 import numpy as np
 from sklearn import linear_model, cross_validation, ensemble, metrics, tree
 from sklearn.externals.six import StringIO
+import matplotlib.pyplot as plt
 import pydotplus
+from minglib import gradient_descent
 
 
 def binominal_result(data, target, predictions):
@@ -135,33 +137,45 @@ def transform_multinominal(df, cols):
 
 loans = transform_multinominal(loans, cols)
 
-# ANOUNCING FEATURES AND TARGET
+# ANNOUNCING FEATURES AND TARGET
 regressors = loans[[i for i in loans.columns if i != target_col]]
 regressand = loans[target_col]
 
-
 cus_weighting = {0: 6, 1: 1}
 
-lr = linear_model.LogisticRegression(class_weight=cus_weighting)  # balanced to penalize misclassification of Charged Off
+lr = linear_model.LogisticRegression(fit_intercept=False, class_weight='auto')
+#  balanced to penalize mis-classification of Charged Off
 lr.fit(regressors, regressand)
 
-predictions = lr.predict_proba(regressors)
+# gradient descent
+print(lr.coef_.shape, regressors.shape, np.matrix(regressand).T.shape)
+new_thetas, costs = gradient_descent(lr.coef_, np.array(regressors), np.matrix(regressand).T, lr, alpha=.1, max_epochs=2000, display=True)
+print(new_thetas.shape, costs)
+# plt.plot(range(len(costs)), costs)
+# plt.show()
+# lr.coef_ = new_thetas
 
-kf = cross_validation.KFold(regressors.shape[0], n_folds=5, random_state=1)
+kf = cross_validation.KFold(regressors.shape[0], n_folds=5, shuffle=False, random_state=1)
 
 predictions = cross_validation.cross_val_predict(lr, regressors, regressand, cv=kf)
 predictions = pd.Series(predictions)
 
-#rf = ensemble.RandomForestClassifier(class_weight="balanced", min_samples_leaf=50, max_leaf_nodes=10, random_state=1)
-dt = tree.DecisionTreeClassifier(class_weight='balanced', max_depth=3, max_leaf_nodes=20, min_samples_leaf=50, random_state=1)
-predictions = pd.Series(cross_validation.cross_val_predict(dt, regressors, regressand, cv=kf))
+binominal_result(loans, target_col, predictions)
+
+# rf = ensemble.RandomForestClassifier(class_weight="balanced", min_samples_leaf=50, max_leaf_nodes=10, random_state=1)
+
+dt = tree.DecisionTreeClassifier(class_weight='balanced', max_depth=5, max_leaf_nodes=20,
+                                 min_samples_leaf=20, random_state=1)
+
+predictions = cross_validation.cross_val_predict(dt, regressors, regressand, cv=kf)
+predictions = pd.Series(predictions)
 
 binominal_result(loans, target_col, predictions)
 dt.fit(regressors, regressand)
 
 dot_data = StringIO()
-tree.export_graphviz(dt, feature_names=regressors.columns, class_names=regressand.name, filled=True, rounded=True
-                     ,special_characters=True, out_file=dot_data)
+tree.export_graphviz(dt, feature_names=regressors.columns, class_names=regressand.name, filled=True,
+                     rounded=True, special_characters=True, out_file=dot_data)
 graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
 graph.write_pdf("lendingDT.pdf")
 
