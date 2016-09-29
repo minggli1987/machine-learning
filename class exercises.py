@@ -23,6 +23,7 @@ class Node(object):
         self.inst_id = self.__class__.__nextid
         self.__class__.__inst[self.inst_id] = self
         self.__class__.__nextid += 1
+        pass
 
     def is_connected(self, other):
 
@@ -46,13 +47,13 @@ class Node(object):
             self.edges.append(other)
 
     def __eq__(self, other):
-        return self.value == other.value
+        pass
 
     def __gt__(self, other):
-        return self.value > other.value
+        pass
 
     def __ge__(self, other):
-        return self.value >= other.value
+        pass
 
     def printall(self):
         return {k: 'Node({0})'.format(v.value) for k, v in self.__class__.__inst.items()}

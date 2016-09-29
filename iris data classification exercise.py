@@ -74,6 +74,8 @@ def visualize():
     plt.show()
 
 
+visualize()
+
 target_dict = {'species': {k: v for k, v in enumerate(data['target_names'])}}
 
 df = pd.DataFrame(data['data'], columns=data['feature_names'], dtype=float) \
