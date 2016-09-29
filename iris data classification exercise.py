@@ -241,7 +241,7 @@ def main(unused_argv):
     # Build 3 layer DNN with 10, 20, 10 units respectively.
     feature_columns = learn.infer_real_valued_columns_from_input(x_train)
     classifier = learn.DNNClassifier(
-        feature_columns=feature_columns, hidden_units=[20, 20, 20, 20], n_classes=3)
+        feature_columns=feature_columns, hidden_units=[10, 20, 10], n_classes=3)
 
     # Fit and predict.
     classifier.fit(x_train, y_train, steps=200)
