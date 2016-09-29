@@ -193,5 +193,3 @@ def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=
         count += 1
 
     return params, costs
-
-

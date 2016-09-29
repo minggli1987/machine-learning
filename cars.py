@@ -9,6 +9,7 @@ from minglib import forward_select, gradient_descent, backward_select
 from warnings import filterwarnings
 filterwarnings('ignore')
 
+
 def normalize(data):
     # building a scaler that applies to future data
     col_name = data.columns
