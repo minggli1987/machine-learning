@@ -18,3 +18,7 @@ import pydotplus
 warnings.filterwarnings('ignore')
 
 
+test = pd.read_csv('data/leaf/test.csv')
+train = pd.read_csv('data/leaf/train.csv')
+
+print(train.info())
