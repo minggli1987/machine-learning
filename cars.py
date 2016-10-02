@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
-from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model
+from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model, naive_bayes
 from minglib import forward_select, gradient_descent, backward_select
 from warnings import filterwarnings
 filterwarnings('ignore')
@@ -126,13 +126,21 @@ sigmoid.coef_ = new_theta
 
 print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta[0]], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta[0]])
 
-
-plt.plot(range(len(cost_set)), cost_set)
-plt.show()
+# plt.plot(range(len(cost_set)), cost_set)
+# plt.show()
 # print(cost_set)
 
 accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
 print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
+
+
+clf = naive_bayes.BernoulliNB()
+clf.fit(x_train, y_train)
+accuracy = metrics.accuracy_score(y_test, clf.predict(x_test))
+print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
+
+
+
 
 # unique_origins = sorted(data['origin'].unique())
 # testing_probs = pd.DataFrame(columns=unique_origins)
