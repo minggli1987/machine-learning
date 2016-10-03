@@ -84,8 +84,8 @@ df['species'] = df['species'].astype('category')
 regressors = df.select_dtypes(include=['float'])
 regressand = df.select_dtypes(include=['category'])
 
-# reg = linear_model.LogisticRegression()
-# reg = naive_bayes.GaussianNB()
+
+# Decision Tree classifier
 reg = tree.DecisionTreeClassifier(max_depth=3, max_leaf_nodes=20, min_samples_leaf=15, random_state=2)
 
 x_train, x_test, y_train, y_test = \
@@ -96,11 +96,8 @@ reg.fit(X=x_train, y=y_train)
 kf_gen = cross_validation.KFold(df.shape[0], n_folds=5, shuffle=False, random_state=2)
 
 prediction = reg.predict(x_test)
-# prediction = cross_validation.cross_val_predict(reg, X=regressors, y=regressand, cv=kf_gen, n_jobs=-1)
-# df['pred'] = prediction
-# accuracy = cross_validation.cross_val_score(reg, regressors, regressand, scoring='accuracy', cv=kf_gen)
 accuracy = metrics.accuracy_score(y_test, prediction)
-print('Accuracy: {:.4f}'.format(accuracy))
+print('Single Tree Accuracy: {:.4f}'.format(accuracy))
 
 # with pd.ExcelWriter('iris_pred.xlsx') as writer:
 #     df.to_excel(writer, sheet_name='output', index=False)
@@ -113,7 +110,6 @@ graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
 graph.write_pdf("iris.pdf")
 
 # neutral network applying on iris dataset from dataquest
-
 
 class NNet3:
 
@@ -216,13 +212,20 @@ model = NNet3(learning_rate=learning_rate, maxepochs=maxepochs,
 # yhat = model.predict(X)[0]
 # auc = metrics.roc_auc_score(y, yhat)
 
-
-
+# logistic regression
 lr = linear_model.LogisticRegression()
 lr.fit(x_train, y_train)
 prediction = lr.predict(x_test)
 score = metrics.accuracy_score(y_test, prediction)
-print('Accuracy: {:.4f}'.format(score))
+print('Logistic Regression Accuracy: {:.4f}'.format(score))
+
+# Bayesian
+
+clf = naive_bayes.GaussianNB()
+clf.fit(x_train, y_train)
+prediction = lr.predict(x_test)
+score = metrics.accuracy_score(y_test, prediction)
+print('Bayesian (GaussianNB) Accuracy: {:.4f}'.format(score))
 
 
 ## Tensorflow Neutral Network implementation
