@@ -85,6 +85,12 @@ regressors = df.select_dtypes(include=['float'])
 regressand = df.select_dtypes(include=['category'])
 
 
+def normalize(data):
+    # building a scaler that applies to future data
+    col_name = data.columns
+    scaler = preprocessing.StandardScaler().fit(data)
+    return pd.DataFrame(scaler.transform(data), columns=col_name)
+
 # Decision Tree classifier
 reg = tree.DecisionTreeClassifier(max_depth=3, max_leaf_nodes=20, min_samples_leaf=15, random_state=2)
 
