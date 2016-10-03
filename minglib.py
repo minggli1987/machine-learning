@@ -82,7 +82,9 @@ def backward_select(data, target, alpha=0.05, display=True):
 
     selected_var = list(set([i for i in data.columns if i not in target.columns]))
 
-    print('beginning backward stepwise variable selection...\n')
+    if display:
+        print('beginning backward stepwise variable selection...\n')
+
     while selected_var:
         if display:
             print(selected_var)

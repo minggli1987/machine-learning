@@ -1,16 +1,6 @@
 __author__ = 'Ming'
 
 
-class NumberFormatted(object):
-
-    def __init__(self, n):
-
-        assert isinstance(n, (float, int)), 'please input a numeric value'
-        self.value = float('{0:.2f}'.format(n))
-
-print(NumberFormatted(234.123).value + 1)
-
-
 class Node(object):
 
     __origin__ = None
@@ -55,8 +45,8 @@ class Node(object):
     def __ge__(self, other):
         pass
 
-    def printall(self):
-        return {k: 'Node({0})'.format(v.value) for k, v in self.__class__.__inst.items()}
+    def __repr__(self):
+        return str({k: 'Node({0})'.format(v.value) for k, v in self.__class__.__inst.items()})
 
 
 x = Node(3)
@@ -99,8 +89,7 @@ print([i.value for i in h.edges])
 print(x.is_connected(y))
 print(x.is_connected(h))
 
-print(h.printall())
-
+print(h)
 
 def fibonacci(n):
     assert n > 0 and isinstance(n, int), 'please input a valid integer'

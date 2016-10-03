@@ -18,10 +18,6 @@ data = load_iris()
 
 def visualize():
 
-    # Code source: Gaël Varoquaux
-    # Modified for documentation by Jaques Grobler
-    # License: BSD 3 clause
-
     iris = load_iris()
 
     X = iris.data  # we only take the first two features.
@@ -88,8 +84,8 @@ df['species'] = df['species'].astype('category')
 regressors = df.select_dtypes(include=['float'])
 regressand = df.select_dtypes(include=['category'])
 
-reg = linear_model.LogisticRegression()
-reg = naive_bayes.GaussianNB()
+# reg = linear_model.LogisticRegression()
+# reg = naive_bayes.GaussianNB()
 reg = tree.DecisionTreeClassifier(max_depth=3, max_leaf_nodes=20, min_samples_leaf=15, random_state=2)
 
 x_train, x_test, y_train, y_test = \
