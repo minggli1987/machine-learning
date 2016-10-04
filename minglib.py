@@ -114,115 +114,133 @@ def backward_select(data, target, alpha=0.05, display=True):
     return model, selected_var
 
 
-class gradient_descent(object):
+class GradientDescent(object):
 
-    def __init__(self):
-        pass
+    def __init__(self, alpha=.1, max_epochs=5000, conv_thres=.0001, display=False):
 
-    def _partial_derivative_cost(params, x, y, model):
+        self._alpha = alpha    # learning rate
+        self._max_epochs = max_epochs  # max number of iterations
+        self._conv_thres = conv_thres    # convergence threshold
+        self._display = display
+        self._multi_class = False
+        self._sigmoid = None
+        self._linear = None
+        self.params = None
+        self.X = None
+        self.y = None
 
-        J = 0
-        m = len(x)
-        # for i in range(m):
-        #     h = np.sum(params.T * x[i])
-        #     J += (h - y[i]) * x[i][j]
-        # J /= m
+    def fit(self, X, y, model):
+
+        self.X = np.array(X)
+        self.y = np.array(y)
 
         if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
-            h = np.dot(x, params.T)     # GLM hypothesis in linear algebra representation
+            self._linear = True
+            self.params = np.array(np.matrix(model.coef_))
 
         if isinstance(model, linear_model.LogisticRegression):
-            h = 1 / (1 + np.exp(-np.dot(x, params.T)))
-            # logistic (sigmoid) model hypothesis
+            self._sigmoid = True
+            self.params = np.array(model.coef_)
 
-        J = np.dot(x.T, (h - y)) / m
-        # partial_derivative terms for either linear or logistic regression
-        return J.T  # J is a n-dimensioned vector
+            unique_classes = np.unique(y)
+            n = len(unique_classes)
+            if n < 2:
+                raise ValueError("Optimiser needs samples of at least 2 classes"
+                                 " in the data, but the data contains only one"
+                                 " class: {0}".format(unique_classes[0]))
+            if n == 2:
+                self._multi_class = False
+            else:
+                self._multi_class = True
 
-    def _cost_function(params, x, y, model):
+        return self
+
+    def __partial_derivative_cost__(self, params, X, y):
 
         J = 0
-        m = len(x)
-        # for i in range(m):
-        #     h = np.sum(params.T * x[i])  # hypothesis linear regression with constant 1
-        #     J += (h - y[i]) ** 2
-        # J /= (2 * m)
-        if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
-            h = np.dot(x, params.T)
+        m = len(X)
+
+        if self._linear:
+            h = np.dot(X, params.T)     # GLM hypothesis in linear algebra representation
+
+        if self._sigmoid:
+            h = 1 / (1 + np.exp(-np.dot(X, params.T)))      # logistic (sigmoid) model hypothesis
+
+        J = np.dot(X.T, (h - y)) / m        # partial_derivative terms for either linear or logistic regression
+        return J.T  # J is a n-dimensioned vector
+
+    def __cost_function__(self, params, X, y):
+
+        J = 0
+        m = len(X)
+
+        if self._linear:
+            h = np.dot(X, params.T)
             # GLM hypothesis in linear algebra representation
             J = (h - y) ** 2
             J /= (2 * m)
             return np.sum(J)
 
-        if isinstance(model, linear_model.LogisticRegression):
-            h = 1 / (1 + np.exp(-np.dot(x, params.T)))
+        if self._sigmoid:
+            h = 1 / (1 + np.exp(-np.dot(X, params.T)))
             # logistic (sigmoid) model hypothesis
             J = -np.dot(np.log(h).T, y) - np.dot(np.log(1 - h).T, (1 - y))
             J /= m
             return np.sum(J)
 
+    def __processing__(self, params, X, y):
 
-    def fit(self):
-
-
-
-def gradient_descent(params, x, y, model, alpha=.01, max_epochs=5000, conv_thres=.0001, display=False):
-
-    initial_thetas = np.array(params)
-    x = np.array(x)
-    n_features = x.shape[1]
-    targets = np.array(y)
-    _classes = np.unique(y)
-    n = len(_classes)
-
-    #  adding compatibility to multi-nominal logistic regression
-
-    master_params = np.empty(shape=(1, n_features))
-    master_costs = []
-
-    for k, _class in enumerate(_classes):
-
-        if n > 2 and isinstance(model, linear_model.LogisticRegression):
-            y = np.array(targets == _class).astype(int)  # one versus rest method handling multinominal classification
-            theta = np.matrix(initial_thetas[k])
-
-        else:  # binominal classifaction and linear models
-            y = targets
-            theta = initial_thetas
+        alpha = self._alpha
 
         count = 0  # initiating a count number so once reaching max iterations will terminate
 
-        cost = cost_function(theta, x, y, model)  # initial J(theta)
+        cost = self.__cost_function__(params, X, y)  # initial J(theta)
         prev_cost = cost + 10
         costs = [cost]
+        thetas = [params]
 
-        # beginning gradient_descent iterations
+        if self._display:
+            print('beginning gradient decent algorithm...')
 
-        if display:
-            print('\nbeginning gradient decent algorithm...\n')
-
-        while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
-
+        while (np.abs(prev_cost - cost) > self._conv_thres) and (count <= self._max_epochs):
             prev_cost = cost
-
-            # update = np.zeros(params.shape[0])
-            #
-            # for j in range(len(params)):
-            #     update = partial_derivative_cost(params, j, x, y)  # gradient descend
-            theta -= alpha * _partial_derivative_cost(theta, x, y, model)  # gradient descend
-
-            # thetas.append(theta)  # restoring historic parameters
-
-            cost = cost_function(theta, x, y, model)  # cost at each iteration
+            params -= alpha * self.__partial_derivative_cost__(params, X, y)  # gradient descend
+            thetas.append(params)  # restoring historic parameters
+            cost = self.__cost_function__(params, X, y)  # cost at each iteration
             costs.append(cost)
             count += 1
-            if display:
+            if self._display:
                 print('iterations have been processed: {0}'.format(count))
 
-        master_costs.append(costs)
-        master_params = np.append(master_params, np.array(theta), axis=0)
+        return params, costs
 
-        if not (n > 2 and isinstance(model, linear_model.LogisticRegression)):  # binary classification does not loop through unique classes
-            break
+    def optimise(self):
 
-    return master_params[1:], master_costs if n > 2 and isinstance(model, linear_model.LogisticRegression) else master_costs[0]
+        X = self.X
+        y = self.y
+        params = self.params
+
+        if not self._multi_class:
+
+            new_thetas, costs = self.__processing__(params, X, y)
+
+            return new_thetas, costs
+
+        if self._multi_class:
+
+            n_samples, n_features = X.shape
+            unique_classes = np.unique(y)
+            master_params = np.empty(shape=(1, n_features))
+            master_costs = list()
+
+            for k, _class in enumerate(unique_classes):
+
+                _y = np.array(y == _class).astype(int)  # one versus rest method handling multinominal classification
+                _params = np.matrix(params[k])
+
+                new_thetas, costs = self.__processing__(_params, X, _y)
+
+                master_costs.append(costs)
+                master_params = np.append(master_params, np.array(_params), axis=0)
+
+            return master_params[1:], master_costs

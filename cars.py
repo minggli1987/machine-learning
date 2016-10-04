@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model, naive_bayes
-from minglib import forward_select, gradient_descent, backward_select
+from minglib import forward_select, GradientDescent, backward_select
 from warnings import filterwarnings
 filterwarnings('ignore')
 
@@ -56,12 +56,14 @@ print('the initial MSE currently stands at: {0:.2f}; '.format(init_mse), 'the in
 old_theta = np.array(np.matrix(lr.coef_))
 y_train = np.array(np.matrix(y_train).T)
 initial_params = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
-new_theta, cost_set = gradient_descent(initial_params, x_train, y_train, lr, alpha=0.005, max_epochs=5000)
+gd = GradientDescent(alpha=.005, max_epochs=5000, conv_thres=.000001, display=True)
+gd.fit(x_train, y_train, lr)
+new_theta, cost_set = gd.optimise()
+
 print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta[0]], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta[0]])
-# plt.plot(range(len(cost_set)), cost_set)
-# plt.show()
-# print(cost_set)
-print(new_theta)
+plt.plot(range(len(cost_set)), cost_set)
+plt.show()
+
 # applying new parameters
 lr.coef_ = new_theta
 
