@@ -13,7 +13,7 @@ filterwarnings('ignore')
 def normalize(data):
     # building a scaler that applies to future data
     col_name = data.columns
-    scaler = preprocessing.StandardScaler().fit(data)
+    scaler = preprocessing.StandardScaler(with_mean=False, with_std=True).fit(data)
     return pd.DataFrame(scaler.transform(data), columns=col_name)
 
 cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
