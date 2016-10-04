@@ -136,11 +136,15 @@ class GradientDescent(object):
 
         if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
             self._linear = True
-            self.params = np.array(np.matrix(model.coef_))
+            if hasattr(model, 'coef_'):
+                self.params = np.array(np.matrix(model.coef_))
+            if hasattr(model, 'params'):
+                self.params = np.array(np.matrix(model.params))
 
         if isinstance(model, linear_model.LogisticRegression):
             self._sigmoid = True
-            self.params = np.array(model.coef_)
+            if hasattr(model, 'coef_'):
+                self.params = np.array(model.coef_)
 
             unique_classes = np.unique(y)
             n = len(unique_classes)

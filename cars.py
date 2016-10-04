@@ -51,11 +51,11 @@ init_mse = metrics.mean_squared_error(y_test, lr.predict(x_test))
 init_r2 = metrics.r2_score(y_test, lr.predict(x_test))
 print('the initial MSE currently stands at: {0:.2f}; '.format(init_mse), 'the initial R-squared stands at: {0:.2f}'.format(init_r2))
 
+
 # preparing Gradient Descent
 
 # generating initial parameters using the shape of existing ones
 old_theta = lr.coef_
-lr.coef_ = np.ones(4)
 gd = GradientDescent(alpha=.005, max_epochs=5000, conv_thres=.000001, display=False)
 gd.fit(x_train, y_train, lr)
 new_theta, cost_set = gd.optimise()
@@ -121,7 +121,6 @@ print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)
 # gradient descent
 old_theta = np.array(sigmoid.coef_)  # capturing parameters from logistic regression
 sigmoid.coef_ = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
-
 gd = GradientDescent(alpha=0.05, max_epochs=10000, display=False)
 gd.fit(x_train, y_train, sigmoid)
 new_theta, cost_set = gd.optimise()
