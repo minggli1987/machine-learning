@@ -163,35 +163,44 @@ def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=
 
     count = 0  # initiating a count number so once reaching max iterations will terminate
 
-    params = np.array(params)
+    initial_thetas = np.array(params)
     x = np.array(x)
-    y = np.array(y)
+    targets = np.array(y)
+    _classes = np.unique(y)
+    n_classes = len(_classes)
 
-    cost = cost_function(params, x, y, model)  # initial J(theta)
+    #  adding compatibility to multinominal logistic regression
 
-    prev_cost = cost + 10
-    costs = [cost]
-    thetas = [params]
+    for k, _class in enumerate(_classes):
 
-    # beginning gradient_descent iterations
+        y = np.array(targets == _class)  # one versus rest method handling multinominal classification
+        theta = params[k]
 
-    if display:
-        print('\nbeginning gradient decent algorithm...\n')
+        cost = cost_function(theta, x, y, model)  # initial J(theta)
 
-    while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
+        prev_cost = cost + 10
+        costs = [cost]
+        thetas = [theta]
 
-        prev_cost = cost
+        # beginning gradient_descent iterations
 
-        # update = np.zeros(params.shape[0])
-        #
-        # for j in range(len(params)):
-        #     update = partial_derivative_cost(params, j, x, y)  # gradient descend
-        params -= alpha * partial_derivative_cost(params, x, y, model)  # gradient descend
+        if display:
+            print('\nbeginning gradient decent algorithm...\n')
 
-        thetas.append(params)  # restoring historic parameters
+        while (np.abs(prev_cost - cost) > conv_thres) and (count <= max_epochs):
 
-        cost = cost_function(params, x, y, model)  # cost at each iteration
-        costs.append(cost)
-        count += 1
+            prev_cost = cost
+
+            # update = np.zeros(params.shape[0])
+            #
+            # for j in range(len(params)):
+            #     update = partial_derivative_cost(params, j, x, y)  # gradient descend
+            theta -= alpha * partial_derivative_cost(theta, x, y, model)  # gradient descend
+
+            thetas.append(params)  # restoring historic parameters
+
+            cost = cost_function(params, x, y, model)  # cost at each iteration
+            costs.append(cost)
+            count += 1
 
     return params, costs
