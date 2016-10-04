@@ -132,7 +132,7 @@ class GradientDescent(object):
             self.thetas = new_thetas
             self.costs = costs
 
-        if self._multi_class:
+        else:
 
             n_samples, n_features = X.shape
             unique_classes = np.unique(y)
@@ -141,7 +141,7 @@ class GradientDescent(object):
 
             for k, _class in enumerate(unique_classes):
 
-                _y = np.array(y == _class).astype(int)  # one versus rest method handling multinominal classification
+                _y = np.array(y == _class).astype(int)  # one versus rest method handling multi-nominal classification
                 _params = np.matrix(params[k])
 
                 new_thetas, costs = self.__processing__(_params, X, _y)

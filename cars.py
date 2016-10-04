@@ -129,7 +129,7 @@ new_theta, cost_set = gd.thetas, gd.costs
 
 plt.plot(range(len(cost_set[2])), cost_set[2])
 plt.show()
-print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta[0]], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta[0]])
+print(' old thetas are: ', old_theta, '\n', 'new thetas are: ', new_theta)
 
 sigmoid.coef_ = new_theta
 
