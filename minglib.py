@@ -114,49 +114,56 @@ def backward_select(data, target, alpha=0.05, display=True):
     return model, selected_var
 
 
-def cost_function(params, x, y, model):
+class gradient_descent(object):
 
-    J = 0
-    m = len(x)
-    # for i in range(m):
-    #     h = np.sum(params.T * x[i])  # hypothesis linear regression with constant 1
-    #     J += (h - y[i]) ** 2
-    # J /= (2 * m)
-    if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
-        h = np.dot(x, params.T)
-        # GLM hypothesis in linear algebra representation
-        J = (h - y) ** 2
-        J /= (2 * m)
-        return np.sum(J)
+    def __init__(self):
+        pass
 
-    if isinstance(model, linear_model.LogisticRegression):
-        h = 1 / (1 + np.exp(-np.dot(x, params.T)))
-        # logistic (sigmoid) model hypothesis
-        J = -np.dot(np.log(h).T, y) - np.dot(np.log(1 - h).T, (1 - y))
-        J /= m
-        return np.sum(J)
+    def _partial_derivative_cost(params, x, y, model):
+
+        J = 0
+        m = len(x)
+        # for i in range(m):
+        #     h = np.sum(params.T * x[i])
+        #     J += (h - y[i]) * x[i][j]
+        # J /= m
+
+        if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
+            h = np.dot(x, params.T)     # GLM hypothesis in linear algebra representation
+
+        if isinstance(model, linear_model.LogisticRegression):
+            h = 1 / (1 + np.exp(-np.dot(x, params.T)))
+            # logistic (sigmoid) model hypothesis
+
+        J = np.dot(x.T, (h - y)) / m
+        # partial_derivative terms for either linear or logistic regression
+        return J.T  # J is a n-dimensioned vector
+
+    def _cost_function(params, x, y, model):
+
+        J = 0
+        m = len(x)
+        # for i in range(m):
+        #     h = np.sum(params.T * x[i])  # hypothesis linear regression with constant 1
+        #     J += (h - y[i]) ** 2
+        # J /= (2 * m)
+        if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
+            h = np.dot(x, params.T)
+            # GLM hypothesis in linear algebra representation
+            J = (h - y) ** 2
+            J /= (2 * m)
+            return np.sum(J)
+
+        if isinstance(model, linear_model.LogisticRegression):
+            h = 1 / (1 + np.exp(-np.dot(x, params.T)))
+            # logistic (sigmoid) model hypothesis
+            J = -np.dot(np.log(h).T, y) - np.dot(np.log(1 - h).T, (1 - y))
+            J /= m
+            return np.sum(J)
 
 
-def partial_derivative_cost(params, x, y, model):
+    def fit(self):
 
-    J = 0
-    m = len(x)
-    # for i in range(m):
-    #     h = np.sum(params.T * x[i])
-    #     J += (h - y[i]) * x[i][j]
-    # J /= m
-
-    if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
-        h = np.dot(x, params.T)
-        # GLM hypothesis in linear algebra representation
-
-    if isinstance(model, linear_model.LogisticRegression):
-        h = 1 / (1 + np.exp(-np.dot(x, params.T)))
-        # logistic (sigmoid) model hypothesis
-
-    J = np.dot(x.T, (h - y)) / m
-    # partial_derivative terms for either linear or logistic regression
-    return J.T  # J is a n-dimensioned vector
 
 
 def gradient_descent(params, x, y, model, alpha=.01, max_epochs=5000, conv_thres=.0001, display=False):
@@ -202,7 +209,7 @@ def gradient_descent(params, x, y, model, alpha=.01, max_epochs=5000, conv_thres
             #
             # for j in range(len(params)):
             #     update = partial_derivative_cost(params, j, x, y)  # gradient descend
-            theta -= alpha * partial_derivative_cost(theta, x, y, model)  # gradient descend
+            theta -= alpha * _partial_derivative_cost(theta, x, y, model)  # gradient descend
 
             # thetas.append(theta)  # restoring historic parameters
 
