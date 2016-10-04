@@ -13,8 +13,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import warnings
-from sklearn.externals.six import StringIO
-from mpl_toolkits.mplot3d import Axes3D
 import statsmodels.api as sm
 from minglib import gradient_descent
 import pydotplus
@@ -96,9 +94,15 @@ print(np.mean(scores))
 # # gradient descent optimisation algorithm
 
 old_theta = reg.coef_
-new_theta, costs = gradient_descent(old_theta, x_train, y_train, reg, alpha=.1)
-print(costs)
+new_theta, costs = gradient_descent(old_theta, x_train, y_train, reg, alpha=.0000001, conv_thres=0.0000001)
+
+plt.plot(range(len(costs[98])), costs[98])
+plt.show()
+# applying new parameters after optimisation
 reg.coef_ = new_theta
+
+
+
 prediction = reg.predict(x_test)
 print(metrics.accuracy_score(y_test, prediction))
 scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
@@ -109,29 +113,22 @@ print(np.mean(scores))
 test['species'] = np.nan
 test = test[train.columns]
 
-combined = pd.concat([test,train])
+combined = pd.concat([test, train])
 
 combined.sort_values('id', inplace=True)
 
 
-# In[275]:
 
 regressors = combined.select_dtypes(exclude=('int', 'object')).copy()
 regressors_std = regressors.apply(preprocessing.scale, axis=0)  # using standard deviation as denominator
 regressors_std = np.column_stack((np.ones(regressors_std.shape[0]), regressors_std))  # add constant 1
 
 
-# In[276]:
-
 combined['species_id'] = reg.predict(regressors_std)
 
 
-# In[277]:
-
 combined['species_predicted'] = combined['species_id'].map(mapping)
 
-
-# In[278]:
 
 result = combined.select_dtypes(include=('int','object')).copy()
 

@@ -165,22 +165,25 @@ def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=
 
     initial_thetas = np.array(params)
     x = np.array(x)
+    n_features = x.shape[1]
     targets = np.array(y)
     _classes = np.unique(y)
-    n_classes = len(_classes)
 
     #  adding compatibility to multinominal logistic regression
+
+    master_params = np.empty(shape=(1, n_features))
+    master_costs = []
 
     for k, _class in enumerate(_classes):
 
         y = np.array(targets == _class)  # one versus rest method handling multinominal classification
-        theta = params[k]
+        theta = np.matrix(initial_thetas[k])
 
         cost = cost_function(theta, x, y, model)  # initial J(theta)
 
         prev_cost = cost + 10
         costs = [cost]
-        thetas = [theta]
+        # thetas = [theta]
 
         # beginning gradient_descent iterations
 
@@ -197,10 +200,13 @@ def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=
             #     update = partial_derivative_cost(params, j, x, y)  # gradient descend
             theta -= alpha * partial_derivative_cost(theta, x, y, model)  # gradient descend
 
-            thetas.append(params)  # restoring historic parameters
+            # thetas.append(theta)  # restoring historic parameters
 
-            cost = cost_function(params, x, y, model)  # cost at each iteration
+            cost = cost_function(theta, x, y, model)  # cost at each iteration
             costs.append(cost)
             count += 1
 
-    return params, costs
+        master_costs.append(costs)
+        master_params = np.append(master_params, np.array(theta), axis=0)
+
+    return master_params[1:], master_costs
