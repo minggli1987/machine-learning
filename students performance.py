@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model, feature_selection, naive_bayes
-from minglib import forward_select, gradient_descent, backward_select
+from minglib import forward_select, backward_select
+from GradientDescent import GradientDescent
 
 
 # cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
@@ -121,6 +122,13 @@ x_train, x_test, y_train, y_test = \
 
 lr.fit(x_train, y_train)
 
+gd = GradientDescent(alpha=.1, max_epochs=5000, conv_thres=.0001, display=True).fit(x_train, y_train, lr)
+gd.optimise()
+new_theta, costs = gd.thetas, gd.costs
+# plt.plot(range(len(costs)), costs)
+# plt.show()
+
+
 predicted = lr.predict(x_test)
 mse = metrics.mean_squared_error(y_test, predicted)
 r2 = metrics.r2_score(y_test, predicted)
@@ -167,12 +175,12 @@ x_train, x_test, y_train, y_test = \
     cross_validation.train_test_split(scaler(regressors), regressand, test_size=.2, random_state=9)
 
 locr.fit(x_train, y_train)
-
-new_theta, costs = gradient_descent(locr.coef_, x_train, np.matrix(y_train).T, locr, alpha=.01)
-plt.plot(range(len(costs)), costs)
-plt.show()
-print(costs)
-locr.coef_ = new_theta
+gd = GradientDescent(display=True).fit(x_train, y_train, locr)
+gd.optimise()
+new_theta, costs = gd.thetas, gd.costs
+# plt.plot(range(len(costs)), costs)
+# plt.show()
+print(locr.coef_.shape, new_theta.shape)
 
 predicted = locr.predict(x_test)
 roc_auc = metrics.roc_auc_score(y_test, predicted)

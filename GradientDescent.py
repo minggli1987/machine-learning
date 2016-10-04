@@ -26,6 +26,8 @@ class GradientDescent(object):
         self.params = None
         self.X = None
         self.y = None
+        self.thetas = None
+        self.costs = None
 
     def fit(self, X, y, model):
 
@@ -42,7 +44,7 @@ class GradientDescent(object):
         if isinstance(model, linear_model.LogisticRegression):
             self._sigmoid = True
             if hasattr(model, 'coef_'):
-                self.params = np.array(model.coef_)
+                self.params = np.array(np.matrix(model.coef_))
 
             unique_classes = np.unique(self.y)
             n = len(unique_classes)
@@ -66,11 +68,11 @@ class GradientDescent(object):
             h = np.dot(X, params.T)     # GLM hypothesis in linear algebra representation
 
         if self._sigmoid:
-            h = 1 / (1 + np.exp(-np.dot(X, params.T)))      # logistic (sigmoid) model hypothesis
+            h = 1 / (1 + np.exp(-np.dot(X, params.T)))     # logistic (sigmoid) model hypothesis
 
-        J = np.dot(X.T, (h - y)) / m        # partial_derivative terms for either linear or logistic regression
+        J = np.dot((h - y).T, X) / m        # partial_derivative terms for either linear or logistic regression
 
-        return J.T  # J is a n-dimensioned vector
+        return J  # J is a n-dimensioned vector
 
     def __cost_function__(self, params, X, y):
 
@@ -86,7 +88,7 @@ class GradientDescent(object):
         if self._sigmoid:
             h = 1 / (1 + np.exp(-np.dot(X, params.T)))
             # logistic (sigmoid) model hypothesis
-            J = -np.dot(np.log(h).T, y) - np.dot(np.log(1 - h).T, (1 - y))
+            J = - np.dot(np.log(h).T, y) - np.dot(np.log(1 - h).T, (1 - y))
             J /= m
 
         return np.sum(J)
@@ -115,7 +117,7 @@ class GradientDescent(object):
             if self._display:
                 print('iterations have been processed: {0}'.format(count))
 
-        return params[0], costs
+        return params, costs
 
     def optimise(self):
 
@@ -127,7 +129,8 @@ class GradientDescent(object):
 
             new_thetas, costs = self.__processing__(params, X, y)
 
-            return new_thetas, costs
+            self.thetas = new_thetas
+            self.costs = costs
 
         if self._multi_class:
 
@@ -146,4 +149,5 @@ class GradientDescent(object):
                 master_costs.append(costs)
                 master_params = np.append(master_params, np.array(_params), axis=0)
 
-            return master_params[1:], master_costs
+            self.thetas = master_params[1:]
+            self.costs = master_costs

@@ -59,8 +59,8 @@ print('the initial MSE currently stands at: {0:.2f}; '.format(init_mse), 'the in
 old_theta = lr.coef_
 gd = GradientDescent(alpha=.005, max_epochs=5000, conv_thres=.000001, display=False)
 gd.fit(x_train, y_train, lr)
-new_theta, cost_set = gd.optimise()
-
+gd.optimise()
+new_theta, cost_set = gd.thetas, gd.costs
 print(' old thetas are: ', old_theta, '\n', 'new thetas are: ', new_theta)
 
 # applying new parameters
@@ -124,8 +124,11 @@ old_theta = np.array(sigmoid.coef_)  # capturing parameters from logistic regres
 sigmoid.coef_ = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
 gd = GradientDescent(alpha=0.05, max_epochs=10000, display=False)
 gd.fit(x_train, y_train, sigmoid)
-new_theta, cost_set = gd.optimise()
+gd.optimise()
+new_theta, cost_set = gd.thetas, gd.costs
 
+plt.plot(range(len(cost_set[2])), cost_set[2])
+plt.show()
 print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta[0]], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta[0]])
 
 sigmoid.coef_ = new_theta

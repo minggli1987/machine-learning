@@ -5,7 +5,7 @@ from sklearn import linear_model, cross_validation, ensemble, metrics, tree
 from sklearn.externals.six import StringIO
 import matplotlib.pyplot as plt
 import pydotplus
-from minglib import gradient_descent
+from GradientDescent import GradientDescent
 
 
 def binominal_result(data, target, predictions):
@@ -148,11 +148,15 @@ lr = linear_model.LogisticRegression(fit_intercept=False, class_weight=cus_weigh
 lr.fit(regressors, regressand)
 
 # gradient descent
-gd
-new_thetas, costs = gradient_descent(lr.coef_, np.array(regressors), regressand, lr, alpha=.1, max_epochs=2000, display=True)
+
+gd = GradientDescent(alpha=1e-12, max_epochs=5000, conv_thres=1e-8, display=True)
+gd.fit(regressors, regressand, lr)
+gd.optimise()
+new_thetas, costs = gd.thetas, gd.costs
 print(new_thetas.shape, costs)
 plt.plot(range(len(costs)), costs)
 plt.show()
+
 lr.coef_ = new_thetas
 
 kf = cross_validation.KFold(regressors.shape[0], n_folds=5, shuffle=False, random_state=1)
