@@ -83,90 +83,33 @@ regressors = np.column_stack((np.ones(regressors.shape[0]), regressors))  # add 
 
 x_train, x_test, y_train, y_test = cross_validation.train_test_split(regressors_std, regressand, test_size=.2, random_state=1)
 
-
-# In[55]:
-
 reg = linear_model.LogisticRegression(fit_intercept=False)  # regressors already contains manually added intercept
-
-
-# In[56]:
-
 reg.fit(x_train, y_train)
 
-
-# In[57]:
-
 prediction = reg.predict(x_test)
-
-
-# In[58]:
-
 reg.coef_.shape # 99 one-vs-rest logistic regression coefficients x 192 features
-
-
-# In[59]:
-
-metrics.accuracy_score(y_test, prediction)
-
-
-# In[60]:
+print(metrics.accuracy_score(y_test, prediction))
 
 scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
-np.mean(scores)
-
+print(np.mean(scores))
 
 # # gradient descent optimisation algorithm
 
-# In[61]:
-
 old_theta = reg.coef_
-
-
-# In[62]:
-
-old_theta.shape
-
-
-# In[63]:
-
 new_theta, costs = gradient_descent(old_theta, x_train, y_train, reg, alpha=.1)
-
-
-# In[64]:
-
+print(costs)
 reg.coef_ = new_theta
-
-
-# In[65]:
-
 prediction = reg.predict(x_test)
-
-
-# In[66]:
-
-metrics.accuracy_score(y_test, prediction)
-
-
-# In[67]:
-
+print(metrics.accuracy_score(y_test, prediction))
 scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
-np.mean(scores)
-
+print(np.mean(scores))
 
 # # apply trained model
-
-# In[272]:
 
 test['species'] = np.nan
 test = test[train.columns]
 
-
-# In[273]:
-
 combined = pd.concat([test,train])
-
-
-# In[274]:
 
 combined.sort_values('id', inplace=True)
 
@@ -192,154 +135,10 @@ combined['species_predicted'] = combined['species_id'].map(mapping)
 
 result = combined.select_dtypes(include=('int','object')).copy()
 
-
-# In[279]:
-
 probs = reg.predict_proba(regressors_std)
-
-
-# In[280]:
 
 probs_df = pd.DataFrame(probs, columns=mapping.values(), index=combined['id'])
 
-
-# In[281]:
-
 submission = probs_df.loc[test['id']]
 
-
-# In[282]:
-
 submission.to_csv('data/leaf/submission.csv', encoding='utf-8', header=True)
-
-
-# # Bayesian?
-
-# In[77]:
-
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(regressors, regressand, test_size=.2, random_state=1)
-
-
-# In[78]:
-
-clf = naive_bayes.GaussianNB()
-
-
-# In[79]:
-
-clf.fit(x_train, y_train)
-
-
-# In[80]:
-
-prediction = clf.predict(x_test)
-
-
-# In[81]:
-
-metrics.accuracy_score(y_test, prediction)
-
-
-# In[82]:
-
-scores = cross_validation.cross_val_score(clf, regressors, regressand, scoring='accuracy', cv=kf_generator)
-np.mean(scores)
-
-
-# # Tree
-
-# In[83]:
-
-clf = ensemble.RandomForestClassifier(max_depth=100, max_leaf_nodes=500, min_samples_leaf=3, random_state=1)
-
-
-# In[84]:
-
-clf.fit(x_train, y_train)
-
-
-# In[85]:
-
-prediction = clf.predict(x_test)
-
-
-# In[86]:
-
-metrics.accuracy_score(y_test, prediction)
-
-
-# In[87]:
-
-scores = cross_validation.cross_val_score(clf, regressors, regressand, scoring='accuracy', cv=kf_generator)
-np.mean(scores)
-
-
-# # Neural Network
-
-# In[3]:
-
-features = regressors.astype(float)
-target = np.array(regressand).astype(int)
-
-
-# In[4]:
-
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(features, target, test_size=.2, random_state=1)
-
-
-# In[5]:
-
-def main(unused_argv):
-
-#     iris = learn.datasets.load_dataset('iris')
-#     x_train, x_test, y_train, y_test = cross_validation.train_test_split(
-#         iris.data, iris.target, test_size=0.2, random_state=42)
-
-    # Build 3 layer DNN with 10, 20, 10 units respectively.
-    feature_columns = learn.infer_real_valued_columns_from_input(x_train)
-    classifier = learn.DNNClassifier(
-        feature_columns=feature_columns, hidden_units=[20, 20, 20, 20], n_classes=99)
-
-    # Fit and predict.
-    classifier.fit(x_train, y_train, steps=200)
-    predictions = list(classifier.predict(x_test, as_iterable=True))
-    score = metrics.accuracy_score(y_test, predictions)
-    print('Accuracy: {:.4f}'.format(score))
-    # print(y_test, predictions)
-
-
-# In[6]:
-
-if __name__ == '__main__':
-  output = tf.app.run()
-
-
-# In[7]:
-
-predictions
-
-
-# In[8]:
-
-
-
-
-# In[8]:
-
-
-
-
-# In[ ]:
-
-
-
-
-# In[ ]:
-
-
-
-
-# In[ ]:
-
-
-
