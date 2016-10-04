@@ -88,16 +88,18 @@ prediction = reg.predict(x_test)
 reg.coef_.shape # 99 one-vs-rest logistic regression coefficients x 192 features
 print(metrics.accuracy_score(y_test, prediction))
 
-scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
-print(np.mean(scores))
+# scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+# print(np.mean(scores))
 
 # # gradient descent optimisation algorithm
 
 old_theta = reg.coef_
-new_theta, costs = gradient_descent(old_theta, x_train, y_train, reg, alpha=.0000001, conv_thres=0.0000001)
+new_theta, costs = gradient_descent(old_theta, x_train, y_train, reg, alpha=.1, conv_thres=0.0000001, display=True)
 
-plt.plot(range(len(costs[98])), costs[98])
-plt.show()
+print(costs[0])
+
+# plt.plot(range(len(costs[0])), costs[0])
+# plt.show()
 # applying new parameters after optimisation
 reg.coef_ = new_theta
 
@@ -105,8 +107,8 @@ reg.coef_ = new_theta
 
 prediction = reg.predict(x_test)
 print(metrics.accuracy_score(y_test, prediction))
-scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
-print(np.mean(scores))
+# scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+# print(np.mean(scores))
 
 # # apply trained model
 

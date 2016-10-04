@@ -159,9 +159,7 @@ def partial_derivative_cost(params, x, y, model):
     return J.T  # J is a n-dimensioned vector
 
 
-def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=.0001, display=False):
-
-    count = 0  # initiating a count number so once reaching max iterations will terminate
+def gradient_descent(params, x, y, model, alpha=.01, max_epochs=5000, conv_thres=.0001, display=False):
 
     initial_thetas = np.array(params)
     x = np.array(x)
@@ -177,18 +175,19 @@ def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=
 
     for k, _class in enumerate(_classes):
 
-        if n > 2:
+        if n > 2 and isinstance(model, linear_model.LogisticRegression):
             y = np.array(targets == _class).astype(int)  # one versus rest method handling multinominal classification
             theta = np.matrix(initial_thetas[k])
-        elif n == 2:
+
+        else:  # binominal classifaction and linear models
             y = targets
             theta = initial_thetas
 
-        cost = cost_function(theta, x, y, model)  # initial J(theta)
+        count = 0  # initiating a count number so once reaching max iterations will terminate
 
+        cost = cost_function(theta, x, y, model)  # initial J(theta)
         prev_cost = cost + 10
         costs = [cost]
-        # thetas = [theta]
 
         # beginning gradient_descent iterations
 
@@ -210,8 +209,13 @@ def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=
             cost = cost_function(theta, x, y, model)  # cost at each iteration
             costs.append(cost)
             count += 1
+            if display:
+                print('iterations have been processed: {0}'.format(count))
 
         master_costs.append(costs)
         master_params = np.append(master_params, np.array(theta), axis=0)
 
-    return master_params[1:], master_costs
+        if not (n > 2 and isinstance(model, linear_model.LogisticRegression)):  # binary classification does not loop through unique classes
+            break
+
+    return master_params[1:], master_costs if n > 2 and isinstance(model, linear_model.LogisticRegression) else master_costs[0]
