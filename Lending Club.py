@@ -148,7 +148,7 @@ lr = linear_model.LogisticRegression(fit_intercept=False, class_weight=cus_weigh
 lr.fit(regressors, regressand)
 
 # gradient descent
-print(lr.coef_.shape, regressors.shape, np.matrix(regressand).T.shape)
+gd
 new_thetas, costs = gradient_descent(lr.coef_, np.array(regressors), regressand, lr, alpha=.1, max_epochs=2000, display=True)
 print(new_thetas.shape, costs)
 plt.plot(range(len(costs)), costs)

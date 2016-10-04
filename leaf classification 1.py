@@ -5,16 +5,15 @@
 
 __author__ = 'Ming Li'
 # This application forms a submission from Ming in regards to leaf classification challenge on Kaggle community
-import tensorflow as tf
-from tensorflow.contrib import learn
-from minglib import gradient_descent
+# import tensorflow as tf
+# from tensorflow.contrib import learn
+from minglib import GradientDescent
 from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition, ensemble
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import warnings
 import statsmodels.api as sm
-from minglib import gradient_descent
 import pydotplus
 warnings.filterwarnings('ignore')
 
@@ -37,8 +36,8 @@ train = pd.read_csv('data/leaf/train.csv')
 
 # In[48]:
 
-regressors = train.select_dtypes(exclude=(np.int, np.object)).copy()
-regressand = train.select_dtypes(exclude=(np.int, np.float)).copy()
+regressors = train.select_dtypes(exclude=(np.int, np.int64, np.object)).copy()
+regressand = train.select_dtypes(exclude=(np.int, np.int64, np.float)).copy()
 
 
 # # codifying types of species
@@ -85,7 +84,6 @@ reg = linear_model.LogisticRegression(fit_intercept=False)  # regressors already
 reg.fit(x_train, y_train)
 
 prediction = reg.predict(x_test)
-reg.coef_.shape # 99 one-vs-rest logistic regression coefficients x 192 features
 print(metrics.accuracy_score(y_test, prediction))
 
 # scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
@@ -94,16 +92,14 @@ print(metrics.accuracy_score(y_test, prediction))
 # # gradient descent optimisation algorithm
 
 old_theta = reg.coef_
-new_theta, costs = gradient_descent(old_theta, x_train, y_train, reg, alpha=.1, conv_thres=0.0000001, display=True)
-
-print(costs[0])
-
-# plt.plot(range(len(costs[0])), costs[0])
-# plt.show()
+gd = GradientDescent(alpha=.1, max_epochs=5000, conv_thres=.0000001, display=True)
+gd.fit(x_train, y_train, reg)
+new_theta, costs = gd.optimise()
+print(new_theta.shape)
+plt.plot(range(len(costs[0])), costs[0])
+plt.show()
 # applying new parameters after optimisation
 reg.coef_ = new_theta
-
-
 
 prediction = reg.predict(x_test)
 print(metrics.accuracy_score(y_test, prediction))
@@ -119,20 +115,15 @@ combined = pd.concat([test, train])
 
 combined.sort_values('id', inplace=True)
 
-
-
-regressors = combined.select_dtypes(exclude=('int', 'object')).copy()
+regressors = combined.select_dtypes(exclude=(np.int, np.int64, np.object)).copy()
 regressors_std = regressors.apply(preprocessing.scale, axis=0)  # using standard deviation as denominator
 regressors_std = np.column_stack((np.ones(regressors_std.shape[0]), regressors_std))  # add constant 1
 
-
 combined['species_id'] = reg.predict(regressors_std)
-
 
 combined['species_predicted'] = combined['species_id'].map(mapping)
 
-
-result = combined.select_dtypes(include=('int','object')).copy()
+result = combined.select_dtypes(include=(np.int, np.int64, np.object)).copy()
 
 probs = reg.predict_proba(regressors_std)
 

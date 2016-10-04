@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model, naive_bayes
-from minglib import forward_select, GradientDescent, backward_select
+from minglib import forward_select, backward_select
+from GradientDescent import GradientDescent
 from warnings import filterwarnings
 filterwarnings('ignore')
 
