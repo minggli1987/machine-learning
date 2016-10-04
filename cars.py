@@ -53,16 +53,14 @@ print('the initial MSE currently stands at: {0:.2f}; '.format(init_mse), 'the in
 
 # preparing Gradient Descent
 
-old_theta = np.array(np.matrix(lr.coef_))
-y_train = np.array(np.matrix(y_train).T)
-initial_params = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
-gd = GradientDescent(alpha=.005, max_epochs=5000, conv_thres=.000001, display=True)
+# generating initial parameters using the shape of existing ones
+old_theta = lr.coef_
+lr.coef_ = np.ones(4)
+gd = GradientDescent(alpha=.005, max_epochs=5000, conv_thres=.000001, display=False)
 gd.fit(x_train, y_train, lr)
 new_theta, cost_set = gd.optimise()
 
-print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta[0]], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta[0]])
-plt.plot(range(len(cost_set)), cost_set)
-plt.show()
+print(' old thetas are: ', old_theta, '\n', 'new thetas are: ', new_theta)
 
 # applying new parameters
 lr.coef_ = new_theta
@@ -122,18 +120,15 @@ print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)
 
 # gradient descent
 old_theta = np.array(sigmoid.coef_)  # capturing parameters from logistic regression
-initial_params = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
+sigmoid.coef_ = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
 
-print(initial_params.shape, x_train.shape, np.matrix(y_train).T.shape)
-
-new_theta, cost_set = gradient_descent(initial_params, x_train, np.array(np.matrix(y_train).T), sigmoid, alpha=0.05, max_epochs=10000)
-sigmoid.coef_ = new_theta
+gd = GradientDescent(alpha=0.05, max_epochs=10000, display=False)
+gd.fit(x_train, y_train, sigmoid)
+new_theta, cost_set = gd.optimise()
 
 print(' old thetas are: ', [float('{0:.2f}'.format(i)) for i in old_theta[0]], '\n', 'new thetas are: ', [float('{0:.2f}'.format(i)) for i in new_theta[0]])
 
-plt.plot(range(len(cost_set[2])), cost_set[2])
-plt.show()
-print(cost_set)
+sigmoid.coef_ = new_theta
 
 accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
 print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))

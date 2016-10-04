@@ -132,7 +132,7 @@ class GradientDescent(object):
     def fit(self, X, y, model):
 
         self.X = np.array(X)
-        self.y = np.array(y)
+        self.y = np.array(y).reshape(len(y), 1)
 
         if isinstance(model, sm.OLS) or isinstance(model, linear_model.LinearRegression):
             self._linear = True
