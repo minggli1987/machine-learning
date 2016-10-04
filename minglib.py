@@ -168,16 +168,21 @@ def gradient_descent(params, x, y, model, alpha=.1, max_epochs=5000, conv_thres=
     n_features = x.shape[1]
     targets = np.array(y)
     _classes = np.unique(y)
+    n = len(_classes)
 
-    #  adding compatibility to multinominal logistic regression
+    #  adding compatibility to multi-nominal logistic regression
 
     master_params = np.empty(shape=(1, n_features))
     master_costs = []
 
     for k, _class in enumerate(_classes):
 
-        y = np.array(targets == _class)  # one versus rest method handling multinominal classification
-        theta = np.matrix(initial_thetas[k])
+        if n > 2:
+            y = np.array(targets == _class).astype(int)  # one versus rest method handling multinominal classification
+            theta = np.matrix(initial_thetas[k])
+        elif n == 2:
+            y = targets
+            theta = initial_thetas
 
         cost = cost_function(theta, x, y, model)  # initial J(theta)
 

@@ -149,11 +149,11 @@ lr.fit(regressors, regressand)
 
 # gradient descent
 print(lr.coef_.shape, regressors.shape, np.matrix(regressand).T.shape)
-new_thetas, costs = gradient_descent(lr.coef_, np.array(regressors), np.matrix(regressand).T, lr, alpha=.1, max_epochs=2000, display=True)
+new_thetas, costs = gradient_descent(lr.coef_, np.array(regressors), regressand, lr, alpha=.1, max_epochs=2000, display=True)
 print(new_thetas.shape, costs)
-# plt.plot(range(len(costs)), costs)
-# plt.show()
-# lr.coef_ = new_thetas
+plt.plot(range(len(costs)), costs)
+plt.show()
+lr.coef_ = new_thetas
 
 kf = cross_validation.KFold(regressors.shape[0], n_folds=5, shuffle=False, random_state=1)
 
