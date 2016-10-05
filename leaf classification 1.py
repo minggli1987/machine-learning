@@ -5,8 +5,8 @@
 
 __author__ = 'Ming Li'
 # This application forms a submission from Ming in regards to leaf classification challenge on Kaggle community
-# import tensorflow as tf
-# from tensorflow.contrib import learn
+import tensorflow as tf
+from tensorflow.contrib import learn
 from GradientDescent import GradientDescent
 from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition, ensemble
 import matplotlib.pyplot as plt
@@ -53,7 +53,7 @@ regressand.drop('species', axis=1, inplace=True)
 
 # In[50]:
 
-kf_generator = cross_validation.KFold(train.shape[0], n_folds=5, shuffle=True, random_state=1)
+kf_generator = cross_validation.KFold(train.shape[0], n_folds=10, shuffle=True, random_state=1)
 
 
 # # feature scaling
@@ -86,25 +86,26 @@ reg.fit(x_train, y_train)
 prediction = reg.predict(x_test)
 print(metrics.accuracy_score(y_test, prediction))
 
-# scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
-# print(np.mean(scores))
+scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+print(np.mean(scores))
 
-# # gradient descent optimisation algorithm
+# gradient descent optimisation algorithm
 
 old_theta = reg.coef_
-gd = GradientDescent(alpha=.1, max_epochs=5000, conv_thres=.0000001, display=True)
+gd = GradientDescent(alpha=.1, max_epochs=5000, conv_thres=.0000001, display=False)
 gd.fit(x_train, y_train, reg)
-new_theta, costs = gd.optimise()
-print(new_theta.shape)
-plt.plot(range(len(costs[0])), costs[0])
-plt.show()
+gd.optimise()
+new_theta, costs = gd.thetas, gd.costs
+
+# plt.plot(range(len(costs[0])), costs[0])
+# plt.show()
 # applying new parameters after optimisation
 reg.coef_ = new_theta
 
 prediction = reg.predict(x_test)
 print(metrics.accuracy_score(y_test, prediction))
-# scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
-# print(np.mean(scores))
+scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+print(np.mean(scores))
 
 # # apply trained model
 
