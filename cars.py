@@ -17,6 +17,7 @@ def normalize(data):
     scaler = preprocessing.StandardScaler(with_mean=False, with_std=True).fit(data)
     return pd.DataFrame(scaler.transform(data), columns=col_name)
 
+
 cols = ['mpg', 'cylinders', 'displacement', 'horsepower', 'weight', 'acceleration', 'year', 'origin', 'name']
 data = pd.read_csv('data/auto-mpg.data-original.txt', header=None, delim_whitespace=True, names=cols)
 data = data.dropna().reset_index(drop=True)
@@ -42,7 +43,7 @@ x_train, x_test, y_train, y_test = \
     cross_validation.train_test_split(np.column_stack((np.ones(regressors.shape[0]), normalize(regressors))),
                                       regressand, test_size=.3)
 # splitting data - k fold cross validation
-kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=5, shuffle=True)
+kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True)
 
 # fitting linear model
 lr = linear_model.LinearRegression(fit_intercept=False)  # regressors already has constant 1
@@ -118,30 +119,32 @@ sigmoid.fit(x_train, y_train)
 
 accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
 print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
+accuracy = cross_validation.cross_val_score(sigmoid, regressors, regressand, scoring='accuracy', cv=kf_gen)
+print('classier accuracy from k-Fold stands at: {0:.2f}'.format(np.mean(accuracy)))
 
 # gradient descent
 old_theta = np.array(sigmoid.coef_)  # capturing parameters from logistic regression
-sigmoid.coef_ = np.ones(old_theta.shape)  # generating initial parameters using the shape of existing ones
-gd = GradientDescent(alpha=0.05, max_epochs=10000, display=False)
+sigmoid.coef_ = old_theta + 1  # generating initial parameters using the shape of existing ones
+gd = GradientDescent(alpha=0.01, max_epochs=10000, conv_thres=1e-5, display=False)
 gd.fit(x_train, y_train, sigmoid)
 gd.optimise()
 new_theta, cost_set = gd.thetas, gd.costs
 
-plt.plot(range(len(cost_set[2])), cost_set[2])
+plt.plot(range(len(cost_set[0])), cost_set[0])
 plt.show()
-print(' old thetas are: ', old_theta, '\n', 'new thetas are: ', new_theta)
 
 sigmoid.coef_ = new_theta
 
 accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
 print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
+accuracy = cross_validation.cross_val_score(sigmoid, regressors, regressand, scoring='accuracy', cv=kf_gen)
+print('classier accuracy from k-Fold stands at: {0:.2f}'.format(np.mean(accuracy)))
 
 
-clf = naive_bayes.BernoulliNB()
-clf.fit(x_train, y_train)
-accuracy = metrics.accuracy_score(y_test, clf.predict(x_test))
-print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
-
+# clf = naive_bayes.BernoulliNB()
+# clf.fit(x_train, y_train)
+# accuracy = metrics.accuracy_score(y_test, clf.predict(x_test))
+# print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
 
 
 
