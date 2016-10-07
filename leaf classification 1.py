@@ -134,4 +134,17 @@ def copy_pics_into_folders(mapping_dict, path='data/leaf/images/'):
         #os.rename(path + file_name, full_path + file_name)
 
 
-copy_pics_into_folders(table)
+def delete_folders(mapping_dict, path='data/leaf/images/'):
+
+    assert isinstance(mapping_dict, pd.DataFrame), 'require a DataFrame'
+
+    for k, v in mapping_dict.iterrows():
+
+        full_path = path + k + '/'
+
+        if os.path.exists(full_path):
+            shutil.rmtree(full_path)
+
+# copy_pics_into_folders(table)
+
+delete_folders(table)
