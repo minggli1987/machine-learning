@@ -68,7 +68,7 @@ class GradientDescent(object):
             h = np.dot(X, params.T)     # GLM hypothesis in linear algebra representation
 
         if self._sigmoid:
-            h = 1 / (1 + np.exp(-np.dot(X, params.T)))     # logistic (sigmoid) model hypothesis
+            h = 1 / (1 + np.exp(-np.dot(params.T, X)))     # logistic (sigmoid) model hypothesis
 
         J = np.dot((h - y).T, X) / m        # partial_derivative terms for either linear or logistic regression
 
