@@ -62,11 +62,12 @@ print(np.mean(roc_auc), np.mean(accuracy))
 parameters = model_dict[0].coef_
 print(parameters.shape)
 
+linear_model.LinearRegression()
 
 def logit(X, theta):
-    return 1 / (1 + np.exp(-np.dot(theta.T, X)))
+    return 1 / (1 + np.exp(-np.dot(X, theta.T)))
 
-result = logit(x_test.T, parameters.T)[0]
+result = logit(x_test, parameters)
 auto_result = model_dict[0].predict_proba(x_test)[:, 1]
 
-print(result == auto_result)
+print(result.shape)

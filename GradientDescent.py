@@ -86,7 +86,7 @@ class GradientDescent(object):
             J /= (2 * m)
 
         if self._sigmoid:
-            h = 1 / (1 + np.exp(-np.dot(params.T, X)))
+            h = 1 / (1 + np.exp(-np.dot(X, params.T)))
             # logistic (sigmoid) model hypothesis
             J = - np.dot(np.log(h).T, y) - np.dot(np.log(1 - h).T, (1 - y))
             J /= m
