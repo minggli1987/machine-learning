@@ -29,45 +29,54 @@ regressand = np.ravel(data.select_dtypes(include=[np.bool_]))
 regressors = np.array(data.select_dtypes(exclude=[np.bool_]))
 regressors = np.column_stack((np.ones(regressors.shape[0]), regressors))
 
-# splitting
-
-x_train, x_test, y_train, y_test = cross_validation.\
-    train_test_split(regressors, regressand, test_size=.2, random_state=1)
 
 # feature scaling using standard deviation as denominator
 
 std_scaler = preprocessing.StandardScaler(with_mean=True, with_std=True)
 min_max_scaler = preprocessing.MinMaxScaler(feature_range=(0, 1))
 
-model_dict = [
-    linear_model.LogisticRegression(fit_intercept=False, class_weight={0: 10, 1: 1}),
-    naive_bayes.GaussianNB()
-]
+# scaling
+
+std_regressors = std_scaler.fit(regressors, regressand).transform(regressors)
+
+# splitting
+
+x_train, x_test, y_train, y_test = cross_validation.\
+    train_test_split(std_regressors, regressand, test_size=.2)
+reg = linear_model.LogisticRegression(fit_intercept=False, class_weight={0: 10, 1: 1})
 
 # wrapping transformation and estimator into pipeline
-pl = pipeline.Pipeline([('selected_scaler', std_scaler), ('logistic reg', model_dict[0])])
+pl = pipeline.Pipeline([('selected_scaler', std_scaler), ('logistic reg', reg)])
+
 # pl.fit(x_train, y_train)
-model_dict[0].fit(x_train, y_train)
+reg.fit(x_train, y_train)
+
 # Stratified K-Fold
 
-kf = cross_validation.StratifiedKFold(y_test, n_folds=5, shuffle=False, random_state=1)
-
+kf = cross_validation.StratifiedKFold(y_test, n_folds=5, shuffle=True)
 
 # Model evaluation
 
-accuracy = cross_validation.cross_val_score(pl, x_test, y_test, scoring='accuracy', cv=kf)
-roc_auc = cross_validation.cross_val_score(pl, x_test, y_test, scoring='roc_auc', cv=kf)
-print(np.mean(roc_auc), np.mean(accuracy))
+cross_val_accuracy = cross_validation.cross_val_score(reg, x_test, y_test, scoring='accuracy', cv=kf)
+roc_auc = cross_validation.cross_val_score(reg, x_test, y_test, scoring='roc_auc', cv=kf)
+print(np.mean(roc_auc), np.mean(cross_val_accuracy))
+accuracy = metrics.accuracy_score(y_test, reg.predict(x_test))
+print(accuracy)
+# Standard Gradient Descent
 
-parameters = model_dict[0].coef_
-print(parameters.shape)
+reg.coef_ = np.zeros(reg.coef_.shape)
+optimiser = GradientDescent(alpha=.05, conv_thres=1e-8, display=False)
+optimiser.fit(reg, x_train, y_train).optimise()
+thetas, costs = optimiser.thetas, optimiser.costs
 
-linear_model.LinearRegression()
+reg.coef_ = thetas  # applying optimised parameters
+
+accuracy = metrics.accuracy_score(y_test, reg.predict(x_test))
+print(accuracy)
+
 
 def logit(X, theta):
     return 1 / (1 + np.exp(-np.dot(X, theta.T)))
 
-result = logit(x_test, parameters)
-auto_result = model_dict[0].predict_proba(x_test)[:, 1]
-
-print(result.shape)
+result = logit(x_test, reg.coef_)
+auto_result = reg.predict_proba(x_test)[:, 1]
