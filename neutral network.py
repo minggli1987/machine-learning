@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn import datasets, cross_validation, metrics
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
 
 # neutral network applying on iris dataset from dataquest
 
@@ -101,8 +102,8 @@ model = NeuralNet()
 
 iris = datasets.load_iris()
 
-regressors = iris.data[:100]
-regressand = iris.target[:100]
+regressors = iris.data
+regressand = iris.target == 1
 
 x_train, x_test, y_train, y_test = cross_validation.\
     train_test_split(regressors, regressand, test_size=0.2, random_state=1)
@@ -114,3 +115,17 @@ yhat = model.predict(x_test)[0]
 roc_auc = metrics.roc_auc_score(y_test, yhat)
 
 print(roc_auc)
+
+
+def __sigmoid_activation__(X, theta):
+    X = np.array(X)
+    theta = np.array(theta)
+
+    return 1 / (1 + np.exp(-np.dot(X, theta.T)))  # logistic sigmoid function
+
+theta = np.ones(4)
+X = range(4)
+
+result = __sigmoid_activation__(X, theta)
+
+print(result)

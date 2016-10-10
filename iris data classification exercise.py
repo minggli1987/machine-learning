@@ -9,7 +9,6 @@ import warnings
 from sklearn.externals.six import StringIO
 from mpl_toolkits.mplot3d import Axes3D
 import statsmodels.api as sm
-from minglib import gradient_descent
 import pydotplus
 warnings.filterwarnings('ignore')
 
