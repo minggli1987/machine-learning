@@ -62,6 +62,7 @@ roc_auc = cross_validation.cross_val_score(reg, x_test, y_test, scoring='roc_auc
 print(np.mean(roc_auc), np.mean(cross_val_accuracy))
 accuracy = metrics.accuracy_score(y_test, reg.predict(x_test))
 print(accuracy)
+
 # Standard Gradient Descent
 
 reg.coef_ = np.zeros(reg.coef_.shape)
@@ -75,8 +76,15 @@ accuracy = metrics.accuracy_score(y_test, reg.predict(x_test))
 print(accuracy)
 
 
-def logit(X, theta):
-    return 1 / (1 + np.exp(-np.dot(X, theta.T)))
 
-result = logit(x_test, reg.coef_)
+def linear(X, theta):
+    return np.dot(X, theta.T)
+
+
+def logit(X, theta):
+    return 1 / (1 + np.exp(-linear(X, theta)))
+
+
+result = np.ravel(logit(x_test, reg.coef_))
 auto_result = reg.predict_proba(x_test)[:, 1]
+
