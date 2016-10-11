@@ -4,10 +4,11 @@ import pandas as pd
 from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree, \
     decomposition, pipeline
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 __author__ = 'Ming Li'
 
-# Loading source data into
+# loading source data into pandas
 
 source_path = 'data/pima-diabetes.csv'
 
@@ -25,10 +26,36 @@ data_type = {
 
 data = pd.read_csv(filepath_or_buffer=source_path, dtype=data_type)
 
-regressand = np.ravel(data.select_dtypes(include=[np.bool_]))
-regressors = np.array(data.select_dtypes(exclude=[np.bool_]))
-regressors = np.column_stack((np.ones(regressors.shape[0]), regressors))
+for column in data.columns:
+    if column not in ['Outcome']:
+        data[column] = data[column].apply(lambda x: np.nan if x == 0 else x)
 
+complete_rows = data.dropna(how='any', axis=0, inplace=False).index.tolist()
+data = data.ix[data.index.isin(complete_rows)].reset_index(drop=True)
+
+# PCA
+
+print(data.corr()['Outcome'].sort_values(ascending=False))  # correlation with Diabete Diagnosis outcome
+
+# visualising Principal Components
+
+x, x_label = data['Age'], data['Age'].name
+y, y_label = data['Glucose'], data['Glucose'].name
+
+plt.scatter(x, y, c=data['Outcome'], cmap=plt.cm.Paired)
+
+plt.title('Diabetes in Pima, India')
+plt.ylim((y.min() - 5, y.max() + 5))
+plt.ylabel(y_label)
+plt.xlim((x.min() - 5, x.max() + 5))
+plt.xlabel(x_label)
+plt.show()
+
+# seperating predictive variables and target
+
+regressand = np.ravel(data.select_dtypes(include=[np.bool_])).copy()
+regressors = np.array(data.select_dtypes(exclude=[np.bool_])).copy()
+regressors = np.column_stack((np.ones(regressors.shape[0]), regressors))
 
 # feature scaling using standard deviation as denominator
 
@@ -59,9 +86,9 @@ kf = cross_validation.StratifiedKFold(y_test, n_folds=5, shuffle=True)
 
 cross_val_accuracy = cross_validation.cross_val_score(reg, x_test, y_test, scoring='accuracy', cv=kf)
 roc_auc = cross_validation.cross_val_score(reg, x_test, y_test, scoring='roc_auc', cv=kf)
-print(np.mean(roc_auc), np.mean(cross_val_accuracy))
+print('{0:.2f}'.format(np.mean(roc_auc)), '{0:.2f}'.format(np.mean(cross_val_accuracy)))
 accuracy = metrics.accuracy_score(y_test, reg.predict(x_test))
-print(accuracy)
+print('{0:.2f}'.format(accuracy))
 
 # Standard Gradient Descent
 
@@ -73,7 +100,7 @@ thetas, costs = optimiser.thetas, optimiser.costs
 reg.coef_ = thetas  # applying optimised parameters
 
 accuracy = metrics.accuracy_score(y_test, reg.predict(x_test))
-print(accuracy)
+print('{0:.2f}'.format(accuracy))
 
 
 
