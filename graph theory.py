@@ -45,8 +45,9 @@ class Node(object):
     def __ge__(self, other):
         pass
 
-    def __repr__(self):
-        return str({k: 'Node({0})'.format(v.value) for k, v in self.__class__.__inst.items()})
+    @classmethod
+    def show(Node):
+        return str({k: 'Node({0})'.format(v.value) for k, v in Node.__inst.items()})
 
 
 x = Node(3)
@@ -89,12 +90,11 @@ print([i.value for i in h.edges])
 print(x.is_connected(y))
 print(x.is_connected(h))
 
-print(h)
+print(h.show())
+print(c.show())
 
 def fibonacci(n):
     assert n > 0 and isinstance(n, int), 'please input a valid integer'
     return 0 if n == 1 else 1 if n == 3 or n == 2 else fibonacci(n - 1) + fibonacci(n - 2)
 
 seq = [fibonacci(i) for i in range(1, 20)]
-
-print(seq)
