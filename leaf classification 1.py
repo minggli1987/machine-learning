@@ -42,10 +42,12 @@ regressand = train.select_dtypes(exclude=(np.int8, np.int64, np.float)).copy()
 regressand['species_id'] = pd.Categorical.from_array(regressand['species']).codes
 mapping = regressand[['species_id','species']].set_index('species_id').to_dict()['species']
 regressand.drop('species', axis=1, inplace=True)
+regressand = np.ravel(regressand)
+
 
 # model generalization
 
-kf_generator = cross_validation.KFold(train.shape[0], n_folds=10, shuffle=True, random_state=1)
+kf_generator = cross_validation.StratifiedKFold(regressand, n_folds=10, shuffle=True, random_state=1)
 
 # feature scaling using standard deviation as denominator
 
@@ -53,8 +55,8 @@ regressors_std = regressors.apply(preprocessing.scale, with_mean=False, with_std
 
 # Logistic regression
 
-regressors_std = np.column_stack((np.ones(regressors.shape[0]), regressors_std))  # add constant 1
-regressors = np.column_stack((np.ones(regressors.shape[0]), regressors))  # add constant 1
+regressors_std = np.column_stack((np.ones(regressors.shape[0]), regressors_std))  # add constant
+regressors = np.column_stack((np.ones(regressors.shape[0]), regressors))  # add constant
 
 # hold out
 
@@ -66,10 +68,10 @@ reg = linear_model.LogisticRegression(fit_intercept=False)  # regressors already
 reg.fit(x_train, y_train)
 
 prediction = reg.predict(x_test)
-# print(metrics.accuracy_score(y_test, prediction))
-#
-# scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
-# print(np.mean(scores))
+print(metrics.accuracy_score(y_test, prediction))
+
+scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+print(np.mean(scores))
 
 
 # Gradient Descent optimisation algorithm
@@ -92,7 +94,7 @@ prediction = reg.predict(x_test)
 # scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
 # print(np.mean(scores))
 
-# # apply trained model
+# apply trained model
 
 test['species'] = np.nan
 test = test[train.columns]
@@ -145,6 +147,7 @@ def delete_folders(mapping_dict, path='data/leaf/images/'):
         if os.path.exists(full_path):
             shutil.rmtree(full_path)
 
-# copy_pics_into_folders(table)
 
 delete_folders(table)
+
+# copy_pics_into_folders(table)
