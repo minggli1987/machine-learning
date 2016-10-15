@@ -1,9 +1,3 @@
-
-# coding: utf-8
-
-__author__ = 'Ming Li'
-# This application forms a submission from Ming in regards to leaf classification challenge on Kaggle community
-
 import tensorflow as tf
 from tensorflow.contrib import learn
 from GradientDescent import GradientDescent
@@ -18,6 +12,10 @@ import os
 import shutil
 warnings.filterwarnings('ignore')
 
+# coding: utf-8
+
+__author__ = 'Ming Li'
+# This application forms a submission from Ming in regards to leaf classification challenge on Kaggle community
 
 # set display right
 pd.set_option('display.width', 4000)
@@ -151,3 +149,4 @@ def delete_folders(mapping_dict, path='leaf/images/'):
 delete_folders(table)
 
 # copy_pics_into_folders(table)
+
