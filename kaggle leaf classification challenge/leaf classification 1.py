@@ -5,6 +5,7 @@ __author__ = 'Ming Li'
 # This application forms a submission from Ming in regards to leaf classification challenge on Kaggle community
 import tensorflow as tf
 from tensorflow.contrib import learn
+
 from GradientDescent import GradientDescent
 from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition, ensemble
 import matplotlib.pyplot as plt
@@ -28,8 +29,8 @@ pd.set_option('float_format', '%.4f')
 
 # load raw data
 
-test = pd.read_csv('data/leaf/test.csv')
-train = pd.read_csv('data/leaf/train.csv')
+test = pd.read_csv('../leaf/test.csv')
+train = pd.read_csv('../leaf/train.csv')
 
 
 # picking useful data points
@@ -74,25 +75,24 @@ scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scori
 print(np.mean(scores))
 
 
-# Gradient Descent optimisation algorithm
+def grad_student_descent():
 
-# old_theta = np.ones(reg.coef_.shape)
-# gd = GradientDescent(alpha=.1, max_epochs=5000, conv_thres=.0000001, display=False)
-# gd.fit(x_train, y_train, reg)
-# gd.optimise()
-# new_theta, costs = gd.thetas, gd.costs
+    # Gradient Descent optimisation algorithm
 
-# plt.plot(range(len(costs[0])), costs[0])
-# plt.show()
+    old_theta = np.ones(reg.coef_.shape)
+    gd = GradientDescent(alpha=.1, max_epochs=5000, conv_thres=.0000001, display=False)
+    gd.fit(x_train, y_train, reg)
+    gd.optimise()
+    new_theta, costs = gd.thetas, gd.costs
 
-# applying new parameters after optimisation
+    # applying new parameters after optimisation
 
-# reg.coef_ = new_theta
+    reg.coef_ = new_theta
 
-# prediction = reg.predict(x_test)
-# print(metrics.accuracy_score(y_test, prediction))
-# scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
-# print(np.mean(scores))
+    prediction = reg.predict(x_test)
+    print(metrics.accuracy_score(y_test, prediction))
+    scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+    print(np.mean(scores))
 
 # apply trained model
 
@@ -118,6 +118,8 @@ table = result[['species_predicted', 'id']].sort_values(by=['species_predicted',
     .set_index('species_predicted')
 
 
+# allocating labels into seperate folders
+
 def copy_pics_into_folders(mapping_dict, path='data/leaf/images/'):
 
     assert isinstance(mapping_dict, pd.DataFrame), 'require a DataFrame'
@@ -132,8 +134,6 @@ def copy_pics_into_folders(mapping_dict, path='data/leaf/images/'):
             os.makedirs(full_path)
 
         shutil.copy(path + file_name, full_path)
-
-        #os.rename(path + file_name, full_path + file_name)
 
 
 def delete_folders(mapping_dict, path='data/leaf/images/'):
