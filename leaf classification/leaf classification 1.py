@@ -3,6 +3,7 @@
 
 __author__ = 'Ming Li'
 # This application forms a submission from Ming in regards to leaf classification challenge on Kaggle community
+
 import tensorflow as tf
 from tensorflow.contrib import learn
 
@@ -29,8 +30,8 @@ pd.set_option('float_format', '%.4f')
 
 # load raw data
 
-test = pd.read_csv('../leaf/test.csv')
-train = pd.read_csv('../leaf/train.csv')
+test = pd.read_csv('leaf/test.csv')
+train = pd.read_csv('leaf/train.csv')
 
 
 # picking useful data points
@@ -113,14 +114,14 @@ result = combined.select_dtypes(include=(np.int8, np.int64, np.object)).copy()
 probs = reg.predict_proba(regressors_std)
 probs_df = pd.DataFrame(probs, columns=mapping.values(), index=combined['id'])
 submission = probs_df.loc[test['id']]
-submission.to_csv('data/leaf/submission.csv', encoding='utf-8', header=True)
+submission.to_csv('leaf/submission.csv', encoding='utf-8', header=True)
 table = result[['species_predicted', 'id']].sort_values(by=['species_predicted', 'id'], ascending=True)\
     .set_index('species_predicted')
 
 
 # allocating labels into seperate folders
 
-def copy_pics_into_folders(mapping_dict, path='data/leaf/images/'):
+def copy_pics_into_folders(mapping_dict, path='leaf/images/'):
 
     assert isinstance(mapping_dict, pd.DataFrame), 'require a DataFrame'
 
@@ -136,7 +137,7 @@ def copy_pics_into_folders(mapping_dict, path='data/leaf/images/'):
         shutil.copy(path + file_name, full_path)
 
 
-def delete_folders(mapping_dict, path='data/leaf/images/'):
+def delete_folders(mapping_dict, path='leaf/images/'):
 
     assert isinstance(mapping_dict, pd.DataFrame), 'require a DataFrame'
 
