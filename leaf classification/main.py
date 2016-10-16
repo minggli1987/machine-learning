@@ -1,15 +1,12 @@
-import tensorflow as tf
-from tensorflow.contrib import learn
-from GradientDescent import GradientDescent
 from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition, ensemble
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import warnings
-import statsmodels.api as sm
-import pydotplus
-import os
-import shutil
+import sys
+from visual import copy_pics_into_folders, delete_folders
+from GradientDescent import GradientDescent
+
 warnings.filterwarnings('ignore')
 
 # coding: utf-8
@@ -46,7 +43,7 @@ regressand = np.ravel(regressand)
 
 # model generalization
 
-kf_generator = cross_validation.StratifiedKFold(regressand, n_folds=10, shuffle=True, random_state=1)
+kf_generator = cross_validation.StratifiedKFold(regressand, n_folds=5, shuffle=False, random_state=1)
 
 # feature scaling using standard deviation as denominator
 
@@ -59,7 +56,8 @@ regressors = np.column_stack((np.ones(regressors.shape[0]), regressors))  # add 
 
 # hold out
 
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(regressors_std, regressand, test_size=.2, random_state=1)
+x_train, x_test, y_train, y_test = cross_validation.\
+    train_test_split(regressors_std, regressand, test_size=.2, random_state=1)
 
 # fit training set
 
@@ -92,61 +90,41 @@ def grad_student_descent():
     scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
     print(np.mean(scores))
 
-# apply trained model
 
-test['species'] = np.nan
-test = test[train.columns]
+# combine train and test
 
-combined = pd.concat([test, train])
+test['species'] = np.nan  # adding species to testing set
+test = test[train.columns]  # only keep columns in training
 
-combined.sort_values('id', inplace=True)
-
+combined = pd.concat([test, train]).sort_values('id', ascending=True)
 regressors = combined.select_dtypes(exclude=(np.int8, np.int64, np.object)).copy()
 regressors_std = regressors.apply(preprocessing.scale, axis=0)  # using standard deviation as denominator
-regressors_std = np.column_stack((np.ones(regressors_std.shape[0]), regressors_std))  # add constant 1
+regressors_std = np.column_stack((np.ones(regressors_std.shape[0]), regressors_std))  # add constant
 
-combined['species_id'] = reg.predict(regressors_std)
+
+# moving classified pictures into folders
+
+combined['species_id'] = reg.predict(regressors_std)  # making predictions
 combined['species_predicted'] = combined['species_id'].map(mapping)
 result = combined.select_dtypes(include=(np.int8, np.int64, np.object)).copy()
-probs = reg.predict_proba(regressors_std)
-probs_df = pd.DataFrame(probs, columns=mapping.values(), index=combined['id'])
-submission = probs_df.loc[test['id']]
-submission.to_csv('leaf/submission.csv', encoding='utf-8', header=True)
 table = result[['species_predicted', 'id']].sort_values(by=['species_predicted', 'id'], ascending=True)\
     .set_index('species_predicted')
 
+copy_pics_into_folders(table)
 
-# allocating labels into seperate folders
+key = input('continue to produce submission?\n')
 
-def copy_pics_into_folders(mapping_dict, path='leaf/images/'):
+if str(key).lower() != 'yes':
+    delete_folders(table)
+    sys.exit()
 
-    assert isinstance(mapping_dict, pd.DataFrame), 'require a DataFrame'
-
-    for k, v in mapping_dict.iterrows():
-
-        leaf_id = str(int(v.values))
-        full_path = path + k + '/'
-        file_name = leaf_id + '.jpg'
-
-        if not os.path.exists(full_path):
-            os.makedirs(full_path)
-
-        shutil.copy(path + file_name, full_path)
-
-
-def delete_folders(mapping_dict, path='leaf/images/'):
-
-    assert isinstance(mapping_dict, pd.DataFrame), 'require a DataFrame'
-
-    for k, v in mapping_dict.iterrows():
-
-        full_path = path + k + '/'
-
-        if os.path.exists(full_path):
-            shutil.rmtree(full_path)
-
-
-delete_folders(table)
-
-# copy_pics_into_folders(table)
-
+else:
+    # produce submission.csv as requested by kaggle
+    print('producing submission...', flush=True, end='')
+    probs = reg.predict_proba(regressors_std)
+    probs_df = pd.DataFrame(probs, columns=mapping.values(), index=combined['id'])
+    submission = probs_df.loc[test['id']]
+    submission.to_csv('submission.csv', encoding='utf-8', header=True)
+    delete_folders(table)
+    print('done', flush=True)
+    sys.exit()
