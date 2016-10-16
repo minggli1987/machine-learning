@@ -13,7 +13,7 @@ __author__ = 'Ming Li'
 path = 'leaf/images/'
 pic_names = {i: path + str(i) + '.jpg' for i in range(1, 1585, 1)}
 
-pic = pic_names[53]
+pic = pic_names[99]
 
 print(pic)
 

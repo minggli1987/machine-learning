@@ -64,11 +64,11 @@ x_train, x_test, y_train, y_test = cross_validation.\
 reg = linear_model.LogisticRegression(fit_intercept=False)  # regressors already contains manually added intercept
 reg.fit(x_train, y_train)
 
-prediction = reg.predict(x_test)
-print(metrics.accuracy_score(y_test, prediction))
 
-scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
-print(np.mean(scores))
+print('Using given features by Kaggle, Logistic Regression model accuracy is:', flush=True, end=' ')
+
+avg_scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+print('{0:.2f}%'.format(100 * np.mean(avg_scores)), flush=True, end='\n')
 
 
 def grad_student_descent():
@@ -96,7 +96,7 @@ def grad_student_descent():
 test['species'] = np.nan  # adding species to testing set
 test = test[train.columns]  # only keep columns in training
 
-combined = pd.concat([test, train]).sort_values('id', ascending=True)
+combined = pd.concat(objs=[test, train], axis=0).sort_values('id', ascending=True)
 regressors = combined.select_dtypes(exclude=(np.int8, np.int64, np.object)).copy()
 regressors_std = regressors.apply(preprocessing.scale, axis=0)  # using standard deviation as denominator
 regressors_std = np.column_stack((np.ones(regressors_std.shape[0]), regressors_std))  # add constant
