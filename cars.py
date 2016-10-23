@@ -1,4 +1,5 @@
-
+import tensorflow as tf
+from tensorflow.contrib import learn
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,7 +24,9 @@ data = pd.read_csv('data/auto-mpg.data-original.txt', header=None, delim_whitesp
 data = data.dropna().reset_index(drop=True)
 data['year'] = (1900 + data['year']).astype(int)
 data.ix[:, :5] = data.ix[:, :5].astype(int)
-data['origin'] = data['origin'].astype(int)
+data.replace({'origin': {1: 'US', 2: 'Europe', 3: 'Japan'}}, inplace=True)
+data['origin'] = pd.Categorical.from_array(data['origin']).codes
+data['origin'] = data['origin'].astype(np.int32)
 
 
 # selecting predictive variables
@@ -101,7 +104,7 @@ print('the average MSE from k-fold validation: {0:.2f}; '.format(np.mean(abs(kf_
 # plt.show()
 
 # multi-class Classifier on Origin
-print('\n\nmulticlass classification on origins of cars\n\n', flush=True)
+print('\nmulticlass classification on origins of cars\n', flush=True)
 # transforming
 dummy_cylinders = pd.get_dummies(data['cylinders'], prefix='cyl')
 dummy_years = pd.get_dummies(data['year'], prefix='y')
@@ -110,9 +113,10 @@ data = data.join(dummies)
 cat_cols = [col for col in data.columns if col.startswith('y_') or col.startswith('cyl_')]
 
 regressors = np.column_stack((np.ones(data.shape[0]), data[cat_cols]))
-regressand = np.array(data['origin'])
+regressand = np.array(data['origin']).reshape((len(data['origin']), 1))
 
-x_train, x_test, y_train, y_test = cross_validation.train_test_split(regressors, regressand, test_size=.3)
+x_train, x_test, y_train, y_test = cross_validation.\
+    train_test_split(regressors, regressand, test_size=.3)
 
 sigmoid = linear_model.LogisticRegression(fit_intercept=False, class_weight='auto')
 sigmoid.fit(x_train, y_train)
@@ -142,6 +146,29 @@ accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
 print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
 accuracy = cross_validation.cross_val_score(sigmoid, regressors, regressand, scoring='accuracy', cv=kf_gen)
 print('classier accuracy from k-Fold stands at: {0:.2f}'.format(np.mean(accuracy)))
+
+# TensorFlow implementation of classifying origins of cars
+
+def DNN():
+
+    # regressors = np.array(data[cat_cols])
+    # regressand = np.array(data['origin'])
+    #
+    # x_train, x_test, y_train, y_test = cross_validation. \
+    #     train_test_split(regressors, regressand, test_size=.3)
+
+    # Build 3 layer DNN with 10, 20, 10 units respectively.
+    feature_columns = learn.infer_real_valued_columns_from_input(x_train)
+    classifier = learn.DNNClassifier(
+        feature_columns=feature_columns, hidden_units=[10, 20, 10], n_classes=3)
+
+    # Fit and predict.
+    classifier.fit(x_train, y_train, steps=200)
+    predictions = list(classifier.predict(x_test, as_iterable=True))
+    score = metrics.accuracy_score(y_test, predictions)
+    print('NN3 Accuracy: {:.4f}'.format(score))
+
+DNN()
 
 
 # clf = naive_bayes.BernoulliNB()

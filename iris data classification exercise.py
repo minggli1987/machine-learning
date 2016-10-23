@@ -51,25 +51,10 @@ def visualize():
     plt.xticks()
     plt.yticks()
 
-    # To getter a better understanding of interaction of the dimensions
-    # plot the first three PCA dimensions
-    #
-    # fig = plt.figure(3, figsize=(8, 6))
-    # ax = Axes3D(fig, elev=-150, azim=110)
-    # X_reduced = decomposition.PCA(n_components=3).fit_transform(iris.data)
-    # ax.scatter(X_reduced[:, 0], X_reduced[:, 1], X_reduced[:, 2], c=Y,
-    #            cmap=plt.cm.Paired)
-    # ax.set_title("First three PCA directions")
-    # ax.set_xlabel("1st eigenvector")
-    # ax.w_xaxis.set_ticklabels([])
-    # ax.set_ylabel("2nd eigenvector")
-    # ax.w_yaxis.set_ticklabels([])
-    # ax.set_zlabel("3rd eigenvector")
-    # ax.w_zaxis.set_ticklabels([])
     plt.show()
 
-if __name__ == '__main__':
-    visualize()
+# if __name__ == '__main__':
+#     visualize()
 
 target_dict = {'species': {k: v for k, v in enumerate(data['target_names'])}}
 
@@ -112,8 +97,7 @@ tree.export_graphviz(reg, feature_names=regressors.columns, class_names=target_d
                      rounded=True, special_characters=True, out_file=dot_data)
 
 graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
-graph.write_pdf("iris.pdf")
-
+# graph.write_pdf("iris.pdf")
 
 
 # logistic regression
@@ -131,15 +115,10 @@ prediction = lr.predict(x_test)
 score = metrics.accuracy_score(y_test, prediction)
 print('Bayesian (GaussianNB) Accuracy: {:.4f}'.format(score))
 
-
-## Tensorflow Neutral Network implementation
+# TensorFlow Neutral Network implementation
 
 
 def main():
-
-    # iris = learn.datasets.load_dataset('iris')
-    # x_train, x_test, y_train, y_test = cross_validation.train_test_split(
-    #     iris.data, iris.target, test_size=0.2, random_state=42)
 
     # Build 3 layer DNN with 10, 20, 10 units respectively.
     feature_columns = learn.infer_real_valued_columns_from_input(x_train)
