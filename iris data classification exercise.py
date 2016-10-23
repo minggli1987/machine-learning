@@ -68,8 +68,8 @@ def visualize():
     # ax.w_zaxis.set_ticklabels([])
     plt.show()
 
-
-visualize()
+if __name__ == '__main__':
+    visualize()
 
 target_dict = {'species': {k: v for k, v in enumerate(data['target_names'])}}
 
@@ -135,11 +135,11 @@ print('Bayesian (GaussianNB) Accuracy: {:.4f}'.format(score))
 ## Tensorflow Neutral Network implementation
 
 
-def main(unused_argv):
+def main():
 
-    iris = learn.datasets.load_dataset('iris')
-    x_train, x_test, y_train, y_test = cross_validation.train_test_split(
-        iris.data, iris.target, test_size=0.2, random_state=42)
+    # iris = learn.datasets.load_dataset('iris')
+    # x_train, x_test, y_train, y_test = cross_validation.train_test_split(
+    #     iris.data, iris.target, test_size=0.2, random_state=42)
 
     # Build 3 layer DNN with 10, 20, 10 units respectively.
     feature_columns = learn.infer_real_valued_columns_from_input(x_train)
@@ -150,10 +150,10 @@ def main(unused_argv):
     classifier.fit(x_train, y_train, steps=200)
     predictions = list(classifier.predict(x_test, as_iterable=True))
     score = metrics.accuracy_score(y_test, predictions)
-    print('Accuracy: {:.4f}'.format(score))
+    print('NN3 Accuracy: {:.4f}'.format(score))
     # print(y_test, predictions)
 
 
 if __name__ == '__main__':
-  output = tf.app.run()
-
+    # tf.app.run()
+    main()

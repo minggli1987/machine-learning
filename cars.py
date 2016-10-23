@@ -59,7 +59,7 @@ print('the initial MSE currently stands at: {0:.2f}; '.format(init_mse), 'the in
 # generating initial parameters using the shape of existing ones
 old_theta = lr.coef_
 gd = GradientDescent(alpha=.005, max_epochs=5000, conv_thres=.000001, display=False)
-gd.fit(x_train, y_train, lr)
+gd.fit(lr, x_train, y_train)
 gd.optimise()
 new_theta, cost_set = gd.thetas, gd.costs
 print(' old thetas are: ', old_theta, '\n', 'new thetas are: ', new_theta)
@@ -101,7 +101,7 @@ print('the average MSE from k-fold validation: {0:.2f}; '.format(np.mean(abs(kf_
 # plt.show()
 
 # multi-class Classifier on Origin
-
+print('\n\nmulticlass classification on origins of cars\n\n', flush=True)
 # transforming
 dummy_cylinders = pd.get_dummies(data['cylinders'], prefix='cyl')
 dummy_years = pd.get_dummies(data['year'], prefix='y')
@@ -116,25 +116,28 @@ x_train, x_test, y_train, y_test = cross_validation.train_test_split(regressors,
 
 sigmoid = linear_model.LogisticRegression(fit_intercept=False, class_weight='auto')
 sigmoid.fit(x_train, y_train)
-
+print('\nBEFORE:')
 accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
 print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
 accuracy = cross_validation.cross_val_score(sigmoid, regressors, regressand, scoring='accuracy', cv=kf_gen)
 print('classier accuracy from k-Fold stands at: {0:.2f}'.format(np.mean(accuracy)))
 
 # gradient descent
+print('\nrunning Gradient Decent parameter optimisation...', end='', flush=True)
 old_theta = np.array(sigmoid.coef_)  # capturing parameters from logistic regression
 sigmoid.coef_ = old_theta + 1  # generating initial parameters using the shape of existing ones
 gd = GradientDescent(alpha=0.01, max_epochs=10000, conv_thres=1e-5, display=False)
-gd.fit(x_train, y_train, sigmoid)
+gd.fit(sigmoid, x_train, y_train)
 gd.optimise()
 new_theta, cost_set = gd.thetas, gd.costs
+print('done')
 
-plt.plot(range(len(cost_set[0])), cost_set[0])
-plt.show()
+#
+# plt.plot(range(len(cost_set[0])), cost_set[0])
+# plt.show()
 
 sigmoid.coef_ = new_theta
-
+print('\nAFTER:')
 accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
 print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
 accuracy = cross_validation.cross_val_score(sigmoid, regressors, regressand, scoring='accuracy', cv=kf_gen)
