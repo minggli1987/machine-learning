@@ -149,13 +149,8 @@ print('classier accuracy from k-Fold stands at: {0:.2f}'.format(np.mean(accuracy
 
 # TensorFlow implementation of classifying origins of cars
 
-def DNN():
 
-    # regressors = np.array(data[cat_cols])
-    # regressand = np.array(data['origin'])
-    #
-    # x_train, x_test, y_train, y_test = cross_validation. \
-    #     train_test_split(regressors, regressand, test_size=.3)
+def DNN():
 
     # Build 3 layer DNN with 10, 20, 10 units respectively.
     feature_columns = learn.infer_real_valued_columns_from_input(x_train)
@@ -166,7 +161,7 @@ def DNN():
     classifier.fit(x_train, y_train, steps=200)
     predictions = list(classifier.predict(x_test, as_iterable=True))
     score = metrics.accuracy_score(y_test, predictions)
-    print('NN3 Accuracy: {:.4f}'.format(score))
+    print('NN3 Accuracy: {:.2f}'.format(score))
 
 DNN()
 
@@ -175,7 +170,6 @@ DNN()
 # clf.fit(x_train, y_train)
 # accuracy = metrics.accuracy_score(y_test, clf.predict(x_test))
 # print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
-
 
 
 # unique_origins = sorted(data['origin'].unique())

@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from skimage import measure, io, color
 import scipy.ndimage as ndi
+from skimage.feature import corner_harris, corner_subpix, corner_peaks, CENSURE
 
 
 __author__ = 'Ming Li'
@@ -38,4 +39,5 @@ contour[:, 1] -= cx
 plt.plot(contour[::, 1], contour[::, 0], linewidth=1, color='black')  # (I will explain this [::,x] later)
 plt.scatter(0, 0)
 plt.title(pic)
+plt.clf()
 plt.show()
