@@ -1,4 +1,4 @@
-from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition, ensemble
+from sklearn import metrics, model_selection, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition, ensemble
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
@@ -19,7 +19,7 @@ pd.set_option('display.width', 4000)
 pd.set_option('max_colwidth', 4000)
 pd.set_option('max_rows', 100)
 pd.set_option('max_columns', 200)
-pd.set_option('float_format', '%.4f')
+# pd.set_option('float_format', '%.4f')
 
 
 # load raw data
@@ -43,7 +43,7 @@ regressand = np.ravel(regressand)
 
 # model generalization
 
-kf_generator = cross_validation.StratifiedKFold(regressand, n_folds=5, shuffle=False, random_state=1)
+kf_generator = model_selection.KFold(n_splits=3, shuffle=False, random_state=1)
 
 # feature scaling using standard deviation as denominator
 
@@ -56,7 +56,7 @@ regressors = np.column_stack((np.ones(regressors.shape[0]), regressors))  # add 
 
 # hold out
 
-x_train, x_test, y_train, y_test = cross_validation.\
+x_train, x_test, y_train, y_test = model_selection.\
     train_test_split(regressors_std, regressand, test_size=.2, random_state=1)
 
 # fit training set
@@ -67,7 +67,7 @@ reg.fit(x_train, y_train)
 
 print('Using given features by Kaggle, Logistic Regression model accuracy is:', flush=True, end=' ')
 
-avg_scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+avg_scores = model_selection.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
 print('{0:.2f}%'.format(100 * np.mean(avg_scores)), flush=True, end='\n')
 
 
@@ -87,7 +87,7 @@ def grad_student_descent():
 
     prediction = reg.predict(x_test)
     print(metrics.accuracy_score(y_test, prediction))
-    scores = cross_validation.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+    scores = model_selection.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
     print(np.mean(scores))
 
 
