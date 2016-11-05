@@ -30,8 +30,7 @@ classifier.show_most_informative_features()
 bad_review = 'As ever, Paolo Sorrentino ironically cuts the legs out from under his protagonists\' wistfulness with grotesquerie'
 good_review = '''Paolo Sorrentino, with Youth, delivers his most tender film to date, an emotionally rich contemplation of life's wisdom gained, lost and remembered - with cynicism harping from the sidelines, but as a wearied chord rather than a major motif.'''
 madeup_review = '''
-
-
+waste of time to watch this bad movie
 '''
 
 
