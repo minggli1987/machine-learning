@@ -64,6 +64,7 @@ x_train, x_test, y_train, y_test = model_selection.\
 reg = linear_model.LogisticRegression(fit_intercept=False)  # regressors already contains manually added intercept
 reg.fit(x_train, y_train)
 
+
 print('Using given features by Kaggle, Logistic Regression model accuracy is:', flush=True, end=' ')
 
 avg_scores = model_selection.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
