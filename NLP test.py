@@ -8,6 +8,7 @@ import string
 def word_feats(words):
     return dict([(word, True) for word in words])
 
+
 negids = mr.fileids('neg')
 posids = mr.fileids('pos')
 
