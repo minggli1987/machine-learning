@@ -150,7 +150,7 @@ lr.fit(regressors, regressand)
 # gradient descent
 
 gd = GradientDescent(alpha=1e-12, max_epochs=5000, conv_thres=1e-8, display=True)
-gd.fit(lr, regressors, regressand)
+gd.fit(regressors, regressand, lr)
 gd.optimise()
 new_thetas, costs = gd.thetas, gd.costs
 print(new_thetas.shape, costs)

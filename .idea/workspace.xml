@@ -2,11 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="6e34522d-4447-4257-afeb-a7ed7877dcaa" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Spacy test.py" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/NLP test.py" afterPath="$PROJECT_DIR$/NLTK test.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Lending Club.py" afterPath="$PROJECT_DIR$/Lending Club.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/cars.py" afterPath="$PROJECT_DIR$/cars.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/NLP test.py" afterPath="$PROJECT_DIR$/NLP test.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/leaf classification/main.py" afterPath="$PROJECT_DIR$/leaf classification/main.py" />
     </list>
     <ignored path="ML1.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -26,13 +24,23 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Lending Club.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Lending Club.py">
+      <file leaf-file-name="GradientDescent.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/GradientDescent.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="255">
-              <caret line="185" column="0" selection-start-line="185" selection-start-column="0" selection-end-line="185" selection-end-column="0" />
+            <state relative-caret-position="180">
+              <caret line="14" column="7" selection-start-line="14" selection-start-column="7" selection-end-line="14" selection-end-column="7" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="NLP test.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/NLP test.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="90">
+              <caret line="35" column="0" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
               <folding>
-                <element signature="e#0#19#0" expanded="true" />
+                <element signature="e#0#25#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -64,13 +72,11 @@
         <option value="$PROJECT_DIR$/cars.py" />
         <option value="$PROJECT_DIR$/leaf classification/main.py" />
         <option value="$PROJECT_DIR$/NLP test.py" />
-        <option value="$PROJECT_DIR$/Spacy test.py" />
-        <option value="$PROJECT_DIR$/Lending Club.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="12" />
+    <option name="x" value="191" />
     <option name="y" value="23" />
     <option name="width" value="1007" />
     <option name="height" value="655" />
@@ -148,7 +154,24 @@
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="last_opened_file_path" value="C:/Program Files/Git/bin/git.exe" />
   </component>
-  <component name="RunManager" selected="Python.Lending Club">
+  <component name="RunManager" selected="Python.NLP test">
+    <configuration default="false" name="Fibonacci" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <module name="ML1" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Fibonacci.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <method />
+    </configuration>
     <configuration default="false" name="cars" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -195,41 +218,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <module name="ML1" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/NLTK test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
-    <configuration default="false" name="Spacy test" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="ML1" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Spacy test.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <method />
-    </configuration>
-    <configuration default="false" name="Lending Club" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <module name="ML1" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Lending Club.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/NLP test.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <method />
@@ -368,20 +357,18 @@
       <option name="USE_KEYWORD" value="false" />
       <method />
     </configuration>
-    <list size="5">
-      <item index="0" class="java.lang.String" itemvalue="Python.cars" />
-      <item index="1" class="java.lang.String" itemvalue="Python.main" />
-      <item index="2" class="java.lang.String" itemvalue="Python.NLP test" />
-      <item index="3" class="java.lang.String" itemvalue="Python.Spacy test" />
-      <item index="4" class="java.lang.String" itemvalue="Python.Lending Club" />
+    <list size="4">
+      <item index="0" class="java.lang.String" itemvalue="Python.Fibonacci" />
+      <item index="1" class="java.lang.String" itemvalue="Python.cars" />
+      <item index="2" class="java.lang.String" itemvalue="Python.main" />
+      <item index="3" class="java.lang.String" itemvalue="Python.NLP test" />
     </list>
     <recent_temporary>
-      <list size="5">
-        <item index="0" class="java.lang.String" itemvalue="Python.Lending Club" />
-        <item index="1" class="java.lang.String" itemvalue="Python.Spacy test" />
-        <item index="2" class="java.lang.String" itemvalue="Python.NLP test" />
-        <item index="3" class="java.lang.String" itemvalue="Python.main" />
-        <item index="4" class="java.lang.String" itemvalue="Python.cars" />
+      <list size="4">
+        <item index="0" class="java.lang.String" itemvalue="Python.NLP test" />
+        <item index="1" class="java.lang.String" itemvalue="Python.main" />
+        <item index="2" class="java.lang.String" itemvalue="Python.cars" />
+        <item index="3" class="java.lang.String" itemvalue="Python.Fibonacci" />
       </list>
     </recent_temporary>
   </component>
@@ -434,18 +421,11 @@
       <option name="project" value="LOCAL" />
       <updated>1478035737529</updated>
     </task>
-    <task id="LOCAL-00006" summary="confirm">
-      <created>1478358530676</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1478358530676</updated>
-    </task>
-    <option name="localTasksCounter" value="7" />
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="12" y="23" width="1007" height="655" extended-state="0" />
+    <frame x="191" y="23" width="1007" height="655" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27904668" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -495,13 +475,6 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/Spacy test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/leaf classification/main.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
@@ -516,7 +489,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/NLTK test.py">
+    <entry file="file://$PROJECT_DIR$/NLP test.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="420">
           <caret line="32" column="0" selection-start-line="32" selection-start-column="0" selection-end-line="32" selection-end-column="0" />
@@ -645,13 +618,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="150">
           <caret line="13" column="17" selection-start-line="13" selection-start-column="17" selection-end-line="13" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/NLTK test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="49" column="30" selection-start-line="49" selection-start-column="30" selection-end-line="49" selection-end-column="30" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -663,26 +630,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file:///Library/Frameworks/Python.framework/Versions/3.5/lib/python3.5/site-packages/spacy/__init__.py">
+    <entry file="file://$PROJECT_DIR$/NLP test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="120">
-          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Spacy test.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="45">
-          <caret line="3" column="0" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Lending Club.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="185" column="0" selection-start-line="185" selection-start-column="0" selection-end-line="185" selection-end-column="0" />
+        <state relative-caret-position="90">
+          <caret line="35" column="0" selection-start-line="35" selection-start-column="0" selection-end-line="35" selection-end-column="0" />
           <folding>
-            <element signature="e#0#19#0" expanded="true" />
+            <element signature="e#0#25#0" expanded="true" />
           </folding>
         </state>
       </provider>
