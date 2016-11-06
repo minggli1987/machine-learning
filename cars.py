@@ -1,9 +1,14 @@
+<<<<<<< HEAD
+#import tensorflow as tf
+#from tensorflow.contrib import learn
+=======
 import tensorflow as tf
 from tensorflow.contrib import learn
+>>>>>>> origin/master
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
+#import seaborn as sns
 import statsmodels.api as sm
 from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model, naive_bayes
 from minglib import forward_select, backward_select

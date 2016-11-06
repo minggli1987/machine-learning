@@ -149,6 +149,17 @@ lr.fit(regressors, regressand)
 
 # gradient descent
 
+<<<<<<< HEAD
+# gd = GradientDescent(alpha=1e-12, max_epochs=5000, conv_thres=1e-8, display=True)
+# gd.fit(lr, regressors, regressand)
+# gd.optimise()
+# new_thetas, costs = gd.thetas, gd.costs
+# print(new_thetas.shape, costs)
+# plt.plot(range(len(costs)), costs)
+# plt.show()
+#
+# lr.coef_ = new_thetas
+=======
 gd = GradientDescent(alpha=1e-12, max_epochs=5000, conv_thres=1e-8, display=True)
 gd.fit(regressors, regressand, lr)
 gd.optimise()
@@ -158,6 +169,7 @@ plt.plot(range(len(costs)), costs)
 plt.show()
 
 lr.coef_ = new_thetas
+>>>>>>> origin/master
 
 kf = cross_validation.KFold(regressors.shape[0], n_folds=5, shuffle=False, random_state=1)
 

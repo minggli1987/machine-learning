@@ -5,7 +5,7 @@ import numpy as np
 import warnings
 import sys
 from visual import copy_pics_into_folders, delete_folders
-from GradientDescent import GradientDescent
+from . import GradientDescent
 
 warnings.filterwarnings('ignore')
 
