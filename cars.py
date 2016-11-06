@@ -138,9 +138,9 @@ gd.optimise()
 new_theta, cost_set = gd.thetas, gd.costs
 print('done')
 
-#
-# plt.plot(range(len(cost_set[0])), cost_set[0])
-# plt.show()
+
+plt.plot(range(len(cost_set[0])), cost_set[0])
+plt.show()
 
 sigmoid.coef_ = new_theta
 print('\nAFTER:')
