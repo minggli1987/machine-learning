@@ -53,8 +53,8 @@ def visualize():
 
     plt.show()
 
-# if __name__ == '__main__':
-#     visualize()
+if __name__ == '__main__':
+    visualize()
 
 target_dict = {'species': {k: v for k, v in enumerate(data['target_names'])}}
 
