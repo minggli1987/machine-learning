@@ -1,7 +1,7 @@
 import numpy as np
 from GradientDescent import GradientDescent
 import pandas as pd
-from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree, \
+from sklearn import metrics, model_selection, naive_bayes, preprocessing, pipeline, linear_model, tree, \
     decomposition, pipeline
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -68,7 +68,7 @@ std_regressors = std_scaler.fit(regressors, regressand).transform(regressors)
 
 # splitting
 
-x_train, x_test, y_train, y_test = cross_validation.\
+x_train, x_test, y_train, y_test = model_selection.\
     train_test_split(std_regressors, regressand, test_size=.2)
 reg = linear_model.LogisticRegression(fit_intercept=False, class_weight={0: 10, 1: 1})
 
@@ -80,27 +80,30 @@ reg.fit(x_train, y_train)
 
 # Stratified K-Fold
 
-kf = cross_validation.StratifiedKFold(y_test, n_folds=5, shuffle=True)
+kf = model_selection.StratifiedKFold(n_splits=5, shuffle=True)
 
 # Model evaluation
 
-cross_val_accuracy = cross_validation.cross_val_score(reg, x_test, y_test, scoring='accuracy', cv=kf)
-roc_auc = cross_validation.cross_val_score(reg, x_test, y_test, scoring='roc_auc', cv=kf)
+cross_val_accuracy = model_selection.cross_val_score(reg, x_test, y_test, scoring='accuracy', cv=kf)
+roc_auc = model_selection.cross_val_score(reg, x_test, y_test, scoring='roc_auc', cv=kf)
 print('{0:.2f}'.format(np.mean(roc_auc)), '{0:.2f}'.format(np.mean(cross_val_accuracy)))
 accuracy = metrics.accuracy_score(y_test, reg.predict(x_test))
-print('{0:.2f}'.format(accuracy))
+print('Initial model accuracy: {0:.2f}'.format(accuracy))
 
 # Standard Gradient Descent
 
 reg.coef_ = np.zeros(reg.coef_.shape)
-optimiser = GradientDescent(alpha=.05, conv_thres=1e-8, display=False)
+optimiser = GradientDescent(alpha=.01, conv_thres=1e-8, display=False)
 optimiser.fit(reg, x_train, y_train).optimise()
 thetas, costs = optimiser.thetas, optimiser.costs
 
 reg.coef_ = thetas  # applying optimised parameters
 
+plt.plot(range(len(costs)), costs)
+plt.show()
+
 accuracy = metrics.accuracy_score(y_test, reg.predict(x_test))
-print('{0:.2f}'.format(accuracy))
+print('Final model accuracy: {0:.2f}'.format(accuracy))
 
 
 

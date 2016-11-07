@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.contrib import learn
-from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition
+from sklearn import metrics, model_selection, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition
 from sklearn.datasets import load_iris
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -53,8 +53,8 @@ def visualize():
 
     plt.show()
 
-# if __name__ == '__main__':
-#     visualize()
+if __name__ == '__main__':
+    visualize()
 
 target_dict = {'species': {k: v for k, v in enumerate(data['target_names'])}}
 
@@ -79,11 +79,11 @@ def normalize(data):
 reg = tree.DecisionTreeClassifier(max_depth=3, max_leaf_nodes=20, min_samples_leaf=15, random_state=2)
 
 x_train, x_test, y_train, y_test = \
-    cross_validation.train_test_split(regressors, np.array(regressand), test_size=.3)
+    model_selection.train_test_split(regressors, np.array(regressand), test_size=.3)
 
 reg.fit(X=x_train, y=y_train)
 
-kf_gen = cross_validation.KFold(df.shape[0], n_folds=5, shuffle=False, random_state=2)
+kf_gen = model_selection.KFold(n_splits=5, shuffle=False, random_state=2)
 
 prediction = reg.predict(x_test)
 accuracy = metrics.accuracy_score(y_test, prediction)

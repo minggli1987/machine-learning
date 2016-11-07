@@ -5,7 +5,7 @@ import numpy as np
 import warnings
 import sys
 from visual import copy_pics_into_folders, delete_folders
-from . import GradientDescent
+from GradientDescent import GradientDescent
 
 warnings.filterwarnings('ignore')
 
@@ -19,7 +19,6 @@ pd.set_option('display.width', 4000)
 pd.set_option('max_colwidth', 4000)
 pd.set_option('max_rows', 100)
 pd.set_option('max_columns', 200)
-# pd.set_option('float_format', '%.4f')
 
 
 # load raw data
@@ -43,7 +42,7 @@ regressand = np.ravel(regressand)
 
 # model generalization
 
-kf_generator = model_selection.KFold(n_splits=3, shuffle=False, random_state=1)
+kf_generator = model_selection.KFold(n_splits=5, shuffle=False, random_state=1)
 
 # feature scaling using standard deviation as denominator
 
@@ -76,8 +75,8 @@ def grad_student_descent():
     # Gradient Descent optimisation algorithm
 
     old_theta = np.ones(reg.coef_.shape)
-    gd = GradientDescent(alpha=.1, max_epochs=5000, conv_thres=.0000001, display=False)
-    gd.fit(x_train, y_train, reg)
+    gd = GradientDescent(alpha=.1, max_epochs=5000, conv_thres=.0000001, display=True)
+    gd.fit(reg, x_train, y_train)
     gd.optimise()
     new_theta, costs = gd.thetas, gd.costs
 
@@ -85,11 +84,11 @@ def grad_student_descent():
 
     reg.coef_ = new_theta
 
-    prediction = reg.predict(x_test)
-    print(metrics.accuracy_score(y_test, prediction))
-    scores = model_selection.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
-    print(np.mean(scores))
+    print('Using given features by Kaggle, Logistic Regression after accuracy Gradient Descent is:', flush=True, end=' ')
+    avg_scores = model_selection.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+    print('{0:.2f}%'.format(100 * np.mean(avg_scores)), flush=True, end='\n')
 
+# grad_student_descent()
 
 # combine train and test
 

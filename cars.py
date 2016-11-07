@@ -1,16 +1,12 @@
-<<<<<<< HEAD
-#import tensorflow as tf
-#from tensorflow.contrib import learn
-=======
+
 import tensorflow as tf
 from tensorflow.contrib import learn
->>>>>>> origin/master
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-#import seaborn as sns
+import seaborn as sns
 import statsmodels.api as sm
-from sklearn import preprocessing, cluster, metrics, cross_validation, linear_model, naive_bayes
+from sklearn import preprocessing, cluster, metrics, model_selection, linear_model, naive_bayes
 from minglib import forward_select, backward_select
 from GradientDescent import GradientDescent
 from warnings import filterwarnings
@@ -48,10 +44,10 @@ regressors = data[var]  # recommended variables from stepwise procedure
 
 # splitting data - holdout validation
 x_train, x_test, y_train, y_test = \
-    cross_validation.train_test_split(np.column_stack((np.ones(regressors.shape[0]), normalize(regressors))),
+    model_selection.train_test_split(np.column_stack((np.ones(regressors.shape[0]), normalize(regressors))),
                                       regressand, test_size=.3)
 # splitting data - k fold cross validation
-kf_gen = cross_validation.KFold(regressors.shape[0], n_folds=10, shuffle=True)
+kf_gen = model_selection.KFold(n_splits=10, shuffle=True)
 
 # fitting linear model
 lr = linear_model.LinearRegression(fit_intercept=False)  # regressors already has constant 1
@@ -93,9 +89,9 @@ print('the new MSE currently stands at: {0:.2f}; '.format(new_mse), 'the R-squar
 #     # calculating MSE for linear model
 
 
-kf_mse = cross_validation.cross_val_score\
+kf_mse = model_selection.cross_val_score\
     (lr, sm.add_constant(normalize(regressors)), regressand, scoring='mean_squared_error', cv=kf_gen)
-kf_r2 = cross_validation.cross_val_score\
+kf_r2 = model_selection.cross_val_score\
     (lr, sm.add_constant(normalize(regressors)), regressand, scoring='r2', cv=kf_gen)
 
 print('the average MSE from k-fold validation: {0:.2f}; '.format(np.mean(abs(kf_mse))),
@@ -110,6 +106,7 @@ print('the average MSE from k-fold validation: {0:.2f}; '.format(np.mean(abs(kf_
 
 # multi-class Classifier on Origin
 print('\nmulticlass classification on origins of cars\n', flush=True)
+
 # transforming
 dummy_cylinders = pd.get_dummies(data['cylinders'], prefix='cyl')
 dummy_years = pd.get_dummies(data['year'], prefix='y')
@@ -120,7 +117,7 @@ cat_cols = [col for col in data.columns if col.startswith('y_') or col.startswit
 regressors = np.column_stack((np.ones(data.shape[0]), data[cat_cols]))
 regressand = np.array(data['origin']).reshape((len(data['origin']), 1))
 
-x_train, x_test, y_train, y_test = cross_validation.\
+x_train, x_test, y_train, y_test = model_selection.\
     train_test_split(regressors, regressand, test_size=.3)
 
 sigmoid = linear_model.LogisticRegression(fit_intercept=False, class_weight='auto')
@@ -128,7 +125,7 @@ sigmoid.fit(x_train, y_train)
 print('\nBEFORE:')
 accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
 print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
-accuracy = cross_validation.cross_val_score(sigmoid, regressors, regressand, scoring='accuracy', cv=kf_gen)
+accuracy = model_selection.cross_val_score(sigmoid, regressors, regressand, scoring='accuracy', cv=kf_gen)
 print('classier accuracy from k-Fold stands at: {0:.2f}'.format(np.mean(accuracy)))
 
 # gradient descent
@@ -149,7 +146,7 @@ sigmoid.coef_ = new_theta
 print('\nAFTER:')
 accuracy = metrics.accuracy_score(y_test, sigmoid.predict(x_test))
 print('classier accuracy on testing stands at: {0:.2f}'.format(np.mean(accuracy)))
-accuracy = cross_validation.cross_val_score(sigmoid, regressors, regressand, scoring='accuracy', cv=kf_gen)
+accuracy = model_selection.cross_val_score(sigmoid, regressors, regressand, scoring='accuracy', cv=kf_gen)
 print('classier accuracy from k-Fold stands at: {0:.2f}'.format(np.mean(accuracy)))
 
 # TensorFlow implementation of classifying origins of cars
@@ -168,7 +165,7 @@ def DNN():
     score = metrics.accuracy_score(y_test, predictions)
     print('NN3 Accuracy: {:.2f}'.format(score))
 
-DNN()
+# DNN()
 
 
 # clf = naive_bayes.BernoulliNB()

@@ -4,6 +4,6 @@ def fibonacci(n):
         return 1
     return fibonacci(n-1) + fibonacci(n-2)
 
-x =  10 #change the number
+x =  7 #change the number
 
 print(fibonacci(x))
