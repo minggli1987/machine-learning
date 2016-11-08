@@ -1,18 +1,19 @@
-from sklearn import metrics, model_selection, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition, ensemble
-import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 import warnings
 import sys
 from visual import copy_pics_into_folders, delete_folders
 from GradientDescent import GradientDescent
-
+from sklearn import metrics, model_selection, preprocessing, linear_model
 warnings.filterwarnings('ignore')
 
 # coding: utf-8
 
 __author__ = 'Ming Li'
-# This application forms a submission from Ming in regards to leaf classification challenge on Kaggle community
+'''
+This application forms a submission from Ming Li
+in regards to leaf classification challenge on Kaggle community
+'''
 
 # set display right
 pd.set_option('display.width', 4000)
@@ -42,31 +43,39 @@ regressand = np.ravel(regressand)
 
 # model generalization
 
-kf_generator = model_selection.KFold(n_splits=5, shuffle=False, random_state=1)
+kf_generator = model_selection.KFold(n_splits=10, shuffle=True, random_state=1)
 
 # feature scaling using standard deviation as denominator
 
-regressors_std = regressors.apply(preprocessing.scale, with_mean=False, with_std=True, axis=0)
+regressors_std = regressors.\
+    apply(preprocessing.scale, with_mean=False, with_std=True, axis=0)
 
 # Logistic regression
 
-regressors_std = np.column_stack((np.ones(regressors.shape[0]), regressors_std))  # add constant
-regressors = np.column_stack((np.ones(regressors.shape[0]), regressors))  # add constant
+regressors_std = np.column_stack(
+    (np.ones(regressors.shape[0]), regressors_std)
+)  # add constant
+regressors = np.column_stack(
+    (np.ones(regressors.shape[0]), regressors)
+)  # add constant
 
-# hold out
-
-x_train, x_test, y_train, y_test = model_selection.\
-    train_test_split(regressors_std, regressand, test_size=.2, random_state=1)
+# # hold out
+#
+# x_train, x_test, y_train, y_test = model_selection.\
+#     train_test_split(regressors_std, regressand, test_size=.3, random_state=1)
 
 # fit training set
 
-reg = linear_model.LogisticRegression(fit_intercept=False)  # regressors already contains manually added intercept
-reg.fit(x_train, y_train)
+reg = linear_model.LogisticRegression(fit_intercept=False)
+# regressors already contains manually added intercept
+reg.fit(regressors_std, regressand)
 
 
-print('Using given features by Kaggle, Logistic Regression model accuracy is:', flush=True, end=' ')
+print('Using given features by Kaggle, Logistic Regression model accuracy is: ', end='')
 
-avg_scores = model_selection.cross_val_score(reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+avg_scores = model_selection.cross_val_score(
+    reg, regressors_std, regressand, scoring='accuracy', cv=kf_generator)
+
 print('{0:.2f}%'.format(100 * np.mean(avg_scores)), flush=True, end='\n')
 
 
@@ -76,7 +85,7 @@ def grad_student_descent():
 
     old_theta = np.ones(reg.coef_.shape)
     gd = GradientDescent(alpha=.1, max_epochs=5000, conv_thres=.0000001, display=True)
-    gd.fit(reg, x_train, y_train)
+    gd.fit(reg, regressors_std, regressand)
     gd.optimise()
     new_theta, costs = gd.thetas, gd.costs
 
@@ -100,7 +109,6 @@ regressors = combined.select_dtypes(exclude=(np.int8, np.int64, np.object)).copy
 regressors_std = regressors.apply(preprocessing.scale, axis=0)  # using standard deviation as denominator
 regressors_std = np.column_stack((np.ones(regressors_std.shape[0]), regressors_std))  # add constant
 
-
 # moving classified pictures into folders
 
 combined['species_id'] = reg.predict(regressors_std)  # making predictions
@@ -109,7 +117,8 @@ result = combined.select_dtypes(include=(np.int8, np.int64, np.object)).copy()
 table = result[['species_predicted', 'id']].sort_values(by=['species_predicted', 'id'], ascending=True)\
     .set_index('species_predicted')
 
-copy_pics_into_folders(table)
+# copy_pics_into_folders(table)
+
 
 key = input('continue to produce submission?\n')
 
