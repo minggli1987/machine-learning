@@ -36,3 +36,4 @@ regressand = data.select_dtypes(include=['category'])
 kf_gen = model_selection.KFold(n_splits=10, shuffle=True, random_state=1)
 x_train, x_test, y_train, y_test = \
     model_selection.train_test_split(regressors, regressors, test_size=.2, random_state=1)
+
