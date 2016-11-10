@@ -11,7 +11,9 @@ genderclassmodel = pd.read_csv('data/genderclassmodel.csv')
 gendermodel = pd.read_csv('data/gendermodel.csv')
 
 
-def pipeline(x):
+def transform(x):
+
+    assert isinstance(x, pd.DataFrame), 'require a dataframe'
 
     mapping = {
         'Sex': {'male': 1, 'female': 0},
@@ -19,13 +21,20 @@ def pipeline(x):
     }
     data = x.drop(['Name', 'Ticket', 'Cabin'], axis=1)
     data.replace(mapping, inplace=True)
-    data[['Sex', 'Embarked']] = data[['Sex', 'Embarked']].astype(int)
+    data[['Sex', 'Embarked']] = data[['Sex', 'Embarked']].astype(np.int)
+    data['Survived'] = data['Survived'].astype('category')
 
     return data
 
-pipeline(train).info()
+data = transform(train)
+
+regressors = data.select_dtypes(exclude=['category'])
+regressand = data.select_dtypes(include=['category'])
 
 # splitting and hold out
+
+print(regressors.columns)
+print(regressand.columns)
 
 # kf_gen = model_selection.KFold(n_splits=10, shuffle=True, random_state=1)
 # x_train, x_test, y_train, y_test = \
