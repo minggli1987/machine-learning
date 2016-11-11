@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-
 web_pages = {
     1: 'http://www.nhs.uk/Conditions/Heart-block/Pages/Symptoms.aspx',
     2: 'http://www.nhs.uk/conditions/frozen-shoulder/Pages/Symptoms.aspx',
@@ -19,9 +18,18 @@ web_pages = {
 }
 
 
-r = requests.get(url=web_pages[1])
-data = r.text
-soup = BeautifulSoup(data, 'html5lib')
+for i in range(1, len(web_pages) + 1, 1):
+
+    m = re.search('conditions/(.*)/pages/', web_pages[i].lower()).group(1)
+    m = re.sub('[^0-9a-zA-Z]+', ' ', m)
+    web_pages[m] = web_pages.pop(i)
+
+illness = web_pages.keys()
+
+for i in illness:
+    r = requests.get(url=web_pages[i])
+    data = r.text
+    soup = BeautifulSoup(data, 'html5lib')
 
 # html = soup.prettify()
 print(soup.title.string)
