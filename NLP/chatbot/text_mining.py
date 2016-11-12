@@ -24,20 +24,18 @@ for i in range(1, len(web_pages) + 1, 1):
     m = re.sub('[^0-9a-zA-Z]+', ' ', m)
     web_pages[m] = web_pages.pop(i)
 
-illness = web_pages.keys()
-
-for i in illness:
-    r = requests.get(url=web_pages[i])
-    data = r.text
-    soup = BeautifulSoup(data, 'html5lib')
+illness = list(web_pages.keys())
+i = illness[1]
+r = requests.get(url=web_pages[i])
+data = r.text
+soup = BeautifulSoup(data, 'lxml')
 
 # html = soup.prettify()
 print(soup.title.string)
 
 
-for link in soup.find_all(['li']):
+for link in soup.find_all(['p']):
     txt = link.string
-    if txt and len(txt.replace(' ', '')) > 5:
-        print(txt, end='\n\n')
+    print(txt)
 
 
