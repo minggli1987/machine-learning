@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import time
 
 web_pages = {
     1: 'http://www.nhs.uk/Conditions/Heart-block/Pages/Symptoms.aspx',
@@ -25,17 +26,27 @@ for i in range(1, len(web_pages) + 1, 1):
     web_pages[m] = web_pages.pop(i)
 
 illness = list(web_pages.keys())
-i = illness[1]
-r = requests.get(url=web_pages[i])
-data = r.text
-soup = BeautifulSoup(data, 'lxml')
+illness.sort(reverse=True)
+print(illness)
+for i in illness:
+    i = 'heart block'
+    r = requests.get(url=web_pages[i])
+    data = r.text
+    soup = BeautifulSoup(data, 'html5lib')
 
-# html = soup.prettify()
-print(soup.title.string)
+# web page overview
+print('scrapping web page for...{0}.'.format(soup.title.string), '\n\n')
+time.sleep(3)
+html = soup.prettify()
+print(html)
+
+# for i in soup.find_all(['p', 'li']):
+#     print(i.string)
 
 
-for link in soup.find_all(['p']):
-    txt = link.string
-    print(txt)
+# for link in soup.find_all(['li']):
+#     txt = link.string
+#     if txt and len(txt.replace(' ', '')) > 5:
+#         print(txt, end='\n\n')
 
 
