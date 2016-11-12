@@ -31,16 +31,15 @@ web_pages = {
 # print(illness)
 
 for i in list(web_pages.keys()):
-    i = 5
     r = requests.get(url=web_pages[i])
     soup = BeautifulSoup(r.text, 'html5lib')
     # for i in soup.find_all('h1'):
     #     print(i)
 
 # web page overview
-print('scrapping web page for...{0}.'.format(soup.title.string), '\n\n')
-time.sleep(2)
-html = soup.prettify()
+# print('scrapping web page for...{0}.'.format(soup.title.string), '\n\n')
+# time.sleep(2)
+# html = soup.prettify()
 # print(html, flush=False)
 
 desc_attributes = {
@@ -61,16 +60,11 @@ article_attributes = {
     'end_t_2': ''
 }
 
-for i in soup.find_all('meta', attrs=desc_attributes):
-    print(i.get('content'))
+meta = soup.find('meta', attrs=desc_attributes).get('content')
 
-meta = i.get('content')
+subj = soup.find('meta', attrs=subj_attributes).get('content')
 
-for i in soup.find('meta', attrs=subj_attributes):
-    print(i.get('content'))
-
-subj = i.get('content')
-
+print(subj, '\n', meta)
 
 article = list()
 
@@ -96,3 +90,4 @@ for i, value in enumerate(article):
         break
 
 article = article[start_idx: end_idx]
+
