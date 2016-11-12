@@ -19,7 +19,7 @@ web_pages = {
     'Pages/Symptoms.aspx'
 }
 
-#
+
 # for i in range(1, len(web_pages) + 1, 1):
 #
 #     m = re.search('conditions/(.*)/pages/', web_pages[i].lower()).group(1)
@@ -31,6 +31,7 @@ web_pages = {
 # print(illness)
 
 for i in list(web_pages.keys()):
+    i = 5
     r = requests.get(url=web_pages[i])
     soup = BeautifulSoup(r.text, 'html5lib')
     # for i in soup.find_all('h1'):
@@ -49,7 +50,6 @@ desc_attributes = {
 subj_attributes = {
     'name': 'DC.Subject',
     'scheme': 'NHSC.Ontology'
-
 }
 
 article_attributes = {
@@ -61,10 +61,38 @@ article_attributes = {
     'end_t_2': ''
 }
 
+for i in soup.find_all('meta', attrs=desc_attributes):
+    print(i.get('content'))
+
+meta = i.get('content')
+
+for i in soup.find('meta', attrs=subj_attributes):
+    print(i.get('content'))
+
+subj = i.get('content')
+
+
 article = list()
 
 for i in soup.find_all(['p', 'li', 'meta']):
     article.append(i.get_text())
 
-start_t_2 = article.index(article_attributes['start_t_2'])
-print(article[start_t_2:])
+start_idx = int()
+end_idx = int()
+
+for i, value in enumerate(article):
+    a = article[i] == article_attributes['start_t_2']
+    b = article[i + 1] == article_attributes['start_t_1']
+    c = article[i + 2] == article_attributes['start_t_0']
+    d = article[i] == article_attributes['end_t_0']
+    e = article[i + 1] == article_attributes['end_t_1']
+    f = article[i + 2] == article_attributes['end_t_2']
+    if a and b and c:
+        print(i)
+        start_idx = i + 2
+    if d and e and f and start_idx:
+        print(i)
+        end_idx = i
+        break
+
+article = article[start_idx: end_idx]
