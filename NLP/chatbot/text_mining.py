@@ -1,23 +1,105 @@
 import requests
 from bs4 import BeautifulSoup
-import re
 import time
-import pandas as pd
+import string
 
-web_pages = {
-    1: 'http://www.nhs.uk/Conditions/Heart-block/Pages/Symptoms.aspx',
-    2: 'http://www.nhs.uk/conditions/frozen-shoulder/Pages/Symptoms.aspx',
-    3: 'http://www.nhs.uk/conditions/coronary-heart-disease/'
-    'Pages/Symptoms.aspx',
-    4: 'http://www.nhs.uk/conditions/bronchitis/Pages/Symptoms-old.aspx',
-    5: 'http://www.nhs.uk/conditions/warts/Pages/Introduction.aspx',
-    6: 'http://www.nhs.uk/conditions/Sleep-paralysis/Pages/Introduction.aspx',
-    7: 'http://www.nhs.uk/Conditions/Glue-ear/Pages/Symptoms.aspx',
-    8: 'http://www.nhs.uk/Conditions/Depression/Pages/Symptoms.aspx',
-    9: 'http://www.nhs.uk/Conditions/Turners-syndrome/Pages/Symptoms.aspx',
-    10: 'http://www.nhs.uk/Conditions/Obsessive-compulsive-disorder/'
-    'Pages/Symptoms.aspx'
-}
+__author__ = 'Ming Li'
+
+
+class NHSTextMining(object):
+
+    '''
+    web scrapping module using BeautifulSoup4 and Requests
+    '''
+
+    def __init__(self, urls, attrs, n=None, display=False):
+
+        assert isinstance(urls, list), 'require a list of urls'
+        assert isinstance(attrs, dict), 'attributes must be a dictionary'
+        if n:
+            assert n % 1 == 0 and 0 <= n <= len(urls), 'index error'
+
+        self._urls = urls
+        self._attrs = attrs
+        self._n = n
+        self._count = len(urls)
+        self._soups = list()
+        self._display = display
+        self._output = dict()
+
+    def _get(self):
+
+        if self._display:
+            print('page(s) are being downloaded...', flush=True, end='')
+
+        if not self._n:
+
+            for i in range(self._count):
+                r = requests.get(url=self._urls[i])
+                soup = BeautifulSoup(r.text, 'html5lib')
+                self._soups.append(soup)
+
+        elif self._n:
+
+            n = self._n
+            r = requests.get(url=self._urls[n])
+            soup = BeautifulSoup(r.text, 'lxml')
+
+            self._soups.append(soup)
+
+        if self._display:
+            print('done')
+
+    def extract(self):
+
+        self._get()
+
+        print('starting to extract information from websites...', flush=True, end='')
+
+        for i, page in enumerate(self._soups):
+
+            page_url = self._urls[i]
+
+            subj = page.find('meta', attrs=self._attrs['subj_attributes']).get('content')
+            meta = page.find('meta', attrs=self._attrs['desc_attributes']).get('content')
+            article = [element.get_text() for element in page.find_all(['p', 'li', 'meta'])]
+
+            start_idx = int()
+            end_idx = int()
+            
+            for j, value in enumerate(article):
+
+                a = article[j] == self._attrs['article_attributes']['start_t_2']
+                b = article[j + 1] == self._attrs['article_attributes']['start_t_1']
+                c = article[j + 2] == self._attrs['article_attributes']['start_t_0']
+                d = article[j] == self._attrs['article_attributes']['end_t_0']
+                e = article[j + 1] == self._attrs['article_attributes']['end_t_1']
+                f = article[j + 2] == self._attrs['article_attributes']['end_t_2']
+
+                if a and b and c:
+                    start_idx = j + 2
+
+                if d and e and f and start_idx:
+                    end_idx = j
+                    break
+            
+            content = article[start_idx: end_idx]
+
+            content.insert(0, subj)
+            content.insert(1, meta)
+
+            self._output[page_url] = content
+
+        time.sleep(1)
+        print('done')
+
+        return self._output
+
+    @staticmethod
+    def cleanse(words):
+        removals = string.punctuation.replace('-', '')
+        return [i.lower().translate(str.maketrans('', '', removals)).replace('\xa0', ' ') for i in words]
+
 
 
 # for i in range(1, len(web_pages) + 1, 1):
@@ -29,65 +111,3 @@ web_pages = {
 # illness = list(web_pages.keys())
 # illness.sort(reverse=True)
 # print(illness)
-
-for i in list(web_pages.keys()):
-    r = requests.get(url=web_pages[i])
-    soup = BeautifulSoup(r.text, 'html5lib')
-    # for i in soup.find_all('h1'):
-    #     print(i)
-
-# web page overview
-# print('scrapping web page for...{0}.'.format(soup.title.string), '\n\n')
-# time.sleep(2)
-# html = soup.prettify()
-# print(html, flush=False)
-
-desc_attributes = {
-    'name': 'description'
-}
-
-subj_attributes = {
-    'name': 'DC.Subject',
-    'scheme': 'NHSC.Ontology'
-}
-
-article_attributes = {
-    'start_t_0': 'Overview',
-    'start_t_1': '\n        Print this page\n    ',
-    'start_t_2': '\n     \n    \n        Print this page\n    \n    \n     \n\n',
-    'end_t_0': 'Share:',
-    'end_t_1': '',
-    'end_t_2': ''
-}
-
-meta = soup.find('meta', attrs=desc_attributes).get('content')
-
-subj = soup.find('meta', attrs=subj_attributes).get('content')
-
-print(subj, '\n', meta)
-
-article = list()
-
-for i in soup.find_all(['p', 'li', 'meta']):
-    article.append(i.get_text())
-
-start_idx = int()
-end_idx = int()
-
-for i, value in enumerate(article):
-    a = article[i] == article_attributes['start_t_2']
-    b = article[i + 1] == article_attributes['start_t_1']
-    c = article[i + 2] == article_attributes['start_t_0']
-    d = article[i] == article_attributes['end_t_0']
-    e = article[i + 1] == article_attributes['end_t_1']
-    f = article[i + 2] == article_attributes['end_t_2']
-    if a and b and c:
-        print(i)
-        start_idx = i + 2
-    if d and e and f and start_idx:
-        print(i)
-        end_idx = i
-        break
-
-article = article[start_idx: end_idx]
-
