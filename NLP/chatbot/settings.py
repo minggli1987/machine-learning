@@ -1,5 +1,7 @@
 # setting file
 
+"""keys to detect useful information and main article of web pages."""
+
 setting = {
     'desc_attributes': {
         'name': 'description'
