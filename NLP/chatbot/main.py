@@ -1,12 +1,9 @@
-import numpy as np
-import pandas as pd
 import random
 from settings import setting
 from textmining import NHSTextMining
 from nltk.tokenize import word_tokenize
 from nltk.classify import NaiveBayesClassifier
 import time
-from sklearn import linear_model, model_selection
 
 
 __author__ = 'Ming Li'
