@@ -1,9 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
-import time
-import string
 
 __author__ = 'Ming Li'
+
+# web scrapping module for NHS symptoms
 
 
 class NHSTextMining(object):
@@ -17,7 +17,7 @@ class NHSTextMining(object):
         assert isinstance(urls, list), 'require a list of urls'
         assert isinstance(attrs, dict), 'attributes must be a dictionary'
         if n:
-            assert n % 1 == 0 and 0 <= n <= len(urls), 'index error'
+            assert isinstance(n, float) and n % 1 == 0 and 0 <= n <= len(urls), 'index error'
 
         self._urls = urls
         self._attrs = attrs
@@ -73,17 +73,17 @@ class NHSTextMining(object):
             
             for j, value in enumerate(article):
 
-                a = article[j] == self._attrs['article_attributes']['start_t_2']
-                b = article[j + 1] == self._attrs['article_attributes']['start_t_1']
-                c = article[j + 2] == self._attrs['article_attributes']['start_t_0']
-                d = article[j] == self._attrs['article_attributes']['end_t_0']
-                e = article[j + 1] == self._attrs['article_attributes']['end_t_1']
-                f = article[j + 2] == self._attrs['article_attributes']['end_t_2']
+                s1 = article[j] == self._attrs['article_attributes']['start_t_2']
+                s2 = article[j + 1] == self._attrs['article_attributes']['start_t_1']
+                s3 = article[j + 2] == self._attrs['article_attributes']['start_t_0']
+                e1 = article[j] == self._attrs['article_attributes']['end_t_0']
+                e2 = article[j + 1] == self._attrs['article_attributes']['end_t_1']
+                e3 = article[j + 2] == self._attrs['article_attributes']['end_t_2']
 
-                if a and b and c:
+                if s1 and s2 and s3:
                     start_idx = j + 2
 
-                if d and e and f and start_idx:
+                if start_idx and e1 and e2 and e3:
                     end_idx = j
                     break
             
