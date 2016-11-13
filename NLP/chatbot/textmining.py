@@ -8,11 +8,11 @@ __author__ = 'Ming Li'
 
 class NHSTextMining(object):
 
-    '''
-    web scrapping module using BeautifulSoup4 and Requests
-    '''
+    """web scrapping module using BeautifulSoup4 and Requests"""
 
     def __init__(self, urls, attrs, n=None, display=False):
+
+        """urls and attrs to be supplied by main and setting."""
 
         assert isinstance(urls, list), 'require a list of urls'
         assert isinstance(attrs, dict), 'attributes must be a dictionary'
@@ -28,6 +28,8 @@ class NHSTextMining(object):
         self._output = dict()
 
     def _get(self):
+
+        """get all web pages and create soup objects ready for information extraction"""
 
         if self._display:
             print('page(s) are being downloaded...', flush=True, end='')
@@ -51,6 +53,8 @@ class NHSTextMining(object):
             print('done')
 
     def extract(self):
+
+        """get all web pages and create soup objects ready for information extraction"""
 
         self._get()
 
@@ -99,15 +103,3 @@ class NHSTextMining(object):
     def cleanse(words):
         removals = '''!"#$%&()*+/;<=>?@[\]^_`{|}~.,:'''
         return [i.lower().translate(str.maketrans('', '', removals)).replace('\xa0', ' ') for i in words]
-
-
-
-# for i in range(1, len(web_pages) + 1, 1):
-#
-#     m = re.search('conditions/(.*)/pages/', web_pages[i].lower()).group(1)
-#     m = re.sub('[^0-9a-zA-Z]+', ' ', m)
-#     web_pages[m] = web_pages.pop(i)
-#
-# illness = list(web_pages.keys())
-# illness.sort(reverse=True)
-# print(illness)

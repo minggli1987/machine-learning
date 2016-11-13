@@ -1,11 +1,5 @@
-
-# coding: utf-8
-
-__author__ = 'Ming Li'
-# This application forms a submission from Ming in regards to leaf classification challenge on Kaggle community
-
-import tensorflow as tf
-from tensorflow.contrib import learn
+# import tensorflow as tf
+# from tensorflow.contrib import learn
 from GradientDescent import GradientDescent
 from sklearn import metrics, cross_validation, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition, ensemble
 import matplotlib.pyplot as plt
@@ -17,6 +11,12 @@ import pydotplus
 import os
 import shutil
 warnings.filterwarnings('ignore')
+
+
+# coding: utf-8
+
+__author__ = 'Ming Li'
+# This application forms a submission from Ming in regards to leaf classification challenge on Kaggle community
 
 
 # set display right

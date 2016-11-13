@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 import random
 from settings import setting
-from text_mining import NHSTextMining
+from textmining import NHSTextMining
 import nltk.classify.util
 from nltk.corpus import movie_reviews as mr
 from nltk.tokenize import word_tokenize
