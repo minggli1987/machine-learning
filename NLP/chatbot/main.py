@@ -1,13 +1,14 @@
 import numpy as np
 import pandas as pd
+import random
 from settings import setting
 from text_mining import NHSTextMining
 import nltk.classify.util
-from nltk.classify import NaiveBayesClassifier
 from nltk.corpus import movie_reviews as mr
 from nltk.tokenize import word_tokenize
 from nltk.classify import NaiveBayesClassifier
-from sklearn import model_selection
+import time
+from sklearn import linear_model, model_selection
 
 
 __author__ = 'Ming Li'
@@ -31,29 +32,99 @@ urls = list(web_pages.values())
 
 web_scraper = NHSTextMining(urls=urls, attrs=setting, n=None, display=True)
 data = web_scraper.extract()
-
-# first is subject, second is description of the pages, rest is main article
-
-for i in range(1, 10):
-    print(data[web_pages[i]][:1])
-    input('press enter to continue...')
-
-heart_block = data[web_pages[0]]
-cleansed_string = NHSTextMining.cleanse(heart_block)
-
-print(cleansed_string[0])
-
-# regressand = word_tokenize(cleansed_string[0])
-# regressors = word_tokenize(cleansed_string[1:])
+# miner extracts subject, meta content (e.g. description of the page), main article
 
 
+def preview():
+    for i in range(1, 10):
+        print(data[web_pages[i]][:1])
+        input('press enter to continue...')
 
-question = '''
-i feel depressed
-'''
 
-print(word_tokenize(question))
+def word_feat(words):
+    return dict([(word, True) for word in words])
 
-# train
 
-# model_selection.train_test_split()
+def generate_training_set(bag, target=False):
+    n = 200
+    sample_size = 50
+    row = list()
+    for i in range(n):
+        row.append((word_feat(random.sample(bag, sample_size)), target))
+    return row
+
+df = list()
+mapping = dict()
+
+for i in web_pages.values():
+
+    subset = data[i]
+    words = word_tokenize(' '.join(NHSTextMining.cleanse(subset)))
+    df = df + generate_training_set(bag=words, target=subset[0])
+    mapping[subset[0]] = i
+
+
+#
+# x_train, x_test, y_train, y_test = \
+#     model_selection.train_test_split(df['features'], df['target'], test_size=.3, random_state=1)
+
+classifier = NaiveBayesClassifier.train(df)
+
+
+def classify(question, decision_boundary=.7):
+
+    options = list()
+    words = word_feat(word_tokenize(question))
+    obj = classifier.prob_classify(words)
+    keys = list(obj.samples())
+
+    for i in keys:
+
+        prob = obj.prob(i)
+        options.append((i, prob))
+
+    options.sort(key=lambda x: x[1], reverse=True)
+
+    if options[0][1] > decision_boundary:
+        return obj.max(), 0
+    elif options[0][1] > decision_boundary / 3:
+        return '; '.join([i[0] for i in options[:3]])
+    else:
+        return None
+
+while True:
+
+    time.sleep(1)
+    question = input('\nhow can I help you?')
+
+    if len(question) == 0:
+        break
+
+    output = classify(question)
+
+    if output and output[1] == 0:
+        time.sleep(2)
+        print('\nBased on what you told me, here is my diagnosis: {0}.'.format(output[0]))
+        time.sleep(2)
+        q = input('\nwould you like to have more information?')
+        if 'yes' in q.lower():
+            print('here is the link: {0}'.format(mapping[output[0]]))
+
+        q = input('\nwould you like to ask more questions?')
+        if 'yes' in q.lower():
+            continue
+        else:
+            break
+    elif not output:
+        print('\nSorry I am not able to help, you can improve result by asking more specific questions')
+        time.sleep(2)
+        continue
+    else:
+        print('\nBased on what you told me, here are possible reasons, including: {0}'.\
+              format(output), '\nYou can improve result by asking more specific questions')
+        time.sleep(2)
+        q = input('\nwould you like to ask more questions?')
+        if 'yes' in q.lower():
+            continue
+        else:
+            break

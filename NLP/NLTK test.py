@@ -21,17 +21,21 @@ poscutoff = int(len(posfeats) * 3 / 4)
 trainfeats = negfeats[:negcutoff] + posfeats[:poscutoff]
 testfeats = negfeats[negcutoff:] + posfeats[poscutoff:]
 
+
 print('train on {:.2f} instances, test on {:.2f} instances'.format(len(trainfeats), len(testfeats)))
 
 classifier = NaiveBayesClassifier.train(trainfeats)
 print('accuracy:', nltk.classify.util.accuracy(classifier, testfeats))
+
+print(trainfeats)
 
 classifier.show_most_informative_features()
 
 bad_review = 'As ever, Paolo Sorrentino ironically cuts the legs out from under his protagonists\' wistfulness with grotesquerie'
 good_review = '''Paolo Sorrentino, with Youth, delivers his most tender film to date, an emotionally rich contemplation of life's wisdom gained, lost and remembered - with cynicism harping from the sidelines, but as a wearied chord rather than a major motif.'''
 madeup_review = '''
-this is a waste of time to watch such bad movie
+There are three levels of heart block, and usually only the most serious type causes symptoms. This type of heart block is known as a complete, or third-degree, heart block.
+Symptoms of heart block can include: shortness of breath, palpitations, fainting
 '''
 
 
@@ -45,6 +49,7 @@ def classify(review):
     tokenized_review = word_tokenize(cleansed_review, language='english')
     feats = dict([(word, True) for word in tokenized_review])
     print('\n', review, '\n', 'NLP classifer believes above review is:')
+    print(feats)
     return classifier.classify(feats)
 
 

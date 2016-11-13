@@ -97,7 +97,7 @@ class NHSTextMining(object):
 
     @staticmethod
     def cleanse(words):
-        removals = string.punctuation.replace('-', '')
+        removals = '''!"#$%&()*+/;<=>?@[\]^_`{|}~.,:'''
         return [i.lower().translate(str.maketrans('', '', removals)).replace('\xa0', ' ') for i in words]
 
 
