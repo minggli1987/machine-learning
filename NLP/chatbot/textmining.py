@@ -94,7 +94,6 @@ class NHSTextMining(object):
 
             self._output[page_url] = content
 
-        time.sleep(1)
         print('done')
 
         return self._output

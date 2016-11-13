@@ -3,8 +3,6 @@ import pandas as pd
 import random
 from settings import setting
 from textmining import NHSTextMining
-import nltk.classify.util
-from nltk.corpus import movie_reviews as mr
 from nltk.tokenize import word_tokenize
 from nltk.classify import NaiveBayesClassifier
 import time
