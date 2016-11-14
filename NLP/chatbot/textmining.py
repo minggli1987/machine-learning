@@ -86,7 +86,7 @@ class NHSTextMining(object):
                 if start_idx and e1 and e2 and e3:
                     end_idx = j
                     break
-            
+
             content = article[start_idx: end_idx]
 
             content.insert(0, subj)
