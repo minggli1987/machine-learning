@@ -40,7 +40,7 @@ def word_feat(words):
     return dict([(word, True) for word in words])
 
 
-def generate_training_set(bag, target=False):
+def generate_training_set(bag, target=None):
     n = 200
     sample_size = 50
     row = list()
@@ -48,22 +48,21 @@ def generate_training_set(bag, target=False):
         row.append((word_feat(random.sample(bag, sample_size)), target))
     return row
 
-df = list()
+feature_set = list()
 mapping = dict()
 
 for i in web_pages.values():
 
     subset = data[i]
     words = word_tokenize(' '.join(NHSTextMining.cleanse(subset)))
-    df = df + generate_training_set(bag=words, target=subset[0])
+    feature_set = feature_set + generate_training_set(bag=words, target=subset[0])
     mapping[subset[0]] = i
 
 
-#
 # x_train, x_test, y_train, y_test = \
-#     model_selection.train_test_split(df['features'], df['target'], test_size=.3, random_state=1)
+#     model_selection.train_test_split(feature_set['features'], feature_set['target'], test_size=.3, random_state=1)
 
-classifier = NaiveBayesClassifier.train(df)
+classifier = NaiveBayesClassifier.train(feature_set)
 
 
 def classify(question, decision_boundary=.8):
@@ -88,9 +87,9 @@ def classify(question, decision_boundary=.8):
         return None
 
 
-def converse():
+def converse(s=1.5):
 
-    t = time.sleep(1.5)
+    t = time.sleep(s)
 
     while True:
 
