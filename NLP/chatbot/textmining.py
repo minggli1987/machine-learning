@@ -99,6 +99,5 @@ class NHSTextMining(object):
         return self._output
 
     @staticmethod
-    def cleanse(words):
-        removals = '''!"#$%&()*+/;<=>?@[\]^_`{|}~.,:'''
+    def cleanse(words, removals='''!"#$%&()*+/;<=>?@[\]^_`{|}~.,:'''):
         return [i.lower().translate(str.maketrans('', '', removals)).replace('\xa0', ' ') for i in words]
