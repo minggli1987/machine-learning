@@ -86,39 +86,48 @@ def classify(question, decision_boundary=.7):
     else:
         return None
 
-while True:
 
-    time.sleep(1)
-    question = input('\nhow can I help you?')
+def converse():
 
-    if len(question) == 0:
-        break
+    t = time.sleep(1.5)
 
-    output = classify(question)
+    while True:
 
-    if output and output[1] == 0:
-        time.sleep(2)
-        print('\nBased on what you told me, here is my diagnosis: {0}.'.format(output[0]))
-        time.sleep(2)
-        q = input('\nwould you like to have more information?')
-        if 'yes' in q.lower():
-            print('here is the link: {0}'.format(mapping[output[0]]))
+        t
+        question = input('\nhow can I help you?')
 
-        q = input('\nwould you like to ask more questions?')
-        if 'yes' in q.lower():
+        if len(question) == 0:
+            break
+
+        output = classify(question)
+
+        if output and output[1] == 0:
+            t
+            print('\nBased on what you told me, here is my diagnosis: {0}.'.format(output[0]))
+            t
+            q = input('\nwould you like to have more information?')
+            if 'yes' in q.lower():
+                print('here is the link: {0}'.format(mapping[output[0]]))
+
+            q = input('\nwould you like to ask more questions?')
+            if 'yes' in q.lower():
+                continue
+            else:
+                break
+        elif not output:
+            print('\nSorry I am not able to help, you can improve result by asking more specific questions')
+            t
             continue
         else:
-            break
-    elif not output:
-        print('\nSorry I am not able to help, you can improve result by asking more specific questions')
-        time.sleep(2)
-        continue
-    else:
-        print('\nBased on what you told me, here are possible reasons, including: {0}'.\
-              format(output), '\nYou can improve result by asking more specific questions')
-        time.sleep(2)
-        q = input('\nwould you like to ask more questions?')
-        if 'yes' in q.lower():
-            continue
-        else:
-            break
+            print('\nBased on what you told me, here are possible reasons, including: {0}'.\
+                  format(output), '\nYou can improve result by asking more specific questions')
+            t
+            q = input('\nwould you like to ask more questions?')
+            if 'yes' in q.lower():
+                continue
+            else:
+                break
+
+if __name__ == '__main__':
+    converse()
+
