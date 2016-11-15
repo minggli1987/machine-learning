@@ -26,10 +26,11 @@ urls = list(web_pages.values())
 
 web_scraper = NHSTextMining(urls=urls, attrs=setting, n=None, display=True)
 data = web_scraper.extract()
+
 # miner extracts subject, meta content (e.g. description of the page), main article
 
 
-def preview():
+def preview_data():
     for i in range(1, 10):
         print(data[web_pages[i]][:1])
         input('press enter to continue...')
@@ -65,7 +66,7 @@ for i in web_pages.values():
 classifier = NaiveBayesClassifier.train(df)
 
 
-def classify(question, decision_boundary=.7):
+def classify(question, decision_boundary=.8):
 
     options = list()
     words = word_feat(word_tokenize(question))

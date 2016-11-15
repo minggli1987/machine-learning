@@ -101,3 +101,7 @@ class NHSTextMining(object):
     @staticmethod
     def cleanse(words, removals='''!"#$%&()*+/;<=>?@[\]^_`{|}~.,:'''):
         return [i.lower().translate(str.maketrans('', '', removals)).replace('\xa0', ' ') for i in words]
+
+    @staticmethod
+    def word_feat(words):
+        return dict([(word, True) for word in words])
