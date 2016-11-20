@@ -87,7 +87,7 @@ def classify(question, decision_boundary=.8):
         return None
 
 
-def converse(s=1.5):
+def converse(s=2):
 
     t = time.sleep(s)
 
