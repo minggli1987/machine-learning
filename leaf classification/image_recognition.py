@@ -1,5 +1,6 @@
 import numpy as np
 import os, sys
+from PIL import Image, ImageChops, ImageOps
 import tensorflow as tf
 from tensorflow.examples.tutorials import mnist
 
@@ -9,6 +10,30 @@ __author__ = 'Ming Li'
 
 path = 'leaf/images/'
 pic_names = {i: path + str(i) + '.jpg' for i in range(1, 1585)}
+
+
+def f_resize(f_in, f_out, size=(96, 96), pad=True):
+
+    image = Image.open(f_in)
+    image.thumbnail(size, Image.ANTIALIAS)
+    image_size = image.size
+
+    if pad:
+        thumb = image.crop((0, 0, size[0], size[1]))
+
+        offset_x = max((size[0] - image_size[0]) / 2, 0)
+        offset_y = max((size[1] - image_size[1]) / 2, 0)
+
+        thumb = ImageChops.offset(thumb, offset_x, offset_y)
+
+    else:
+        thumb = ImageOps.fit(image, size, Image.ANTIALIAS, (0.5, 0.5))
+
+    thumb.save(f_out)
+
+
+
+
 
 
 g = tf.Graph().as_default()
