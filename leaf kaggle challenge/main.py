@@ -22,6 +22,7 @@ pic_names = [i.name for i in os.scandir(dir_path) if i.is_file()]
 input_shape = (96, 96)
 m = input_shape[0] * input_shape[1]
 n = len(classes)
+
 # cross validation of training photos
 
 cross_val = False
@@ -48,10 +49,10 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
             directory = dir_path + 'validation/' + label_map[leaf_id]
         else:
             directory = dir_path + 'test'
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        # if not os.path.exists(directory):
+        #     os.makedirs(directory)
 
-        leaf_images[leaf_id].save(directory+'/' + name)
+        # leaf_images[leaf_id].save(directory+'/' + name)
 
     if not cross_val:
         break
@@ -80,13 +81,13 @@ y = tf.matmul(x, W) + b
 cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
 train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
-tf.image.decode_jpeg(channels=1)
 
+print(np.array(leaf_images[1]).flatten().shape)
 
 # train
-for i in range(1000):
-    batch = mnist.train.next_batch(100)
-    train_step.run(feed_dict={x: batch[0], y_: batch[1]})
+# for i in range(1000):
+#     batch = mnist.train.next_batch(100)
+#     train_step.run(feed_dict={x: batch[0], y_: batch[1]})
 
 
 sess.run(init)
