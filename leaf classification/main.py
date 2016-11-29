@@ -136,3 +136,4 @@ else:
     delete_folders(table)
     print('done', flush=True)
     sys.exit()
+
