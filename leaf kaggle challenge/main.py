@@ -20,12 +20,13 @@ dir_path = 'leaf/images/'
 label_map, classes = extract('leaf/train.csv')
 pic_names = [i.name for i in os.scandir(dir_path) if i.is_file()]
 input_shape = (96, 96)
-
+m = input_shape[0] * input_shape[1]
+n = len(classes)
 # cross validation of training photos
 
 cross_val = False
 
-kf_iterator = model_selection.StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
+kf_iterator = model_selection.StratifiedKFold(n_splits=5, shuffle=True, random_state=1)  # Stratified
 train_x = list(label_map.keys())  # leaf id
 train_y = list(label_map.values())  # leaf species names
 
@@ -39,7 +40,7 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
     for name in pic_names:
 
         leaf_id = int(name.split('.')[0])
-        leaf_images[leaf_id] = pic_resize(dir_path + name, shape=input_shape, pad=True)
+        leaf_images[leaf_id] = pic_resize(dir_path + name, size=input_shape, pad=True)
 
         if leaf_id in train_id:
             directory = dir_path + 'train/' + label_map[leaf_id]
@@ -56,4 +57,38 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
         break
 
 # setting up tf Session
+
+tf.device("/cpu:0")
+sess = tf.Session()
+
+# declare placeholders
+
+x = tf.placeholder(dtype=tf.float32, shape=[None, m], name='feature')
+y_ = tf.placeholder(dtype=tf.string, shape=[None, n], name='label')
+
+# declare variables
+
+# Variables
+W = tf.Variable(tf.zeros([m, n]))
+b = tf.Variable(tf.zeros([n]))
+
+init = tf.global_variables_initializer()
+
+y = tf.matmul(x, W) + b
+
+# loss function
+cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
+train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+
+tf.image.decode_jpeg(channels=1)
+
+
+# train
+for i in range(1000):
+    batch = mnist.train.next_batch(100)
+    train_step.run(feed_dict={x: batch[0], y_: batch[1]})
+
+
+sess.run(init)
+sess.close()
 

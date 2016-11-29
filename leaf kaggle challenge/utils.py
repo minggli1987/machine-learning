@@ -2,7 +2,6 @@ from PIL import Image, ImageChops, ImageOps
 import os
 import shutil
 import pandas as pd
-from sklearn import model_selection
 
 
 def extract(train_data):
@@ -41,6 +40,3 @@ def pic_resize(f_in, size=(96, 96), pad=True):
         thumb = ImageOps.fit(image, size, Image.ANTIALIAS, (0.5, 0.5))
 
     return thumb
-
-
-
