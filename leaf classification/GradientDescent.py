@@ -7,12 +7,10 @@ __author__ = 'Ming Li'
 
 class GradientDescent(object):
 
-    '''
-
+    """
     This is a standard Gradient Descent algorithm to optimise parameters for General Linear Models and Logistic Regression.
     Multi-class Logistic Regression is supported
-
-    '''
+    """
 
     def __init__(self, alpha=.1, max_epochs=5000, conv_thres=.0001, display=False):
 
