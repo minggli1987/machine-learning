@@ -1,5 +1,6 @@
 from PIL import Image, ImageChops, ImageOps
-from os import scandir, makedirs, path
+import os
+import shutil
 import pandas as pd
 from sklearn import model_selection
 
@@ -9,6 +10,13 @@ def _label(train_data):
     _labelmap = dict(zip(train['id'], train['species']))
     _class = set(train['species'])
     return _labelmap, _class
+
+
+def delete_folders(dirs=['test', 'train', 'validation'], dir_path='leaf/images/'):
+
+    for directory in dirs:
+        if os.path.exists(dir_path + directory):
+            shutil.rmtree(dir_path + directory)
 
 dir_path = 'leaf/images/'
 
@@ -38,13 +46,18 @@ def f_resize(f_in, size=(96, 96), pad=True):
 
     return thumb
 
-pic_names = [i.name for i in scandir(dir_path) if i.is_file()]
+pic_names = [i.name for i in os.scandir(dir_path) if i.is_file()]
+
+
+# cross validation of training photos
 
 kf_gen = model_selection.StratifiedKFold(n_splits=5, shuffle=True, random_state=1)
 
 train_x = list(label_map.keys())
 train_y = list(label_map.values())
 leaf_images = dict()
+
+cross_val = False
 
 for train_index, valid_index in kf_gen.split(train_x, train_y):
 
@@ -62,10 +75,13 @@ for train_index, valid_index in kf_gen.split(train_x, train_y):
             directory = dir_path + 'validation/' + label_map[leaf_id]
         else:
             directory = dir_path + 'test'
-        if not path.exists(directory):
-            makedirs(directory)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
         leaf_images[leaf_id].save(directory+'/' + name)
 
-    break
+    if not cross_val:
+        break
 
+
+delete_folders()
