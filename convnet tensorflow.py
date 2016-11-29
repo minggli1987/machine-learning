@@ -1,37 +1,5 @@
-import numpy as np
-import os, sys
-from PIL import Image, ImageChops, ImageOps
 import tensorflow as tf
 from tensorflow.examples.tutorials import mnist
-
-
-__author__ = 'Ming Li'
-# This application forms a submission from Ming in regards to leaf classification challenge on Kaggle community
-
-path = 'leaf/images/'
-pic_names = {i: path + str(i) + '.jpg' for i in range(1, 1585)}
-
-
-def f_resize(f_in, f_out, size=(96, 96), pad=True):
-
-    image = Image.open(f_in)
-    image.thumbnail(size, Image.ANTIALIAS)
-    image_size = image.size
-
-    if pad:
-        thumb = image.crop((0, 0, size[0], size[1]))
-
-        offset_x = max((size[0] - image_size[0]) / 2, 0)
-        offset_y = max((size[1] - image_size[1]) / 2, 0)
-
-        thumb = ImageChops.offset(thumb, offset_x, offset_y)
-
-    else:
-        thumb = ImageOps.fit(image, size, Image.ANTIALIAS, (0.5, 0.5))
-
-    thumb.save(f_out)
-
-
 
 mnist = mnist.input_data.read_data_sets('MNIST_data', one_hot=True)
 
@@ -127,7 +95,7 @@ correct_prediction = tf.equal(tf.argmax(y_conv,1), tf.argmax(y_,1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 sess.run(tf.initialize_all_variables())
 
-for i in range(20000):
+for i in range(5000):
     batch = mnist.train.next_batch(50)
     if i % 100 == 0:
         train_accuracy = accuracy.eval(feed_dict={
