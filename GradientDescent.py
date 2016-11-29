@@ -7,11 +7,10 @@ __author__ = 'Ming Li'
 
 class GradientDescent(object):
 
-    '''
-    This is a standard Gradient Descent algorithm to optimise parameters
-    for General Linear Models and Logistic Regression. Multi-class
-    Logistic Regression is supported
-    '''
+    """
+    This is a standard Gradient Descent algorithm to optimise parameters for General Linear Models and Logistic Regression.
+    Multi-class Logistic Regression is supported
+    """
 
     def __init__(self, alpha=.1, max_epochs=5000, conv_thres=.0001, display=False):
 
@@ -64,15 +63,12 @@ class GradientDescent(object):
         m = len(X)
 
         if self._linear:
-            h = np.dot(X, params.T)
-            # GLM hypothesis in linear algebra representation
+            h = np.dot(X, params.T)     # GLM hypothesis in linear algebra representation
 
         if self._sigmoid:
-            h = 1 / (1 + np.exp(-np.dot(X, params.T)))
-            # logistic (sigmoid) model hypothesis
+            h = 1 / (1 + np.exp(-np.dot(X, params.T)))     # logistic (sigmoid) model hypothesis
 
-        J = np.dot((h - y).T, X) / m
-        # partial_derivative terms for either linear or logistic regression
+        J = np.dot((h - y).T, X) / m        # partial_derivative terms for either linear or logistic regression
 
         return J  # J is a n-dimensioned vector
 
@@ -99,8 +95,7 @@ class GradientDescent(object):
 
         alpha = self._alpha
 
-        count = 0
-        # initiating a count number so once reaching max iterations will terminate
+        count = 0  # initiating a count number so once reaching max iterations will terminate
 
         cost = self.__cost_function__(params, X, y)  # initial J(theta)
         prev_cost = cost + 10
