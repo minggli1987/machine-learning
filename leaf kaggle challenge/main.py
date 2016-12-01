@@ -34,7 +34,8 @@ train_y = list(id_name.values())  # leaf species names
 for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
     leaf_images = dict()  # temp dictionary of resized leaf images
-    array_label = list()  # array of image and label of species id
+    train = list()  # array of image and label of species id
+    valid = list()  # array of image and label of species id
 
     train_id = [train_x[i] for i in train_index]
     valid_id = [train_x[i] for i in valid_index]
@@ -46,10 +47,10 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
         if leaf_id in train_id:
             directory = dir_path + 'train/' + id_name[leaf_id]
-            array_label.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
+            train.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
         elif leaf_id in valid_id:
             directory = dir_path + 'validation/' + id_name[leaf_id]
-            array_label.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
+            valid.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
 
         else:
             directory = dir_path + 'test'
@@ -58,14 +59,12 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
         leaf_images[leaf_id].save(directory+'/' + name)
 
-    data = np.array(array_label)
+    train = np.array(train)
+    valid = np.array(valid)
 
     if not cross_val:
         break
 
-
-# create batches
-batches = batch_iter(data=data, batch_size=50, num_epochs=10)
 
 # setting up tf Session
 
@@ -91,7 +90,7 @@ y = tf.matmul(x, W) + b
 cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
 train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
-for batch in batches:
+for batch in batch_iter(data=train, batch_size=50, num_epochs=10):
     x_batch, y_batch = zip(*batch)
     train_step.run(feed_dict={x: x_batch, y_: y_batch})
 
