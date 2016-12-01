@@ -17,19 +17,19 @@ __author__ = 'Ming Li'
 # params
 
 dir_path = 'leaf/images/'
-label_map, classes = extract('leaf/train.csv')
+id_label, id_name, mapping = extract('leaf/train.csv')
 pic_names = [i.name for i in os.scandir(dir_path) if i.is_file()]
 input_shape = (96, 96)
 m = input_shape[0] * input_shape[1]
-n = len(classes)
+n = len(set(id_label.values()))
 
 # cross validation of training photos
 
 cross_val = False
 
 kf_iterator = model_selection.StratifiedKFold(n_splits=5, shuffle=True, random_state=1)  # Stratified
-train_x = list(label_map.keys())  # leaf id
-train_y = list(label_map.values())  # leaf species names
+train_x = list(id_name.keys())  # leaf id
+train_y = list(id_name.values())  # leaf species names
 
 for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
@@ -44,9 +44,9 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
         leaf_images[leaf_id] = pic_resize(dir_path + name, size=input_shape, pad=True)
 
         if leaf_id in train_id:
-            directory = dir_path + 'train/' + label_map[leaf_id]
+            directory = dir_path + 'train/' + id_name[leaf_id]
         elif leaf_id in valid_id:
-            directory = dir_path + 'validation/' + label_map[leaf_id]
+            directory = dir_path + 'validation/' + id_name[leaf_id]
         else:
             directory = dir_path + 'test'
         # if not os.path.exists(directory):
@@ -56,6 +56,7 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
     if not cross_val:
         break
+
 
 # setting up tf Session
 
@@ -83,6 +84,8 @@ train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
 
 print(np.array(leaf_images[1]).flatten().shape)
+
+
 
 # train
 # for i in range(1000):

@@ -6,9 +6,13 @@ import pandas as pd
 
 def extract(train_data):
     train = pd.read_csv(train_data)
-    _labelmap = dict(zip(train['id'], train['species']))
-    _class = set(train['species'])
-    return _labelmap, _class
+    species_id_mapping = {'species': {v: k for k, v in enumerate(set(train['species']))}}
+    train['species_name'] = train['species'].copy()
+    train.replace(species_id_mapping, inplace=True)
+    id_label = dict(zip(train['id'], train['species']))
+    id_name = dict(zip(train['id'], train['species_name']))
+    mapping = dict(zip(id_label.values(), id_name.values()))
+    return id_label, id_name, mapping
 
 
 def delete_folders(dirs=['test', 'train', 'validation'], dir_path='leaf/images/'):
