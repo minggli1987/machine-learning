@@ -44,3 +44,14 @@ def pic_resize(f_in, size=(96, 96), pad=True):
         thumb = ImageOps.fit(image, size, Image.ANTIALIAS, (0.5, 0.5))
 
     return thumb
+
+
+def batch_iter(data, batch_size, num_epochs):
+    """batch iterator"""
+    data_size = len(data)
+    num_batches_per_epoch = int(len(data)/batch_size) + 1
+    for epoch in range(num_epochs):
+        for batch_num in range(num_batches_per_epoch):
+            start_index = batch_num * batch_size
+            end_index = min((batch_num + 1) * batch_size, data_size)
+            yield data[start_index:end_index]
