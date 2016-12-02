@@ -51,7 +51,6 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
         elif leaf_id in valid_id:
             directory = dir_path + 'validation/' + id_name[leaf_id]
             valid.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
-
         else:
             directory = dir_path + 'test'
         if not os.path.exists(directory):
