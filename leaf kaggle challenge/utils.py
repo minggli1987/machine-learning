@@ -56,10 +56,3 @@ def batch_iter(data, batch_size, num_epochs):
             end_index = min((batch_num + 1) * batch_size, data_size)
             yield data[start_index:end_index]
 
-
-train = pd.read_csv('leaf/train.csv', index_col=['id'])
-mapping = {k: v for k, v in enumerate(pd.get_dummies(train['species']).columns)}
-dummies = pd.get_dummies(train['species'])
-dummies.columns = mapping.keys()
-pid_label = dict(zip(dummies.index, np.array(dummies)))
-id_name = dict(zip(train.index, train['species']))
