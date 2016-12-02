@@ -102,21 +102,23 @@ def main():
         cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
         train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
+
+
+        valid_x = np.array([i[0] for i in valid])
+        valid_y = np.array([i[1] for i in valid])
+
         for batch in batches:
             x_batch, y_batch = zip(*batch)
             x_batch = np.array(x_batch)
             y_batch = np.array(y_batch)
             train_step.run(feed_dict={x: x_batch, y_: y_batch})
 
-        # eval
-        correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+            # eval
+            correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-        valid_x = np.array([i[0] for i in valid])
-        valid_y = np.array([i[1] for i in valid])
-
-        print(accuracy.eval(feed_dict={x: valid_x, y_: valid_y}))
+            print(accuracy.eval(feed_dict={x: valid_x, y_: valid_y}))
 
 
 if __name__ == '__main__':
