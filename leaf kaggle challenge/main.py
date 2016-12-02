@@ -22,7 +22,7 @@ pic_names = [i.name for i in os.scandir(dir_path) if i.is_file()]
 input_shape = (96, 96)
 m = input_shape[0] * input_shape[1]
 n = len(set(id_label.values()))
-
+print(id_label)
 # cross validation of training photos
 
 cross_val = False
@@ -63,8 +63,6 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        leaf_images[pic_id].save(directory+'/' + name)
-
     train = np.array(train)
     valid = np.array(valid)
 
@@ -73,13 +71,10 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
 # load image into tensor
 
-print(train[0])
-
 # create batches
 # batches = batch_iter(data=train, batch_size=50, num_epochs=10)
 
 # setting up tf Session
-
 
 
 def main():

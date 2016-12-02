@@ -2,15 +2,16 @@ from PIL import Image, ImageChops, ImageOps
 import os
 import shutil
 import pandas as pd
-
+import numpy as np
 
 def extract(train_data):
-    train = pd.read_csv(train_data)
-    species_id_mapping = {'species': {v: k for k, v in enumerate(set(train['species']))}}
-    train['species_name'] = train['species'].copy()
-    train.replace(species_id_mapping, inplace=True)
+    train = pd.read_csv(train_data, index_col=['id'])
+    # species_id_mapping = {'species': {v: k for k, v in enumerate(set(train['species']))}}
+    # train['species_name'] = train['species'].copy()
+    # train.replace(species_id_mapping, inplace=True)
+    dummies = pd.get_dummies(train['species'])
     id_label = dict(zip(train['id'], train['species']))
-    id_name = dict(zip(train['id'], train['species_name']))
+    id_name = dict(zip(train['id'], dummies))
     mapping = dict(zip(id_label.values(), id_name.values()))
     return id_label, id_name, mapping
 
@@ -55,3 +56,14 @@ def batch_iter(data, batch_size, num_epochs):
             start_index = batch_num * batch_size
             end_index = min((batch_num + 1) * batch_size, data_size)
             yield data[start_index:end_index]
+
+
+train = pd.read_csv('leaf/train.csv', index_col=['id'])
+mapping = {k: v for k, v in enumerate(pd.get_dummies(train['species']).columns)}
+dummies = pd.get_dummies(train['species'])
+dummies.columns = mapping.keys()
+pid_label = dict(zip(dummies.index, np.array(dummies)))
+# id_name = dict(zip(dummies.index, dummies))
+# mapping = dict(zip(id_label.values(), id_name.values()))
+label = np.array(dummies)
+
