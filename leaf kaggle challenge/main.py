@@ -39,8 +39,8 @@ train_y = list(id_name.values())  # leaf species names
 for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
     leaf_images = dict()  # temp dictionary of resized leaf images
-    # train = list()  # array of image and label of species id
-    # valid = list()  # array of image and label of species id
+    train = list()  # array of image and label of species id
+    valid = list()  # array of image and label of species id
 
     train_id = [train_x[idx] for idx in train_index]
     valid_id = [train_x[idx] for idx in valid_index]
@@ -48,14 +48,14 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
     for name in pic_names:
 
         pic_id = int(name.split('.')[0])
-        # leaf_images[leaf_id] = pic_resize(dir_path + name, size=input_shape, pad=True)
+        leaf_images[pic_id] = pic_resize(dir_path + name, size=input_shape, pad=True)
 
         if pic_id in train_id:
             directory = dir_path + 'train/' + id_name[pic_id]
-            # train.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
+            train.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
         elif pic_id in valid_id:
             directory = dir_path + 'validation/' + id_name[pic_id]
-            # valid.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
+            valid.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
         else:
             directory = dir_path + 'test'
         if not os.path.exists(directory):
@@ -63,13 +63,10 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
         leaf_images[pic_id].save(directory+'/' + name)
 
-    # train = np.array(train)
-    # valid = np.array(valid)
-
     if not cross_val:
         break
 
-
+# load image into tensor
 
 
 
