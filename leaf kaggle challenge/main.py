@@ -31,7 +31,6 @@ delete = True
 if delete:
     delete_folders()
 
-
 kf_iterator = model_selection.StratifiedKFold(n_splits=5, shuffle=True, random_state=1)  # Stratified
 train_x = list(id_name.keys())  # leaf id
 train_y = list(id_name.values())  # leaf species names
@@ -52,23 +51,29 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
         if pic_id in train_id:
             directory = dir_path + 'train/' + id_name[pic_id]
-            train.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
+            train.append((np.array(leaf_images[pic_id]).flatten(), id_label[pic_id]))
+
         elif pic_id in valid_id:
             directory = dir_path + 'validation/' + id_name[pic_id]
-            valid.append((np.array(leaf_images[leaf_id]).flatten(), id_label[leaf_id]))
+            valid.append((np.array(leaf_images[pic_id]).flatten(), id_label[pic_id]))
+
         else:
             directory = dir_path + 'test'
+
         if not os.path.exists(directory):
             os.makedirs(directory)
 
         leaf_images[pic_id].save(directory+'/' + name)
+
+    train = np.array(train)
+    valid = np.array(valid)
 
     if not cross_val:
         break
 
 # load image into tensor
 
-
+print(train[0])
 
 # create batches
 # batches = batch_iter(data=train, batch_size=50, num_epochs=10)
