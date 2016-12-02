@@ -17,12 +17,13 @@ __author__ = 'Ming Li'
 # params
 
 dir_path = 'leaf/images/'
-id_label, id_name, mapping = extract('leaf/train.csv')
+pid_label, pid_name = extract('leaf/train.csv')
 pic_names = [i.name for i in os.scandir(dir_path) if i.is_file()]
 input_shape = (96, 96)
 m = input_shape[0] * input_shape[1]
-n = len(set(id_label.values()))
-print(id_label)
+n = len(set(pid_name.values()))
+
+
 # cross validation of training photos
 
 cross_val = False
@@ -32,12 +33,12 @@ if delete:
     delete_folders()
 
 kf_iterator = model_selection.StratifiedKFold(n_splits=5, shuffle=True, random_state=1)  # Stratified
-train_x = list(id_name.keys())  # leaf id
-train_y = list(id_name.values())  # leaf species names
+train_x = list(pid_name.keys())  # leaf id
+train_y = list(pid_name.values())  # leaf species names
 
 for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
-    leaf_images = dict()  # temp dictionary of resized leaf images
+    leaf_images = dict()  # temp dictionary of re-sized leaf images
     train = list()  # array of image and label of species id
     valid = list()  # array of image and label of species id
 
