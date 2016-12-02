@@ -1,5 +1,6 @@
 import tensorflow as tf
 from tensorflow.examples.tutorials import mnist
+import sys
 
 mnist = mnist.input_data.read_data_sets('MNIST_data', one_hot=True)
 
@@ -27,10 +28,14 @@ train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
 for i in range(1000):
   batch = mnist.train.next_batch(100)
+  print(batch[0].shape, batch[1].shape)
   train_step.run(feed_dict={x: batch[0], y_: batch[1]})
+  break
+
+sys.exit()
 
 # eval
-correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
+correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 

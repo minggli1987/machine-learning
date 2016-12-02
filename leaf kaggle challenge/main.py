@@ -66,42 +66,47 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
         break
 
 
+# create batches
+batches = batch_iter(data=train, batch_size=50, num_epochs=10)
+
 # setting up tf Session
 
 tf.device("/cpu:0")
 sess = tf.Session()
+with tf.Graph().as_default():
+    with tf.Session().as_default():
 
-# declare placeholders
+        # declare placeholders
 
-x = tf.placeholder(dtype=tf.float32, shape=[None, m], name='feature')
-y_ = tf.placeholder(dtype=tf.float32, shape=[None, n], name='label')
+        x = tf.placeholder(dtype=tf.float32, shape=[None, m], name='feature')
+        y_ = tf.placeholder(dtype=tf.float32, shape=[None, n], name='label')
 
-# declare variables
+        # declare variables
 
-# Variables
-W = tf.Variable(tf.zeros([m, n]))
-b = tf.Variable(tf.zeros([n]))
+        # Variables
+        W = tf.Variable(tf.zeros([m, n]))
+        b = tf.Variable(tf.zeros([n]))
 
-init = tf.global_variables_initializer()
+        init = tf.global_variables_initializer()
 
-y = tf.matmul(x, W) + b
+        y = tf.matmul(x, W) + b
 
-# loss function
-cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
-train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+        # loss function
+        cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
+        train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
 
-for batch in batch_iter(data=train, batch_size=50, num_epochs=10):
-    x_batch, y_batch = zip(*batch)
-    train_step.run(feed_dict={x: x_batch, y_: y_batch})
+        for batch in batches:
+            x_batch, y_batch = zip(*batch)
+            x_batch = np.array(x_batch)
+            y_batch = np.array(y_batch)
+            train_step.run(feed_dict={x: x_batch, y_: np.array(y_batch)})
 
-# eval
-correct_prediction = tf.equal(tf.argmax(y,1), tf.argmax(y_,1))
+        # eval
+        correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-print(accuracy.eval(feed_dict={x: , y_: }))
-
-
+        print(accuracy.eval(feed_dict={x: zip(*valid)[0], y_: zip(*valid)[1]}))
 
 sess.run(init)
 sess.close()
