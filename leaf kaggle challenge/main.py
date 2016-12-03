@@ -26,52 +26,51 @@ n = len(set(pid_name.values()))
 
 # load image into tensor
 
+sess = tf.Session()
+
+# declare placeholders
+
+x = tf.placeholder(dtype=tf.float32, shape=[None, m], name='feature')  # pixels as features
+y_ = tf.placeholder(dtype=tf.float32, shape=[None, n], name='label')  # 99 classes in 1D tensor
+
+# declare variables
+
+# Variables
+W = tf.Variable(tf.zeros([m, n]))
+b = tf.Variable(tf.zeros([n]))
+
+init = tf.global_variables_initializer()
+sess.run(init)
+
+y = tf.matmul(x, W) + b
+
+# loss function
+cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
+train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
+
+
 def main():
 
-    sess = tf.Session()
-    with sess.as_default():
+    for batch in batches:
+        x_batch, y_batch = zip(*batch)
+        x_batch = np.array(x_batch)
+        y_batch = np.array(y_batch)
+        train_step.run(feed_dict={x: x_batch, y_: y_batch}, session=sess)
 
-        # declare placeholders
+        # eval
+        correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
 
-        x = tf.placeholder(dtype=tf.float32, shape=[None, m], name='feature')  # pixels as features
-        y_ = tf.placeholder(dtype=tf.float32, shape=[None, n], name='label')  # 99 classes in 1D tensor
+        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
-        # declare variables
+        print(accuracy.eval(feed_dict={x: valid_x, y_: valid_y}, session=sess))
 
-        # Variables
-        W = tf.Variable(tf.zeros([m, n]))
-        b = tf.Variable(tf.zeros([n]))
-
-        init = tf.global_variables_initializer()
-        sess.run(init)
-
-        y = tf.matmul(x, W) + b
-
-        # loss function
-        cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
-        train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
-
-        valid_x = np.array([i[0] for i in valid])
-        valid_y = np.array([i[1] for i in valid])
-
-        for batch in batches:
-            x_batch, y_batch = zip(*batch)
-            x_batch = np.array(x_batch)
-            y_batch = np.array(y_batch)
-            train_step.run(feed_dict={x: x_batch, y_: y_batch})
-
-            # eval
-            correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-
-            accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-
-            print(accuracy.eval(feed_dict={x: valid_x, y_: valid_y}))
+    print('\n\n\n\n Continuing Cross Validation... \n\n\n\n')
 
 
 # cross validation of training photos
 
-cross_val = False
-delete = False
+cross_val = True
+delete = True
 
 if delete:
     delete_folders()
@@ -114,7 +113,9 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
     valid = np.array(valid)
 
     # create batches
-    batches = batch_iter(data=train, batch_size=50, num_epochs=1000)
+    batches = batch_iter(data=train, batch_size=50, num_epochs=30)
+    valid_x = np.array([i[0] for i in valid])
+    valid_y = np.array([i[1] for i in valid])
 
     main()
 
