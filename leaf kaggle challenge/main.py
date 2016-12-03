@@ -171,7 +171,7 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
     valid = np.array(valid)
 
     # create batches
-    batches = batch_iter(data=train, batch_size=30, num_epochs=5)
+    batches = batch_iter(data=train, batch_size=50, num_epochs=5)
     valid_x = np.array([i[0] for i in valid])
     valid_y = np.array([i[1] for i in valid])
 
