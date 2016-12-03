@@ -23,7 +23,6 @@ input_shape = (96, 96)
 m = input_shape[0] * input_shape[1]  # num of flat array
 n = len(set(pid_name.values()))
 
-
 # load image into tensor
 
 sess = tf.Session()
