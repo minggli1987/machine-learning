@@ -35,6 +35,7 @@ y_ = tf.placeholder(dtype=tf.float32, shape=[None, n], name='label')  # 99 class
 
 # declare variables
 
+# Variables
 W = tf.Variable(tf.zeros([m, n]))
 b = tf.Variable(tf.zeros([n]))
 
@@ -121,3 +122,4 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
     if not cross_val:
         break
 
+"best result is 98.48%"
