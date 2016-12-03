@@ -39,6 +39,7 @@ b = tf.Variable(tf.zeros([n]))
 
 y = tf.matmul(x, W) + b
 
+
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
     return tf.Variable(initial)
@@ -54,7 +55,7 @@ def conv2d(x, W):
 
 
 def max_pool_2x2(x):
-    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1], strides=[1, 2, 2, 1], padding='SAME')
+    return tf.nn.max_pool(x, ksize=[1, 4, 4, 1], strides=[1, 4, 4, 1], padding='SAME')
 
 
 # First Convolution Layer
@@ -74,10 +75,10 @@ h_conv2 = tf.nn.relu(conv2d(h_pool1, W_conv2) + b_conv2)
 h_pool2 = max_pool_2x2(h_conv2)
 
 # Densely connected layer
-W_fc1 = weight_variable([24 * 24 * 64, 1024])
+W_fc1 = weight_variable([6 * 6 * 64, 1024])
 b_fc1 = bias_variable([1024])
 
-h_pool2_flat = tf.reshape(h_pool2, [-1, 24*24*64])
+h_pool2_flat = tf.reshape(h_pool2, [-1, 6 * 6 * 64])
 h_fc1 = tf.nn.relu(tf.matmul(h_pool2_flat, W_fc1) + b_fc1)
 
 # Dropout
@@ -92,7 +93,7 @@ y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
 
 cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y_conv, y_))
-train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
+train_step = tf.train.AdamOptimizer(learning_rate=1e-3).minimize(cross_entropy)
 correct_prediction = tf.equal(tf.argmax(y_conv, 1), tf.argmax(y_, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
@@ -117,7 +118,7 @@ def main(loop_num=0):
         if i % 5 == 0:
             train_accuracy = accuracy.eval(feed_dict={x: valid_x, y_: valid_y, keep_prob: 1.0}, session=sess)
             print("loop {3}, epoch {2}, step {0}, training accuracy {1:.4f}".format(i, train_accuracy, e, loop_num))
-        train_step.run(feed_dict={x: x_batch, y_: y_batch, keep_prob: 0.5}, session=sess)
+        train_step.run(feed_dict={x: x_batch, y_: y_batch, keep_prob: 1.0}, session=sess)
 
     if not os.path.exists(model_path):
         os.makedirs(model_path)
