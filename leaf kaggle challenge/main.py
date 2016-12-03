@@ -116,7 +116,7 @@ def main(loop_num=0):
         y_batch = np.array(y_batch)
         if i % 5 == 0:
             train_accuracy = accuracy.eval(feed_dict={x: valid_x, y_: valid_y, keep_prob: 1.0}, session=sess)
-            print("epoch {2}, step {0}, training accuracy {1:.4f}".format(i, train_accuracy, e))
+            print("loop {3}, epoch {2}, step {0}, training accuracy {1:.4f}".format(i, train_accuracy, e, loop_num))
         train_step.run(feed_dict={x: x_batch, y_: y_batch, keep_prob: 0.5}, session=sess)
 
     if not os.path.exists(model_path):
@@ -171,13 +171,12 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
     valid = np.array(valid)
 
     # create batches
-    batches = batch_iter(data=train, batch_size=50, num_epochs=5)
+    batches = batch_iter(data=train, batch_size=200, num_epochs=20)
     valid_x = np.array([i[0] for i in valid])
     valid_y = np.array([i[1] for i in valid])
 
-    count += 1
-
     main(loop_num=count)
+    count += 1
 
     if not cross_val:
         break
