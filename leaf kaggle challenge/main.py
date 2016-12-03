@@ -1,5 +1,4 @@
 import os
-import pandas as pd
 import numpy as np
 import warnings
 from utils import delete_folders, extract, pic_resize, batch_iter
@@ -17,6 +16,7 @@ __author__ = 'Ming Li'
 # params
 
 dir_path = 'leaf/images/'
+model_path = 'models/'
 pid_label, pid_name = extract('leaf/train.csv')
 pic_names = [i.name for i in os.scandir(dir_path) if i.is_file() and i.name.endswith('.jpg')]
 input_shape = (96, 96)
@@ -38,15 +38,7 @@ y_ = tf.placeholder(dtype=tf.float32, shape=[None, n], name='label')  # 99 class
 W = tf.Variable(tf.zeros([m, n]))
 b = tf.Variable(tf.zeros([n]))
 
-init = tf.global_variables_initializer()
-sess.run(init)
-
 y = tf.matmul(x, W) + b
-
-# loss function
-cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(y, y_))
-train_step = tf.train.GradientDescentOptimizer(0.5).minimize(cross_entropy)
-
 
 def weight_variable(shape):
     initial = tf.truncated_normal(shape, stddev=0.1)
@@ -108,20 +100,30 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 init = tf.global_variables_initializer()
 sess.run(init)
 
+# Saver obj
 
-def main():
+saver = tf.train.Saver()
+
+
+def main(loop_num=0):
 
     print('\n\n\n\n starting cross validation... \n\n\n\n')
 
     for batch in batches:
-        i = batch[0]
-        x_batch, y_batch = zip(*batch[1])
+        e = batch[0]
+        i = batch[1]
+        x_batch, y_batch = zip(*batch[2])
         x_batch = np.array(x_batch)
         y_batch = np.array(y_batch)
         if i % 5 == 0:
             train_accuracy = accuracy.eval(feed_dict={x: valid_x, y_: valid_y, keep_prob: 1.0}, session=sess)
-            print("step {0}, training accuracy {1}".format(i, train_accuracy))
+            print("epoch {2}, step {0}, training accuracy {1:.4f}".format(i, train_accuracy, e))
         train_step.run(feed_dict={x: x_batch, y_: y_batch, keep_prob: 0.5}, session=sess)
+
+    if not os.path.exists(model_path):
+        os.makedirs(model_path)
+    save_path = saver.save(sess, model_path + "model_loop_{0}.ckpt".format(loop_num))
+    print("Model saved in file: {0}".format(save_path))
 
 # cross validation of training photos
 
@@ -134,6 +136,7 @@ if delete:
 kf_iterator = model_selection.StratifiedKFold(n_splits=5, shuffle=True, random_state=1)  # Stratified
 train_x = list(pid_name.keys())  # leaf id
 train_y = list(pid_name.values())  # leaf species names
+count = 0
 
 for train_index, valid_index in kf_iterator.split(train_x, train_y):
 
@@ -169,11 +172,13 @@ for train_index, valid_index in kf_iterator.split(train_x, train_y):
     valid = np.array(valid)
 
     # create batches
-    batches = batch_iter(data=train, batch_size=50, num_epochs=30)
+    batches = batch_iter(data=train, batch_size=30, num_epochs=5)
     valid_x = np.array([i[0] for i in valid])
     valid_y = np.array([i[1] for i in valid])
 
-    main()
+    count += 1
+
+    main(loop_num=count)
 
     if not cross_val:
         break
