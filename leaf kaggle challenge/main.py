@@ -1,10 +1,9 @@
-import os
-import numpy as np
-import warnings
-from utils import delete_folders, extract, pic_resize, batch_iter
-from GradientDescent import GradientDescent
-from sklearn import model_selection
 import tensorflow as tf
+import numpy as np
+from sklearn import model_selection
+from utils import delete_folders, extract, pic_resize, batch_iter
+import warnings
+import os
 warnings.filterwarnings('ignore')
 
 # coding: utf-8
