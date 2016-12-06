@@ -7,3 +7,11 @@ def fibonacci(n):
 x =  7 #change the number
 
 print(fibonacci(x))
+
+
+
+def power_of_two(x):
+    return x == 1 if x < 2 else power_of_two(x/2)
+
+
+print(power_of_two(8))
