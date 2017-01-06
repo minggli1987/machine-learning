@@ -1,6 +1,6 @@
 import tensorflow as tf
 from tensorflow.contrib import learn
-from sklearn import metrics, model_selection, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition
+from sklearn import metrics, model_selection, naive_bayes, preprocessing, pipeline, linear_model, tree, decomposition, svm,
 from sklearn.datasets import load_iris
 import matplotlib.pyplot as plt
 import pandas as pd
