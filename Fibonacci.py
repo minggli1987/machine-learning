@@ -1,6 +1,3 @@
-import numpy as np
-
-
 def fibonacci(n):
     assert n == int(n) and n > 0
     if n == 1 or n == 2:
@@ -25,5 +22,4 @@ test = -1
 print(power_of_two(test))
 
 print(log_power_of_two(test))
-
 
