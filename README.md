@@ -1,2 +1,2 @@
 # machine-learning
-machine learning workshop in Python 3
+dumping repository for various old machine learning workshops and exercises in Python 3
