@@ -4,7 +4,7 @@ import numpy as np
 class Board(object):
 
     def __init__(self, m=8, n=8):
-        self.board = np.zeros(shape=(m,n))
+        self.board = np.zeros(shape=(m, n))
 
     def cast(self, chesspiece):
         self.board[chesspiece.row, chesspiece.col] = 2
@@ -54,7 +54,8 @@ def timeit(func):
         start = time.time()
         output = func(*args, **kwargs)
         end = time.time()
-        print('function {0} took {1:0.3f} ms'.format(func.__name__, (end - start)*1000))
+        print('function {0} took {1:0.3f} ms'.format(
+              func.__name__, (end - start) * 1000))
         return output
     return wrapper
 
@@ -69,11 +70,13 @@ def fit_queens(game, num_queens=0):
             game.cast(Queen(pos[0], pos[1]))
             queens_fit += 1
         except IndexError:
-            """no more available positions left on the chessboard before reaching 8 queens."""
+            # no more available positions left on the chessboard before
+            # reaching 8 queens.
             game.reset()
             queens_fit = 0
             continue
     return game
+
 
 if __name__ == '__main__':
     print(fit_queens(game=Board(8, 8), num_queens=8))

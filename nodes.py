@@ -1,40 +1,37 @@
-__author__ = 'Ming'
 
 
 class Node(object):
 
-    __origin__ = None
-    __nextid = 1
-    __inst = dict()
+    instances = list()
 
-    def __init__(self, n):
+    def __init__(self, value):
+        self.value = value
         self.edges = []
-        self.value = n
-        self.inst_id = self.__class__.__nextid
-        self.__class__.__inst[self.inst_id] = self
-        self.__class__.__nextid += 1
-        pass
+        self.is_origin = None
+        self.__class__.instances.append(self)
 
     def is_connected(self, other):
 
-        if self.__class__.__origin__ is None:
-            self.__class__.__origin__ = self
+        self.is_origin = True
 
         if other in self.edges:
-            self.__class__.__origin__ = None
+            self.is_origin = None
             return True
         else:
             for edge in self.edges:
-                if edge == self.__class__.__origin__:
+                if edge.is_origin:
                     continue
                 if edge.is_connected(other):
-                    self.__class__.__origin__ = None
+                    self.is_origin = None
                     return True
-        return False
+            return False
 
     def connect(self, other):
         if other not in self.edges:
-            self.edges.append(other)
+            self.edges.insert(0, other)
+
+    def __repr__(self):
+        return 'Node({0})'.format(self.value)
 
     def __eq__(self, other):
         pass
@@ -46,8 +43,8 @@ class Node(object):
         pass
 
     @classmethod
-    def show(Node):
-        return str({k: 'Node({0})'.format(v.value) for k, v in Node.__inst.items()})
+    def show(cls):
+        return [i for i in cls.instances]
 
 
 x = Node(3)
@@ -72,7 +69,7 @@ d.connect(e)
 e.connect(f)
 f.connect(g)
 g.connect(h)
-
+# h.connect(x)
 
 print([i.value for i in x.edges])
 print([i.value for i in y.edges])
@@ -92,9 +89,3 @@ print(x.is_connected(h))
 
 print(h.show())
 print(c.show())
-
-def fibonacci(n):
-    assert n > 0 and isinstance(n, int), 'please input a valid integer'
-    return 0 if n == 1 else 1 if n == 3 or n == 2 else fibonacci(n - 1) + fibonacci(n - 2)
-
-seq = [fibonacci(i) for i in range(1, 20)]
