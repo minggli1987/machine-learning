@@ -3,6 +3,7 @@ def joseph(friends):
     """starting from one"""
     n = len(friends)
     if n > 1:
+        print(friends)
         friends = friends[::2]
         if n % 2 != 0:
             friends.insert(0, friends.pop())
@@ -11,6 +12,6 @@ def joseph(friends):
         return friends[0]
 
 
-friends = list(range(1, 66))
+friends = list(range(1, 10))
 a = joseph(friends)
 print(a)
