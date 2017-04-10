@@ -1,4 +1,3 @@
-
 def joseph(friends):
     """starting from one"""
     n = len(friends)
@@ -12,6 +11,6 @@ def joseph(friends):
         return friends[0]
 
 
-friends = list(range(1, 10))
+friends = list(range(1, 77))
 a = joseph(friends)
 print(a)
