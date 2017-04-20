@@ -11,6 +11,6 @@ def joseph(friends):
         return friends[0]
 
 
-friends = list(range(1, 77))
+friends = list(range(1, 12))
 a = joseph(friends)
 print(a)
