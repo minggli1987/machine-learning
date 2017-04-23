@@ -71,5 +71,40 @@ if True:
 if False:
     outputs, final_state = tf.nn.dynamic_rnn(cell=lstm_cell, data=x)
 
+print(outputs.get_shape())
 
-w = weight_variable(shape=)
+outputs_transposed = tf.transpose(outputs, [1, 0, 2])
+last = tf.gather(outputs_transposed, int(outputs_transposed.get_shape()[0]) - 1)
+
+weight = weight_variable(shape=[num_hidden, y_.get_shape()[1]])
+bias = bias_variable(shape=[y_.get_shape()[1]])
+
+logits = tf.matmul(last, weight) + bias
+
+cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits, y_)
+loss = tf.reduce_mean(cross_entropy)
+train_step = tf.train.RMSPropOptimizer(learning_rate=1e-4).minimize(loss)
+
+# eval
+mistakes = tf.not_equal(tf.argmax(logits, 1), tf.argmax(y_, 1))
+error_rate = tf.reduce_mean(tf.cast(mistakes, tf.float32))
+
+
+init_op = tf.initialize_all_variables()
+sess = tf.Session()
+sess.run(init_op)
+
+
+batch_size = 1000
+no_of_batches = int(len(X_train)/batch_size)
+epoch = 5000
+for i in range(epoch):
+    ptr = 0
+    for j in range(no_of_batches):
+        inp, out = X_train[ptr:ptr+batch_size], y_train[ptr:ptr+batch_size]
+        ptr += batch_size
+        sess.run(train_step, {x: inp, y_: out})
+    print("Epoch - ", str(i))
+incorrect = sess.run(error_rate, feed_dict={x: X_test, y_: y_test})
+print('Epoch {:2d} error {:3.1f}%'.format(i + 1, 100 * incorrect))
+sess.close()
