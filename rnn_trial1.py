@@ -7,7 +7,8 @@ import tensorflow as tf
 import numpy as np
 
 from sklearn import model_selection
-# for testing purpose, fixing random seed
+
+# for testing purpose, fixing random seed for determinisim
 random.seed(0)
 
 
@@ -31,14 +32,14 @@ def generate_training_data(total_size, seq_length):
         index_start = n * seq_length
         index_end = min(total_size, (n + 1) * seq_length)
         sequence_sub = sequence_whole[index_start:index_end]
-        sequence_nested.append(np.array(sequence_sub))
+        sequence_nested.append(sequence_sub)
         labels.append(sequence_sub.count(1))
 
+    # reshape training data to (inferred row count, 1, sequence length)
     train = np.array(sequence_nested).reshape(-1, 1, seq_length)
-    label = np.array(labels)
 
-    # one-hot label
-    one_hot_label = np.eye(seq_length + 1)[label]
+    # one-hot label using eye if labels can be used as numerical index.
+    one_hot_label = np.eye(seq_length + 1)[np.array(labels)]
 
     return train, one_hot_label
 
@@ -53,7 +54,7 @@ def bias_variable(shape):
         return tf.Variable(initial)
 
 
-train, label = generate_training_data(int(1e5), 20)
+train, label = generate_training_data(int(1e6), 20)
 
 X_train, X_test, y_train, y_test = \
                 model_selection.train_test_split(train,
@@ -71,7 +72,7 @@ lstm_cell = tf.contrib.rnn.LSTMCell(num_units=num_hidden,
                                     activation=tf.tanh,
                                     use_peepholes=False)
 
-# unrolled LSTM neural network, dynamnic_rnn or static_rnn
+# unrolled LSTM neural network to dynamnic_rnn or static_rnn
 if False:
     outputs, final_state = tf.contrib.rnn.static_rnn(cell=lstm_cell,
                                                      inputs=x,
@@ -81,17 +82,22 @@ if True:
                                              inputs=x,
                                              dtype=tf.float32)
 
+outputs_transposed = tf.transpose(outputs, perm=[1, 0, 2])
 
-outputs_transposed = tf.transpose(outputs, [1, 0, 2])
-last = tf.gather(outputs_transposed, int(outputs_transposed.get_shape()[0]) - 1)
+# last in shape (batch_size, 24)
+last = tf.gather(outputs_transposed, int(outputs_transposed.get_shape()[0])-1)
 
+# weights in shape (24, 21) and bias in shape (21, )
 weight = weight_variable(shape=[num_hidden, int(y_.get_shape()[1])])
 bias = bias_variable(shape=[y_.get_shape()[1]])
 
+# logits in (batch_size, 21)
 logits = tf.matmul(last, weight) + bias
 
+# softmax_cross_entropy_with_logits to produce numerically robust Xent
 cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=logits,
                                                         labels=y_)
+
 loss = tf.reduce_mean(cross_entropy)
 train_step = tf.train.RMSPropOptimizer(learning_rate=1e-3).minimize(loss)
 
@@ -105,7 +111,7 @@ sess.run(init_op)
 
 batch_size = 1000
 no_of_batches = int(len(X_train)/batch_size)
-epoch = 1000
+epoch = 3000
 for i in range(epoch):
     ptr = 0
     for j in range(no_of_batches):
