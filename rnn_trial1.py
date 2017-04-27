@@ -82,6 +82,10 @@ if True:
                                              inputs=x,
                                              dtype=tf.float32)
 
+
+# outputs in shape (batch_size, 1, 24), final_state (batch_size, 24)
+
+# outputs_transposed in shape (1, batch_size, 24)
 outputs_transposed = tf.transpose(outputs, perm=[1, 0, 2])
 
 # last in shape (batch_size, 24)
