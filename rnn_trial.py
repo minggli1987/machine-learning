@@ -68,8 +68,8 @@ x = tf.placeholder(dtype=tf.float32,
 y_ = tf.placeholder(dtype=tf.uint8,
                     shape=[None, N_CLASS],
                     name='label')
-init_state = tf.zeros(shape=[BATCH_SIZE, STATE_SIZE], name='initial_state')
-init_output = tf.zeros(shape=[BATCH_SIZE, STATE_SIZE], name='initial_output')
+init = tf.placeholder(dtype=tf.float32,
+                      shape=[None, STATE_SIZE])
 
 
 def rnn_cell(rnn_input, state):
@@ -187,9 +187,7 @@ def lstm_cell(lstm_input, lstm_output, cell_state):
 
 rnn_inputs = tf.unstack(x, axis=1)
 # static rnn unrolled
-state = init_state
-output = init_output
-
+state = output = tf.zeros_like(init, name='initial_state')
 
 rnn_outputs = list()
 for rnn_input in rnn_inputs:
@@ -228,7 +226,7 @@ for i in range(epoch):
     for j in range(no_of_batches):
         inp, out = X_train[ptr:ptr+BATCH_SIZE], y_train[ptr:ptr+BATCH_SIZE]
         ptr += BATCH_SIZE
-        sess.run(train_step, {x: inp, y_: out})
+        sess.run(train_step, {x: inp, y_: out, init: np.zeros([inp.shape[0], STATE_SIZE])})
     print("Epoch - ", str(i))
 
 no_of_batches = int(len(X_test)/BATCH_SIZE)
@@ -237,10 +235,7 @@ ptr = 0
 for j in range(no_of_batches):
     inp, out = X_test[ptr:ptr+BATCH_SIZE], y_test[ptr:ptr+BATCH_SIZE]
     ptr += BATCH_SIZE
-    incorrect_rates.append(sess.run(error_rate, feed_dict={x: inp, y_: out}))
+    incorrect_rates.append(sess.run(error_rate, feed_dict={x: inp, y_: out, init: np.zeros([inp.shape[0], STATE_SIZE])}))
 incorrect = np.array(incorrect_rates).mean()
 print('Epoch {:2d} error {:3.1f}%'.format(i + 1, 100 * incorrect))
 sess.close()
-
-for var in tf.global_variables():
-    print(var)
