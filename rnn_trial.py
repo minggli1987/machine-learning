@@ -10,6 +10,7 @@ from sklearn import model_selection
 
 # for testing purpose, fixing random seed for determinisim
 random.seed(0)
+tf.set_random_seed(1)
 
 N_CLASS = 21
 STATE_SIZE = 24
@@ -71,29 +72,10 @@ init_state = tf.zeros(shape=[BATCH_SIZE, STATE_SIZE], name='initial_state')
 init_output = tf.zeros(shape=[BATCH_SIZE, STATE_SIZE], name='initial_output')
 
 
-def rnn_params_initializer():
-    with tf.variable_scope('rnn_cell'):
-        W_hx = tf.get_variable(
-                    name='W_hx',
-                    shape=[STEP_SIZE, STATE_SIZE],
-                    initializer=tf.truncated_normal_initializer(stddev=0.1)
-                    )
-        W_hh = tf.get_variable(
-                    name='W_hh',
-                    shape=[STATE_SIZE, STATE_SIZE],
-                    initializer=tf.truncated_normal_initializer(stddev=0.1)
-                    )
-        b_h = tf.get_variable(
-                    name='b_h',
-                    shape=[STATE_SIZE],
-                    initializer=tf.constant_initializer(0.0)
-                    )
-
-
 def rnn_cell(rnn_input, state):
     """implementation according to Lipton et al (2015) with sigmoid function
     replaced by hyberbolic tangent."""
-    with tf.variable_scope('rnn_cell', reuse=True):
+    with tf.variable_scope('rnn_cell', reuse=None):
         W_hx = tf.get_variable(
                     name='W_hx',
                     shape=[STEP_SIZE, STATE_SIZE],
@@ -109,75 +91,13 @@ def rnn_cell(rnn_input, state):
                     shape=[STATE_SIZE],
                     initializer=tf.constant_initializer(0.0)
                     )
-    return tf.tanh(tf.matmul(rnn_input, W_hx) + tf.matmul(state, W_hh) + b_h)
-
-
-def lstm_params_initializer():
-    with tf.variable_scope('lstm_cell'):
-        forget_W_hx = tf.get_variable(
-                    name='forget_W_hx',
-                    shape=[STEP_SIZE, STATE_SIZE],
-                    initializer=tf.truncated_normal_initializer(stddev=0.1)
-                    )
-        forget_W_hh = tf.get_variable(
-                    name='forget_W_hh',
-                    shape=[STATE_SIZE, STATE_SIZE],
-                    initializer=tf.truncated_normal_initializer(stddev=0.1)
-                    )
-        forget_b_h = tf.get_variable(
-                    name='forget_b_h',
-                    shape=[STATE_SIZE],
-                    initializer=tf.constant_initializer(0.0)
-                    )
-        input_W_hx = tf.get_variable(
-                    name='input_W_hx',
-                    shape=[STEP_SIZE, STATE_SIZE],
-                    initializer=tf.truncated_normal_initializer(stddev=0.1)
-                    )
-        input_W_hh = tf.get_variable(
-                    name='input_W_hh',
-                    shape=[STATE_SIZE, STATE_SIZE],
-                    initializer=tf.truncated_normal_initializer(stddev=0.1)
-                    )
-        input_b_h = tf.get_variable(
-                    name='input_b_h',
-                    shape=[STATE_SIZE],
-                    initializer=tf.constant_initializer(0.0)
-                    )
-        cell_state_W_hx = tf.get_variable(
-                    name='cell_state_W_hx',
-                    shape=[STEP_SIZE, STATE_SIZE],
-                    initializer=tf.truncated_normal_initializer(stddev=0.1)
-                    )
-        cell_state_W_hh = tf.get_variable(
-                    name='cell_state_W_hh',
-                    shape=[STATE_SIZE, STATE_SIZE],
-                    initializer=tf.truncated_normal_initializer(stddev=0.1)
-                    )
-        cell_state_b_h = tf.get_variable(
-                    name='cell_state_b_h',
-                    shape=[STATE_SIZE],
-                    initializer=tf.constant_initializer(0.0)
-                    )
-        output_W_hx = tf.get_variable(
-                    name='output_W_hx',
-                    shape=[STEP_SIZE, STATE_SIZE],
-                    initializer=tf.truncated_normal_initializer(stddev=0.1)
-                    )
-        output_W_hh = tf.get_variable(
-                    name='output_W_hh',
-                    shape=[STATE_SIZE, STATE_SIZE],
-                    initializer=tf.truncated_normal_initializer(stddev=0.1)
-                    )
-        output_b_h = tf.get_variable(
-                    name='output_b_h',
-                    shape=[STATE_SIZE],
-                    initializer=tf.constant_initializer(0.0)
-                    )
+    output = tf.tanh(tf.matmul(rnn_input, W_hx) + tf.matmul(state, W_hh) + b_h)
+    state = output
+    return output, state
 
 
 def lstm_cell(lstm_input, lstm_output, cell_state):
-    with tf.variable_scope('lstm_cell', reuse=True):
+    with tf.variable_scope('lstm_cell', reuse=None):
         forget_W_hx = tf.get_variable(
                     name='forget_W_hx',
                     shape=[STEP_SIZE, STATE_SIZE],
@@ -269,7 +189,8 @@ rnn_inputs = tf.unstack(x, axis=1)
 # static rnn unrolled
 state = init_state
 output = init_output
-lstm_params_initializer()
+
+
 rnn_outputs = list()
 for rnn_input in rnn_inputs:
     output, state = lstm_cell(rnn_input, output, state)
@@ -320,3 +241,6 @@ for j in range(no_of_batches):
 incorrect = np.array(incorrect_rates).mean()
 print('Epoch {:2d} error {:3.1f}%'.format(i + 1, 100 * incorrect))
 sess.close()
+
+for var in tf.global_variables():
+    print(var)
