@@ -65,6 +65,7 @@ def RNN(x, weights, biases):
     # Linear activation, using rnn inner loop last output
     return tf.matmul(outputs[-1], weights['out']) + biases['out']
 
+
 pred = RNN(x, weights, biases)
 
 # Define loss and optimizer
