@@ -1,12 +1,30 @@
-def fibonacci(n):
+import functools
+
+
+def fibonacci1(n):
+    """recursively sum up fibonacci numbers"""
     assert n == int(n) and n > 0
-    if n == 1 or n == 2:
+    if n in [1, 2]:
         return 1
-    return fibonacci(n-1) + fibonacci(n-2)
+    return fibonacci1(n-1) + fibonacci1(n-2)
 
-x = 7 #change the number
 
-print(fibonacci(x))
+def fibonacci_wrapper(func):
+    @functools.wraps(func)
+    def wrapper(*args):
+        n = args[0]
+        g = func(n)
+        sequence = [next(g) for _ in range(n)]
+        return sequence.pop()
+    return wrapper
+
+
+@fibonacci_wrapper
+def fibonacci2(max):
+    a, b = 1, 1
+    while True:
+        yield a
+        a, b = b, a + b
 
 
 def power_of_two(x):
@@ -17,9 +35,7 @@ def log_power_of_two(x):
     import numpy as np
     return x > 0 and np.log2(x) % 1 == 0
 
-test = -1
 
-print(power_of_two(test))
-
-print(log_power_of_two(test))
-
+x = 0b1001111
+print(fibonacci1(x))
+print(fibonacci2(x))

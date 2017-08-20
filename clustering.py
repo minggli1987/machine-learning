@@ -25,8 +25,8 @@ gm.fit(iris)
 gm_pred = gm.predict(iris)
 gm_iris = v_measure_score(gm_pred, iris_target)
 print(gm_iris)
-print(gm.means_)
-print(gm.covariances_)
 
-
-print(np.isfinite(np.nan))
+ds = DBSCAN(eps=1, min_samples=5, p=2)
+ds_pred = ds.fit_predict(iris)
+ds_iris = v_measure_score(ds_pred, iris_target)
+print(ds_iris)
