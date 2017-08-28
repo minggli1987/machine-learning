@@ -26,6 +26,13 @@ def power_of_two_recursive(n):
     return n == 1 if n < 2 else power_of_two_recursive(n/2)
 
 
+def power_of_two_iterative(n):
+    """O(log(N))"""
+    while n % 2 == 0 and n > 0:
+        n /= 2
+    return n == 1
+
+
 def power_of_two_log(n):
     """log2 of 2 to any exponent should be non-negative integer."""
     import numpy as np
@@ -40,9 +47,6 @@ def power_of_x_log(n, x):
 
 def power_of_x_recursive(n, x):
     return n == 1 if n < x else power_of_x_recursive(n/x, x)
-
-
-print(power_of_x_recursive(64, 4))
 
 
 def even_number(n):
