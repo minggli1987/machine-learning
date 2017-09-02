@@ -8,7 +8,7 @@ play programme for diabete regression problem using Gaussian Process.
 import numpy as np
 import pandas as pd
 
-from sklearn.datasets import load_diabetes, load_boston, load_linnerud
+from sklearn.datasets import load_diabetes
 
 from sklearn.model_selection import train_test_split, cross_validate
 from sklearn.pipeline import make_pipeline
@@ -53,8 +53,8 @@ def deserialize_score(json):
 
 
 # per documentation data has already been standardized i.e. (x - μ) / σ
-data, target = load_boston(return_X_y=True)
-print(load_boston()['DESCR'])
+data, target = load_diabetes(return_X_y=True)
+print(load_diabetes()['DESCR'])
 _data = pd.DataFrame(
                 data=data,
                 columns=['var_{0}'.format(i) for i in range(data.shape[1])])
@@ -68,11 +68,11 @@ candidates = [
                 Ridge(),
                 ElasticNet(),
                 RandomForestRegressor(n_estimators=100),
-                XGBRegressor(max_depth=3, learning_rate=.1, n_estimators=100),
+                XGBRegressor(max_depth=2, learning_rate=.1, n_estimators=100),
                 GaussianProcessRegressor(kernel=RBF(
-                                         length_scale=2.0,
-                                         length_scale_bounds=(1e-2, 1e2)),
-                                         alpha=1e-5)
+                                         length_scale=10.0,
+                                         length_scale_bounds=(1e-5, 1e5)),
+                                         alpha=1e-10)
 ]
 
 cv_pipes = [make_pipeline(StandardScaler(), PCA(n_components=8), estimator)
