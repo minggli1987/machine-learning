@@ -9,6 +9,7 @@ from sklearn import (metrics, model_selection, naive_bayes, preprocessing,
                      linear_model, tree, svm)
 from sklearn.datasets import load_iris
 from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
 
 from sklearn.externals.six import StringIO
 warnings.filterwarnings('ignore')
@@ -127,14 +128,14 @@ score = metrics.accuracy_score(y_test, prediction)
 print('Bayesian (GaussianNB) Accuracy: {:.4f}'.format(score))
 
 # Gaussian Process classifier
-gpc = GaussianProcessClassifier(kernel=None)
+gpc = GaussianProcessClassifier(kernel=RBF())
 gpc.fit(x_train, y_train)
 prediction = gpc.predict(x_test)
 score = metrics.accuracy_score(y_test, prediction)
 print('Gaussian Process Classsifier Accuracy: {:.4f}'.format(score))
 
 
-svc = svm.SVC(C=1.0, kernel='rbf')
+svc = svm.SVC(C=1.0, kernel=RBF())
 svc.fit(x_train, y_train)
 prediction = svc.predict(x_test)
 score = metrics.accuracy_score(y_test, prediction)
