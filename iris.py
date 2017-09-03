@@ -120,7 +120,6 @@ score = metrics.accuracy_score(y_test, prediction)
 print('Logistic Regression Accuracy: {:.4f}'.format(score))
 
 # Bayesian
-
 clf = naive_bayes.GaussianNB()
 clf.fit(x_train, y_train)
 prediction = lr.predict(x_test)
@@ -134,7 +133,7 @@ prediction = gpc.predict(x_test)
 score = metrics.accuracy_score(y_test, prediction)
 print('Gaussian Process Classsifier Accuracy: {:.4f}'.format(score))
 
-
+# Support Vector Machine
 svc = svm.SVC(C=1.0, kernel=RBF())
 svc.fit(x_train, y_train)
 prediction = svc.predict(x_test)
