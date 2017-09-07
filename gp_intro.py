@@ -62,12 +62,22 @@ L = np.linalg.cholesky(K + 5e-5 * np.eye(X_train.shape[0]))
 # conditional probability of multivariate gaussian given f_prior
 K_s = radial_basis_function(X_train, X_test, lengthscale=.5)
 Lk = np.linalg.solve(L, K_s)
+# so that Lk * L = K_s
 print(Lk.shape)
 
-# TODO !!! why lower triangular matrix instead of whole kernel matrix?
+# TODO !!! why lower triangular matrix L instead of whole kernel matrix?
+# according to Ebden 2008:
+# mu = K_s * inv(K) * y = Lk * L * inv(L * L.T) * y =
+# Lk * (L * inv(L)) * inv(L.T) * y = Lk * I * (inv(L.T) * y)
+# TODO need to check if matrix order of mupltication holds
 mean = np.dot(Lk.T, np.linalg.solve(L, y_train)).reshape((N, ))
 
 # sample from f ~ posterior given x_test points
+# according to Ebden 2008:
+# K_ss - K_s * inv(K) * K_s.T = K_ss - Lk * L * inv(L * L.T) * (Lk * L).T =
+# K_ss - Lk * L * inv(L) * inv(L.T) * Lk.T * L.T =
+# K_ss - Lk * I * I * Lk.T =
+# K_ss - Lk * Lk.T
 L = np.linalg.cholesky(K_ss + 1e-6 * np.eye(N) - np.dot(Lk.T, Lk))
 f_posterior = mean.reshape(-1, 1) + \
               np.dot(L, np.random.normal(loc=0, size=(N, 3)))
