@@ -5,7 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from scipy.spatial.distance import cdist, pdist, squareform
-from sklearn.metrics.pairwise import rbf_kernel
+
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.gaussian_process.kernels import RBF
 
 # np.random.seed(0)
 
@@ -34,8 +36,8 @@ def radial_basis_function(Xa, Xb=None, lengthscale=1):
 a = np.random.rand(4, 8)
 b = np.random.normal(size=(100, 8))
 
-assert np.allclose(radial_basis_function(a, b, lengthscale=1),
-                   rbf_kernel(a, b, gamma=.5))
+# assert np.allclose(radial_basis_function(a, b, lengthscale=1),
+#                    rbf_kernel(a, b, gamma=.5))
 
 assert np.allclose(cdist(a, a), squareform(pdist(a)))
 
@@ -62,15 +64,15 @@ L_ss = np.linalg.cholesky(K_ss)
 f_prior = 0 + np.dot(L_ss, np.random.normal(loc=0, size=(N, 3)))
 
 # f_prior with shape (N, 3)
-fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True)
+fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, sharey=True)
 ax1.plot(X_test, f_prior)
 ax1.grid(True)
 
 # new evidence
-X_train = np.arange(-10, 10, 1)
-bool_mask = np.random.choice(a=[1, 0], size=len(X_train), p=[.6, .4])
-X_train = (X_train * bool_mask).reshape(-1, 1)
-y_train = np.sin(X_train) * 4
+X_train = np.arange(-10, 10, 1).reshape(-1, 1)
+bool_mask = np.random.choice(a=[True, False], size=len(X_train), p=[.5, .5])
+X_train = X_train[bool_mask]
+y_train = np.sin(X_train)
 
 
 def polynomial(X, theta, p=2):
@@ -127,11 +129,22 @@ f_posterior = mean.reshape(-1, 1) + \
 var = np.diag(K_ss) - np.sum(L_s**2, axis=0)
 std = np.sqrt(var)
 
-ax2.plot(X_train, y_train, 'bs', ms=8)
+ax2.plot(X_train, y_train, 'bs', ms=5)
 ax2.plot(X_test, f_posterior)
 # 4 sigma confidence interval roughly 95%
 ax2.fill_between(X_test.ravel(), mean-2*std, mean+2*std, color="#dddddd")
-ax2.plot(X_test, mean, 'b--', lw=2)
+ax2.plot(X_test, mean, 'r--', lw=2)
 ax2.grid(True)
+fig.tight_layout()
+
+
+gp = GaussianProcessRegressor(kernel=RBF(length_scale=param), alpha=epsilon)
+gp.fit(X_train, y_train)
+mu, std = gp.predict(X_test, return_std=True)
+
+ax3.plot(X_train, y_train, 'bs', ms=5)
+ax3.fill_between(X_test.ravel(), mu.ravel()-2*std, mu.ravel()+2*std)
+ax3.plot(X_test, mu, 'r--', lw=2)
+ax3.grid(True)
 fig.tight_layout()
 plt.show()
