@@ -118,13 +118,14 @@ assert np.allclose(np.dot(np.linalg.inv(L), y_train),
 # = K_ss - L_s * L * inv(L) * inv(L.T) * L_s.T * L.T
 # = K_ss - L_s * I * I * L_s.T
 # = K_ss - L_s * L_s.T
-L = np.linalg.cholesky(K_ss - np.dot(L_s.T, L_s))
+sigma = K_ss - np.dot(L_s.T, L_s)
+L = np.linalg.cholesky(sigma)
 f_posterior = mean.reshape(-1, 1) + \
               np.dot(L, np.random.normal(loc=0, size=(N, 3)))
 
 # TODO how to find standard deviation of this posterier?
-S = np.diag(K_ss) - np.sum(L_s**2, axis=0)
-std = np.sqrt(S)
+var = np.diag(K_ss) - np.sum(L_s**2, axis=0)
+std = np.sqrt(var)
 
 ax2.plot(X_train, y_train, 'bs', ms=8)
 ax2.plot(X_test, f_posterior)
