@@ -3,6 +3,8 @@ This is code for simple GP regression. It assumes a zero mean GP Prior.
 """
 
 import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as pl
 
 
