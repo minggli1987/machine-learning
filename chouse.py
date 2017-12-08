@@ -14,7 +14,7 @@ import requests
 # pylint: disable=C0111
 
 BASE_URL = "https://api.companieshouse.gov.uk/"
-API_KEY = os.environ["CHKEY"]
+API_KEY = os.getenv("CHKEY")
 SESS = requests.Session()
 SESS.auth = (API_KEY, "")
 VALS = ' '.join(sys.argv[1:])
