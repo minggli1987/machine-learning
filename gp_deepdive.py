@@ -123,7 +123,7 @@ mu = np.dot(L_s.T, np.linalg.solve(L, y_train)).ravel()
 # = K_ss - L_s * L * inv(L * L.T) * (L_s * L).T
 # = K_ss - L_s * L * inv(L) * inv(L.T) * L_s.T * L.T
 # using associative property of matrix multiplication
-# = K_ss - L_s * (L * inv(L)) * (inv(L.T) * L.T) * L_s.T)
+# = K_ss - L_s * (L * inv(L)) * (inv(L.T) * L.T) * L_s.T
 # = K_ss - L_s * I * I.T * L_s.T
 # = K_ss - L_s * L_s.T
 K_posterior = K_ss - np.dot(L_s.T, L_s)
