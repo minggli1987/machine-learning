@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import warnings
 import os
+import pydotplus
 
 from tensorflow.contrib import learn
 from sklearn import (metrics, model_selection, naive_bayes, preprocessing,
@@ -10,7 +11,7 @@ from sklearn import (metrics, model_selection, naive_bayes, preprocessing,
 from sklearn.datasets import load_iris
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
-
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.externals.six import StringIO
 warnings.filterwarnings('ignore')
 
@@ -108,8 +109,15 @@ tree.export_graphviz(reg,
                      special_characters=True,
                      out_file=dot_data)
 
-# graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
-# graph.write_pdf("iris.pdf")
+graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+graph.write_pdf("iris.pdf")
+
+# random forest
+rf = RandomForestClassifier()
+rf.fit(x_train, y_train)
+prediction = rf.predict(x_test)
+score = metrics.accuracy_score(y_test, prediction)
+print('Random Forest Accuracy: {:.4f}'.format(score))
 
 
 # logistic regression
