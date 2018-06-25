@@ -6,8 +6,8 @@ import numpy as np
 from scipy.linalg import solve_triangular
 from numba import jit
 
-X = np.random.rand(10000, 300)
-y = np.random.rand(10000)
+X = np.random.rand(1000, 500)
+y = np.random.rand(1000)
 
 # solve X @ theta = y
 
@@ -71,15 +71,10 @@ print(timeit(qr_solution, number=100))
 print(timeit(svd_solution, number=100))
 
 # jit compiling
-covariance_matrix_inversion = jit(covariance_matrix_inversion)
-cholesky_decomposition = jit(cholesky_decomposition)
-qr_decomposition = jit(qr_decomposition)
-svd_decomposition = jit(svd_decomposition)
-
-cov_inv_solution = partial(covariance_matrix_inversion, X, y)
-cholesky_solution = partial(cholesky_decomposition, X, y)
-qr_solution = partial(qr_decomposition, X, y)
-svd_solution = partial(svd_decomposition, X, y)
+cov_inv_solution = partial(jit(covariance_matrix_inversion), X, y)
+cholesky_solution = partial(jit(cholesky_decomposition), X, y)
+qr_solution = partial(jit(qr_decomposition), X, y)
+svd_solution = partial(jit(svd_decomposition), X, y)
 print(timeit(cov_inv_solution, number=100))
 print(timeit(cholesky_solution, number=100))
 print(timeit(qr_solution, number=100))
