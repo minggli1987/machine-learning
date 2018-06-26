@@ -101,8 +101,8 @@ L_s = np.linalg.solve(L, K_s)
 assert np.allclose(np.linalg.inv(L) @ K_s, np.linalg.solve(L, K_s))
 
 
-# TODO !!! why lower triangular matrix L instead of whole kernel matrix?
-# below derivation explains according to Ebden 2008 Gaussian Processes for Regression:
+# below derivation explains
+# according to Ebden 2008 Gaussian Processes for Regression:
 # mu = K_s * inv(K) * y
 # = L_s * L * inv(L * L.T) * y
 # using associative property of matrix multiplication
@@ -132,7 +132,6 @@ L_posterior = np.linalg.cholesky(K_posterior)
 f_posterior = mu.reshape(-1, 1) + \
               L_posterior @ np.random.normal(loc=0, size=(N, S))
 
-# TODO how to find standard deviation of this posterier?
 var = np.diag(K_ss) - np.sum(L_s**2, axis=0)
 std = np.sqrt(var)
 
