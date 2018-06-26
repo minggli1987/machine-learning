@@ -7,6 +7,8 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.metrics.pairwise import rbf_kernel
 
+np.random.seed(0)
+
 
 def euclidean(Xa, Xb):
     """distance sparse matrix"""
@@ -39,9 +41,12 @@ assert np.allclose(cdist(a, a), squareform(pdist(a)))
 
 # Gaussian Process Introduction
 
-N = 100
+N = 50
+# diagonal values of identity matrix
 epsilon = 1e-10
-param = .5
+param = 1
+# sample size
+S = 10
 X_test = np.linspace(-10, 10, N).reshape(-1, 1)
 
 K_ss = radial_basis_function(X_test, lengthscale=param)
@@ -56,9 +61,7 @@ K_ss += np.eye(N) * epsilon
 
 L_ss = np.linalg.cholesky(K_ss)
 # sample from multivariate Gaussian with random white gaussian.
-# TODO shouldn't the gaussian be multivate with 0 mean and np.eye(N) sigma?
-
-f_prior = 0 + L_ss @ np.random.normal(loc=0, size=(N, 3))
+f_prior = 0 + L_ss @ np.random.normal(loc=0, size=(N, S))
 
 # f_prior with shape (N, 3)
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, sharey=True)
@@ -127,7 +130,7 @@ K_posterior = K_ss - L_s.T @ L_s
 L_posterior = np.linalg.cholesky(K_posterior)
 # sampling from posterier multivarate gaussian distribution
 f_posterior = mu.reshape(-1, 1) + \
-              L_posterior @ np.random.normal(loc=0, size=(N, 3))
+              L_posterior @ np.random.normal(loc=0, size=(N, S))
 
 # TODO how to find standard deviation of this posterier?
 var = np.diag(K_ss) - np.sum(L_s**2, axis=0)
