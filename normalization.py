@@ -1,3 +1,8 @@
+"""
+interesting code snippet from
+http://benalexkeen.com/feature-scaling-with-scikit-learn/
+"""
+
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import pandas as pd
