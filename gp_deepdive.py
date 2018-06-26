@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib
-matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
 from scipy.spatial.distance import cdist, pdist, squareform
@@ -8,7 +6,6 @@ from scipy.spatial.distance import cdist, pdist, squareform
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.metrics.pairwise import rbf_kernel
-# np.random.seed(0)
 
 
 def euclidean(Xa, Xb):
@@ -61,7 +58,7 @@ L_ss = np.linalg.cholesky(K_ss)
 # sample from multivariate Gaussian with random white gaussian.
 # TODO shouldn't the gaussian be multivate with 0 mean and np.eye(N) sigma?
 
-f_prior = 0 + np.dot(L_ss, np.random.normal(loc=0, size=(N, 3)))
+f_prior = 0 + L_ss @ np.random.normal(loc=0, size=(N, 3))
 
 # f_prior with shape (N, 3)
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, sharey=True)
@@ -84,7 +81,7 @@ def polynomial(X, theta, p=2):
     X_polynominal = np.zeros(shape=(m, p + 1))
     for order in range(0, p + 1):
         X_polynominal[:, order] = np.power(X, order).ravel()
-    return np.dot(X_polynominal, theta)
+    return X_polynominal @ theta
 
 
 # y_train = polynomial(X_train, theta=[1.2, 2.5], p=1)
@@ -98,7 +95,7 @@ L = np.linalg.cholesky(K)
 K_s = radial_basis_function(X_train, X_test, lengthscale=param)
 L_s = np.linalg.solve(L, K_s)
 
-assert np.allclose(np.dot(np.linalg.inv(L), K_s), np.linalg.solve(L, K_s))
+assert np.allclose(np.linalg.inv(L) @ K_s, np.linalg.solve(L, K_s))
 
 
 # TODO !!! why lower triangular matrix L instead of whole kernel matrix?
@@ -109,13 +106,13 @@ assert np.allclose(np.dot(np.linalg.inv(L), K_s), np.linalg.solve(L, K_s))
 # = L_s * (L * inv(L)) * inv(L.T) * y
 # = L_s * I * (inv(L.T) * y)
 # provable as follows
-assert np.allclose(np.dot(L_s.T, np.dot(np.linalg.inv(L), y_train)),
-                   np.dot(K_s.T, np.dot(np.linalg.inv(K), y_train)))
+assert np.allclose(L_s.T @ (np.linalg.inv(L) @ y_train),
+                   K_s.T @ np.linalg.inv(K) @ y_train)
 
 # linalg.solve does the same as matrix division
-assert np.allclose(np.dot(np.linalg.inv(L), y_train), np.linalg.solve(L, y_train))
+assert np.allclose(np.linalg.inv(L) @ y_train, np.linalg.solve(L, y_train))
 # thus the black line mean of posterier given y_train
-mu = np.dot(L_s.T, np.linalg.solve(L, y_train)).ravel()
+mu = L_s.T @ np.linalg.solve(L, y_train).ravel()
 
 # sample from f ~ posterior given x_test, x_train, y_train points
 # according to Ebden 2008:
@@ -126,11 +123,11 @@ mu = np.dot(L_s.T, np.linalg.solve(L, y_train)).ravel()
 # = K_ss - L_s * (L * inv(L)) * (inv(L.T) * L.T) * L_s.T
 # = K_ss - L_s * I * I.T * L_s.T
 # = K_ss - L_s * L_s.T
-K_posterior = K_ss - np.dot(L_s.T, L_s)
+K_posterior = K_ss - L_s.T @ L_s
 L_posterior = np.linalg.cholesky(K_posterior)
 # sampling from posterier multivarate gaussian distribution
 f_posterior = mu.reshape(-1, 1) + \
-              np.dot(L_posterior, np.random.normal(loc=0, size=(N, 3)))
+              L_posterior @ np.random.normal(loc=0, size=(N, 3))
 
 # TODO how to find standard deviation of this posterier?
 var = np.diag(K_ss) - np.sum(L_s**2, axis=0)
