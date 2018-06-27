@@ -98,8 +98,8 @@ L_s = np.linalg.solve(L, K_s)
 assert np.allclose(np.linalg.inv(L) @ K_s, np.linalg.solve(L, K_s))
 
 # according to Murphy 2012 chapter 4.3.1:
-# mu = K_s * inv(K) * y
-# = L_s * L * inv(L * L.T) * y
+# mu = 𝜇(X*) + K_s * inv(K) * (y - 𝜇(X))
+# = 0 + L_s * L * inv(L * L.T) * (y - 0)
 # using associative property of matrix multiplication
 # = L_s * (L * inv(L)) * inv(L.T) * y
 # = L_s * I * (inv(L.T) * y)
