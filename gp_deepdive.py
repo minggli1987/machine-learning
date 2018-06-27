@@ -7,8 +7,6 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF
 from sklearn.metrics.pairwise import rbf_kernel
 
-np.random.seed(0)
-
 
 def euclidean(Xa, Xb):
     """distance sparse matrix"""
@@ -39,17 +37,16 @@ assert np.allclose(radial_basis_function(a, b, lengthscale=1),
 
 assert np.allclose(cdist(a, a), squareform(pdist(a)))
 
-# Gaussian Process Introduction
 
-N = 50
+N = 100
 # diagonal values of identity matrix
 epsilon = 1e-10
-param = 1
+param = .5
 # sample size
-S = 10
+S = 3
 X_test = np.linspace(-10, 10, N).reshape(-1, 1)
 
-K_ss = radial_basis_function(X_test, lengthscale=param)
+K_ss = rbf_kernel(X_test, gamma=param)
 # in order to apply cholesky decomposition, K_ss must be a matrix:
 # - positive definite i.e. x.H * M * x > 0 for any x in same shape in C;
 # - symmetric, a especial case of Hermitian with only real values.
@@ -90,19 +87,17 @@ def polynomial(X, theta, p=2):
 # y_train = polynomial(X_train, theta=[1.2, 2.5], p=1)
 
 n = X_train.shape[0]
-K = radial_basis_function(X_train, lengthscale=param)
+K = rbf_kernel(X_train, gamma=param)
 K += epsilon * np.eye(n)
 L = np.linalg.cholesky(K)
 
 # conditional covariance matrix of multivariate gaussian given f_prior
-K_s = radial_basis_function(X_train, X_test, lengthscale=param)
+K_s = rbf_kernel(X_train, X_test, gamma=param)
 L_s = np.linalg.solve(L, K_s)
 
 assert np.allclose(np.linalg.inv(L) @ K_s, np.linalg.solve(L, K_s))
 
-
-# below derivation explains
-# according to Ebden 2008 Gaussian Processes for Regression:
+# according to Murphy 2012 chapter 4.3.1:
 # mu = K_s * inv(K) * y
 # = L_s * L * inv(L * L.T) * y
 # using associative property of matrix multiplication
@@ -111,14 +106,13 @@ assert np.allclose(np.linalg.inv(L) @ K_s, np.linalg.solve(L, K_s))
 # provable as follows
 assert np.allclose(L_s.T @ (np.linalg.inv(L) @ y_train),
                    K_s.T @ np.linalg.inv(K) @ y_train)
-
 # linalg.solve does the same as matrix division
 assert np.allclose(np.linalg.inv(L) @ y_train, np.linalg.solve(L, y_train))
 # thus the black line mean of posterier given y_train
 mu = L_s.T @ np.linalg.solve(L, y_train).ravel()
 
 # sample from f ~ posterior given x_test, x_train, y_train points
-# according to Ebden 2008:
+# according to Murphy 2012 chapter 4.3.1:
 # Σ = K_ss - K_s * inv(K) * K_s.T
 # = K_ss - L_s * L * inv(L * L.T) * (L_s * L).T
 # = K_ss - L_s * L * inv(L) * inv(L.T) * L_s.T * L.T
@@ -137,8 +131,8 @@ std = np.sqrt(var)
 
 ax2.plot(X_train, y_train, 'bs', ms=5)
 ax2.plot(X_test, f_posterior)
-# 4 sigma confidence interval roughly 95%
-ax2.fill_between(X_test.ravel(), mu-2*std, mu+2*std, color="#dddddd")
+# 2 * 1.96 sigma covering confidence interval 95% of gaussian
+ax2.fill_between(X_test.ravel(), mu-1.96*std, mu+1.96*std, color="#dddddd")
 ax2.plot(X_test, mu, 'r--', lw=2)
 ax2.grid(True)
 fig.tight_layout()
