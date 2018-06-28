@@ -58,7 +58,7 @@ K_ss += np.eye(N) * epsilon
 
 L_ss = np.linalg.cholesky(K_ss)
 # sample from multivariate Gaussian with random white gaussian.
-f_prior = 0 + L_ss @ np.random.normal(loc=0, size=(N, S))
+f_prior = 0 + L_ss @ np.random.normal(loc=0, scale=1, size=(N, S))
 
 # f_prior with shape (N, 3)
 fig, (ax1, ax2, ax3) = plt.subplots(3, 1, sharex=True, sharey=True)
@@ -88,43 +88,47 @@ def polynomial(X, theta, p=2):
 
 n = X_train.shape[0]
 K = rbf_kernel(X_train, gamma=param)
-K += epsilon * np.eye(n)
+K += np.eye(n)*epsilon
 L = np.linalg.cholesky(K)
-
+assert np.allclose(K.T, K)
+assert np.allclose(L @ L.T, K)
 # conditional covariance matrix of multivariate gaussian given f_prior
 K_s = rbf_kernel(X_train, X_test, gamma=param)
 L_s = np.linalg.solve(L, K_s)
-
+assert np.allclose(L @ L_s, K_s)
 assert np.allclose(np.linalg.inv(L) @ K_s, np.linalg.solve(L, K_s))
 
-# according to Murphy 2012 chapter 4.3.1:
-# mu = 𝜇(X*) + K_s * inv(K) * (y - 𝜇(X))
-# = 0 + L_s * L * inv(L * L.T) * (y - 0)
+# according to Murphy 2012 chapter 4.3.1 but inverse order of conditioning:
+# mu = 𝜇(X*) + K_s.T * inv(K) * (y - 𝜇(X))
+# = 0 + (L * L_s).T * inv(L * L.T) * (y - 0)
 # using associative property of matrix multiplication
-# = L_s * (L * inv(L)) * inv(L.T) * y
-# = L_s * I * (inv(L.T) * y)
+# = L_s.T * L.T * inv(L.T) * inv(L) * y
+# = L_s.T * I * inv(L) * y
 # provable as follows
 assert np.allclose(L_s.T @ (np.linalg.inv(L) @ y_train),
                    K_s.T @ np.linalg.inv(K) @ y_train)
-# linalg.solve does the same as matrix division
+# linalg.solve does the same as matrix inversion but use factorization.
 assert np.allclose(np.linalg.inv(L) @ y_train, np.linalg.solve(L, y_train))
 # thus the black line mean of posterier given y_train
 mu = L_s.T @ np.linalg.solve(L, y_train).ravel()
 
 # sample from f ~ posterior given x_test, x_train, y_train points
-# according to Murphy 2012 chapter 4.3.1:
-# Σ = K_ss - K_s * inv(K) * K_s.T
-# = K_ss - L_s * L * inv(L * L.T) * (L_s * L).T
-# = K_ss - L_s * L * inv(L) * inv(L.T) * L_s.T * L.T
+# according to Murphy 2012 chapter 4.3.1 but inverse order of conditioning:
+# Σ = K_ss - K_s.T * inv(K) * K_s
+# = K_ss - (L * L_s).T * inv(L * L.T) * (L * L_s)
+# = K_ss - L_s.T * L.T * inv(L.T) * inv(L) * L * L_s
 # using associative property of matrix multiplication
-# = K_ss - L_s * (L * inv(L)) * (inv(L.T) * L.T) * L_s.T
-# = K_ss - L_s * I * I.T * L_s.T
-# = K_ss - L_s * L_s.T
+# = K_ss - L_s.T * (L.T * inv(L.T)) * (inv(L) * L) * L_s
+# = K_ss - L_s.T * I.T * I * L_s
+# = K_ss - L_s.T * L_s
+assert np.allclose(K_ss - K_s.T @ np.linalg.solve(K, K_s),
+                   K_ss - L_s.T @ L_s)
+
 K_posterior = K_ss - L_s.T @ L_s
 L_posterior = np.linalg.cholesky(K_posterior)
 # sampling from posterier multivarate gaussian distribution
 f_posterior = mu.reshape(-1, 1) + \
-              L_posterior @ np.random.normal(loc=0, size=(N, S))
+              L_posterior @ np.random.normal(loc=0, scale=1, size=(N, S))
 
 var = np.diag(K_ss) - np.sum(L_s**2, axis=0)
 std = np.sqrt(var)
@@ -142,7 +146,7 @@ gp.fit(X_train, y_train)
 mu, std = gp.predict(X_test, return_std=True)
 
 ax3.plot(X_train, y_train, 'bs', ms=5)
-ax3.fill_between(X_test.ravel(), mu.ravel()-2*std, mu.ravel()+2*std)
+ax3.fill_between(X_test.ravel(), mu.ravel()-1.96*std, mu.ravel()+1.96*std)
 ax3.plot(X_test, mu, 'r--', lw=2)
 ax3.grid(True)
 fig.tight_layout()
