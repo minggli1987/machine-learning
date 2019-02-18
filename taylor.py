@@ -2,15 +2,16 @@ import numpy as np
 
 
 def taylor_exp(x, k=3):
-	actual = np.exp(x)
 	approx = 0
 
 	for i in range(k):
 		approx += np.power(x, i) / np.math.factorial(i)
 
-	print(f"true exponential function: {actual}; taylor approximation at {k}th order: {approx}")
-
+	return approx
 
 if __name__ == "__main__":
-	for k in range(10):
-		taylor_exp(3, k=k)
+	val = 3
+	for k in range(19):
+		yhat = taylor_exp(val, k=k)
+		y = np.exp(val)
+		print(f"true exponential function: {y}; taylor approximation at {k}th order: {yhat}")
