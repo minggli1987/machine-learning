@@ -67,8 +67,9 @@ def fibonacci4(max):
         a, b = b, a + b
 
 
-x = 35
-print(fibonacci1(x))
-print(fibonacci2(x))
-print(fibonacci3(x))
-print(fibonacci4(x))
+if __name__ == "__main__":
+    x = 35
+    print(fibonacci1(x))
+    print(fibonacci2(x))
+    print(fibonacci3(x))
+    print(fibonacci4(x))
