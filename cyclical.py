@@ -9,9 +9,9 @@ import numpy as np
 
 
 def cyclical_transform(x, units_cycle=24):
-    radius = x / units_cycle
-    sin = np.sin(2 * np.pi * radius)
-    cos = np.cos(2 * np.pi * radius)
+    radians = x / units_cycle
+    sin = np.sin(2 * np.pi * radians)
+    cos = np.cos(2 * np.pi * radians)
     return sin, cos
 
 if __name__ == "__main__":
