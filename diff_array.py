@@ -85,12 +85,28 @@ if __name__ == "__main__":
     assert arr_1 == arr_2
     assert max_1 == max_2
 
-    with open("diff_array.txt", "r") as f:
+    i = 5, [[1, 2, 100], [2, 5, 100], [3, 4, 100]]
+
+    arr_1, max_1 = array_manipulation_linear(*i)
+    arr_2, max_2 = array_manipulation_quadratic(*i)
+    assert arr_1 == arr_2
+    assert max_1 == max_2
+    print(arr_1, arr_2)
+
+    with open("diff_array_t1.txt", "r") as f:
         n, _ = f.readline().split()
         n = int(n)
         queries = [[int(i) for i in q.split()] for q in f.readlines()]
-        queries = queries[:500]
-        print(len(queries))
+
+    arr_1, max_1 = array_manipulation_linear(n, queries, return_arr=True)
+    arr_2, max_2 = array_manipulation_quadratic(n, queries, return_arr=True)
+    assert arr_1 == arr_2
+    assert max_1 == max_2
+
+    with open("diff_array_t2.txt", "r") as f:
+        n, _ = f.readline().split()
+        n = int(n)
+        queries = [[int(i) for i in q.split()] for q in f.readlines()]
 
     arr_1, max_1 = array_manipulation_linear(n, queries, return_arr=True)
     arr_2, max_2 = array_manipulation_quadratic(n, queries, return_arr=True)
