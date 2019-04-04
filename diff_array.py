@@ -91,7 +91,6 @@ if __name__ == "__main__":
     arr_2, max_2 = array_manipulation_quadratic(*i)
     assert arr_1 == arr_2
     assert max_1 == max_2
-    print(arr_1, arr_2)
 
     with open("diff_array_t1.txt", "r") as f:
         n, _ = f.readline().split()
