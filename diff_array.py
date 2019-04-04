@@ -95,7 +95,7 @@ if __name__ == "__main__":
     with open("diff_array_t1.txt", "r") as f:
         n, _ = f.readline().split()
         n = int(n)
-        queries = [[int(i) for i in q.split()] for q in f.readlines()]
+        queries = [[int(i) for i in q.split()] for q in f.readlines()][:5000]
 
     arr_1, max_1 = array_manipulation_linear(n, queries, return_arr=True)
     arr_2, max_2 = array_manipulation_quadratic(n, queries, return_arr=True)
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     with open("diff_array_t2.txt", "r") as f:
         n, _ = f.readline().split()
         n = int(n)
-        queries = [[int(i) for i in q.split()] for q in f.readlines()]
+        queries = [[int(i) for i in q.split()] for q in f.readlines()][:5000]
 
     arr_1, max_1 = array_manipulation_linear(n, queries, return_arr=True)
     arr_2, max_2 = array_manipulation_quadratic(n, queries, return_arr=True)
