@@ -19,20 +19,24 @@ def time(func):
 
 
 @time
-def array_manipulation_quadratic(n, queries):
+def array_manipulation_quadratic(n, queries, return_arr=True):
     normal_arr = [0] * n
 
     for (a, b, k) in queries:
         # O(M)
         a -= 1
         b -= 1
-        normal_arr[a: b + 1] = map(lambda x: x + k, normal_arr[a: b + 1])
+        for i in range(a, b + 1):
+            normal_arr[i] += k
 
-    return normal_arr, max(normal_arr)
+    if return_arr:
+        return normal_arr, max(normal_arr)
+    else:
+        return max(normal_arr)
 
 
 @time
-def array_manipulation_linear(n, queries):
+def array_manipulation_linear(n, queries, return_arr=True):
     diff_arr = [0] * (n + 1)
 
     for (a, b, k) in queries:
@@ -42,17 +46,27 @@ def array_manipulation_linear(n, queries):
         diff_arr[a] += k
         diff_arr[b + 1] -= k
 
-    normal_arr = [0] * n
+
+    if return_arr:
+        normal_arr = [0] * n
+
     cumsum = 0
+    maximum = 0
     for idx, l in enumerate(diff_arr):
         # O(N)
         cumsum += l
-        try:
-            normal_arr[idx] = cumsum
-        except IndexError:
-            pass
+        maximum = cumsum if cumsum > maximum else maximum
 
-    return normal_arr, max(normal_arr)
+        if return_arr:
+            try:
+                normal_arr[idx] = cumsum
+            except IndexError:
+                pass
+
+    if return_arr:
+        return normal_arr, max(normal_arr)
+    else:
+        return maximum
 
 
 if __name__ == "__main__":
@@ -63,5 +77,26 @@ if __name__ == "__main__":
     arr_2, max_2 = array_manipulation_quadratic(*i)
     assert arr_1 == arr_2
     assert max_1 == max_2
+
+    i = 10, [[1, 5, 3], [4, 8, 7], [6, 9, 1]]
+
+    arr_1, max_1 = array_manipulation_linear(*i)
+    arr_2, max_2 = array_manipulation_quadratic(*i)
+    assert arr_1 == arr_2
+    assert max_1 == max_2
+
+    with open("diff_array.txt", "w") as f:
+        n, _ = f.readline().split()
+        n = int(n)
+        q = f.readlines()
+        queries = [[int(i) for i in q.split()] for q in q]
+        print(n)
+        print(queries)
+
+    # arr_1, max_1 = array_manipulation_linear(*i)
+    # arr_2, max_2 = array_manipulation_quadratic(*i)
+    # assert arr_1 == arr_2
+    # assert max_1 == max_2
+
 
 
