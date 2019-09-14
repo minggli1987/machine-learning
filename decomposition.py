@@ -43,7 +43,10 @@ assert np.allclose(manual_Sigma, Sigma)
 # into L so that A = L * L.H, a good way to check singular matrix
 L = cholesky(Sigma)
 assert np.allclose(L @ L.T, Sigma)
-
+try:
+    cholesky(np.ones((2, 2)))
+except np.linalg.LinAlgError:
+    pass
 
 # Eigen decomposition requires symmetric matrix A so that A.dot(v) = λ * v
 # where λ is a scalar.
