@@ -8,16 +8,41 @@ m, n = 100, 20
 M = np.random.rand(m, n)
 # !!! strangely numpy.cov assumes by default observations in columns and
 # variables in rows, rowvar=False turns it off.
+# UPDATE this is just definition of Cov.
 Sigma = cov(M, rowvar=False)
+
+# definition of covariance matrix is X @ X.T (after mean-centreing) where X
+# consists of random variables (dims) in its ROWS instead of columns.
+Sigma_rowvar = cov(M.T)
+assert np.allclose(Sigma, Sigma_rowvar)
 # covariance matrix is always symmetric (i.e. A = A.T) and positive
 # semi-definite (i.e. x.H * A * x >= 0)
 # unitary matrix is A.T = inv(A) and Hermitan Matrix is symmetric complex
 # matrix and A.H = A
 
+
+def compute_cov(a, rowvar=True):
+    # ensure rows are random variables and columns observations.
+    if not rowvar:
+        a = a.T
+
+    # mean center random variables at rows.
+    mean = a.mean(axis=1)[:, None]
+    # number of observations
+    n = a.shape[1]
+    # number of degree of freedom
+    dof = n - 1
+    x = a - mean
+    return x @ x.T / dof
+
+
+manual_Sigma = compute_cov(M, rowvar=False)
+assert np.allclose(manual_Sigma, Sigma)
+
 # Cholesky decomposition factorizes a symmetric positive semi-definite matrix A
-# into L so that A = L * L.H
+# into L so that A = L * L.H, a good way to check singular matrix
 L = cholesky(Sigma)
-assert np.allclose(dot(L, L.T), Sigma)
+assert np.allclose(L @ L.T, Sigma)
 
 
 # Eigen decomposition requires symmetric matrix A so that A.dot(v) = λ * v
