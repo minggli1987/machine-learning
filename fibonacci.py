@@ -5,10 +5,11 @@ from functools import wraps, lru_cache as cache
 def timeit(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
+        n = func.__name__
         start = time.time()
         rv = func(*args, **kwargs)
         end = time.time()
-        print("function {0} took {1:.4f} ms.".format(func.__name__, 1e3 * (end - start)))
+        print("function {0} took {1:.4f} ms.".format(n, 1e3 * (end - start)))
         return rv
     return wrapper
 
